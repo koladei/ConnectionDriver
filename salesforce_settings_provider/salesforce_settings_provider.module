@@ -1,0 +1,46 @@
+<?php
+
+require_once 'forms/admin.inc';
+
+/**
+ * Implement hook_menu().
+ */
+function salesforce_settings_provider_menu() {
+    $items = [];
+
+    return $items;
+}
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function salesforce_settings_provider_permission() {
+    $permission = [];
+    return $permission;
+}
+
+function salesforce_settings_provider__user_access($args) {
+    return true;
+}
+
+/**
+ * Implements hook_library
+ * @return array
+ */
+function salesforce_settings_provider_library() {
+    $libraries = array();
+
+    return $libraries;
+}
+
+function salesforce_settings_provider_get_settings() {
+    $s = new stdClass();
+    $s->URL = variable_get('SALESFORCE_SETTINGS_ENDPOINT_URL');
+    $s->Username = variable_get('SALESFORCE_SETTINGS_USERNAME');
+    $s->Password = variable_get('SALESFORCE_SETTINGS_PASSWORD');
+    $s->GrantType = variable_get('SALESFORCE_SETTINGS_GRANT_TYPE');
+    $s->ClientID = variable_get('SALESFORCE_SETTINGS_CLIENT_ID');
+    $s->ClientSecret = variable_get('SALESFORCE_SETTINGS_CLIENT_SECRET');
+    return $s;
+}
