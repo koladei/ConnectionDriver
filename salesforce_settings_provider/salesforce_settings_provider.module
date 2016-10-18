@@ -34,7 +34,7 @@ function salesforce_settings_provider_library() {
     return $libraries;
 }
 
-function salesforce_settings_provider_get_settings() {
+function salesforce_settings_provider__get_settings() {
     $s = new stdClass();
     $s->URL = variable_get('SALESFORCE_SETTINGS_ENDPOINT_URL');
     $s->Username = variable_get('SALESFORCE_SETTINGS_USERNAME');
