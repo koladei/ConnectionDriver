@@ -6,7 +6,8 @@
  */
 function salesforce_settings_provider_form_settings_provider_admin_alter(&$form, &$form_state) {
 
-    if (variable_get('SALESFORCE_SETTINGS_REMOTE_ENDPOINT', FALSE) == FALSE) {
+    //This is as backward compatibility block.
+    if (variable_get('SALESFORCE_SETTINGS_ENDPOINT_URL', FALSE) == FALSE) {
         variable_set('SALESFORCE_SETTINGS_ENDPOINT_URL', variable_get('MWARE_CUSTOMER_REMOTE_ENDPOINT'));
         variable_set('SALESFORCE_SETTINGS_USERNAME', variable_get('MWARE_CUSTOMER_REMOTE_ENDPOINT_USERNAME'));
         variable_set('SALESFORCE_SETTINGS_PASSWORD', variable_get('MWARE_CUSTOMER_REMOTE_ENDPOINT_PASSWORD'));
@@ -52,7 +53,7 @@ function salesforce_settings_provider_form_settings_provider_admin_alter(&$form,
         ),
         '#size' => 100,
         '#maxlength' => 100,
-        '#description' => t("The password to the remote webservice."),
+        '#description' => t('The password to the remote webservice.'),
         '#weight' => 2
     );
 
