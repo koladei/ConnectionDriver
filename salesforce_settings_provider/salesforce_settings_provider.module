@@ -44,3 +44,137 @@ function salesforce_settings_provider__get_settings() {
     $s->ClientSecret = variable_get('SALESFORCE_SETTINGS_CLIENT_SECRET');
     return $s;
 }
+
+/**
+ * Returns the mapped names of the salesforce opportunity entity
+ * @param bool $forward
+ * @return array
+ */
+function salesforce_settings_provider__get_salesforce_account_field_name_map($forward = TRUE) {
+    //TODO: fetch this from the cache
+    $x = ['GCID__c' => 'GCID', 'LastModifiedDate' => 'Modified', 'CreatedDate' => 'Created', 'Name' => 'Name', 'Id' => 'Id'];
+    if ($forward) {
+        return $x;
+    } else {
+        return array_flip($x);
+    }
+}
+
+/**
+ * Returns the mapped names of the salesforce opportunity entity
+ * @param bool $forward
+ * @return array
+ */
+function salesforce_settings_provider__get_salesforce_opportunity_field_name_map($forward = TRUE) {
+    $x = ['GCID__c' => 'GCID', 'Name' => 'Name','LastModifiedDate' => 'Modified','CreatedDate' => 'Created', 'AccountId' => 'AccountId', 'Id' => 'Id'];
+    if ($forward) {
+        return $x;
+    } else {
+        return array_flip($x);
+    }
+}
+
+/**
+ * Returns the mapped names of the salesforce opportunity entity
+ * @param bool $forward
+ * @return array
+ */
+function salesforce_settings_provider__get_salesforce_customer_product_field_name_map($forward = TRUE) {
+    $x = ['GCID__c' => 'GCID', 'LastModifiedDate' => 'Modified','CreatedDate' => 'Created', 'Account__c' => 'Account', 'Id' => 'Id', 'Auxiliary_Circuit_ID__c' => 'AuxiliaryCircuitID'];
+    if ($forward) {
+        return $x;
+    } else {
+        return array_flip($x);
+    }
+}
+
+/**
+ * Substitutes the contenct of the $selected_fields array with values of corresponding keys in the $field_names array.
+ * Should be used to process field select arrays.
+ * @param array $selected_fields
+ * @param array $field_names
+ * @return array
+ */
+function salesforce_settings_provider__rename_select_fields(array &$selected_fields, array $field_names) {
+    $substitues = [];
+
+    foreach ($selected_fields as $key) {
+        if (array_key_exists($key, $field_names)) {
+            $substitues[] = $field_names[$key];
+        }
+    }
+
+    $selected_fields = $substitues;
+    return $selected_fields;
+}
+
+/**
+ * Renames the keys of the supplied object with the values of the corresponding keys in the $field_names array.
+ * @param stdClass $entity
+ * @param array $field_names
+ */
+function salesforce_settings_provider__rename_returned_object_fields(stdClass &$entity, array $field_names) {
+    foreach ($field_names as $key => $substitute) {
+        if (isset($entity->{$key}) && $key !== $substitute) {
+            $entity->{$substitute} = $entity->{$key};
+            unset($entity->{$key});
+        }
+    }
+}
+
+/**
+ * Implements hook_salesforce_customer_product_field_name_alter
+ * @param stdClass $entity
+ */
+function salesforce_settings_provider_salesforce_customer_product_field_name_alter(stdClass &$entity) {
+    $field_names = salesforce_settings_provider__get_salesforce_customer_product_field_name_map();
+    salesforce_settings_provider__rename_returned_object_fields($entity, $field_names);
+}
+
+/**
+ * Implements hook_salesforce_customer_product_field_name_select_alter
+ * @param stdClass $entity
+ */
+function salesforce_settings_provider_salesforce_customer_product_field_name_select_alter(array &$selected_fields) {
+    $field_names = salesforce_settings_provider__get_salesforce_customer_product_field_name_map(FALSE);
+    salesforce_settings_provider__rename_select_fields($selected_fields, $field_names);
+    return $selected_fields;
+}
+
+/**
+ * Implements hook_salesforce_opportunity_field_name_alter
+ * @param stdClass $entity
+ */
+function salesforce_settings_provider_salesforce_opportunity_field_name_alter(stdClass &$entity) {
+    $field_names = salesforce_settings_provider__get_salesforce_opportunity_field_name_map();
+    salesforce_settings_provider__rename_returned_object_fields($entity, $field_names);
+}
+
+/**
+ * Implements hook_salesforce_opportunity_field_name_select_alter
+ * @param stdClass $entity
+ */
+function salesforce_settings_provider_salesforce_opportunity_field_name_select_alter(array &$selected_fields) {
+    $field_names = salesforce_settings_provider__get_salesforce_opportunity_field_name_map(FALSE);
+    salesforce_settings_provider__rename_select_fields($selected_fields, $field_names);
+    return $selected_fields;
+}
+
+/**
+ * Implements hook_salesforce_account_field_name_alter
+ * @param stdClass $entity
+ */
+function salesforce_settings_provider_salesforce_account_field_name_alter(stdClass &$entity) {
+    $field_names = salesforce_settings_provider__get_salesforce_account_field_name_map();
+    salesforce_settings_provider__rename_returned_object_fields($entity, $field_names);
+}
+
+/**
+ * Implements hook_salesforce_account_field_name_select_alter
+ * @param stdClass $entity
+ */
+function salesforce_settings_provider_salesforce_account_field_name_select_alter(array &$selected_fields) {
+    $field_names = salesforce_settings_provider__get_salesforce_account_field_name_map(FALSE);
+    salesforce_settings_provider__rename_select_fields($selected_fields, $field_names);
+    return $selected_fields;
+}
