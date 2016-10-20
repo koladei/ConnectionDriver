@@ -66,7 +66,7 @@ function salesforce_settings_provider__get_salesforce_account_field_name_map($fo
  * @return array
  */
 function salesforce_settings_provider__get_salesforce_opportunity_field_name_map($forward = TRUE) {
-    $x = ['GCID__c' => 'GCID', 'Name' => 'Name','LastModifiedDate' => 'Modified','CreatedDate' => 'Created', 'AccountId' => 'AccountId', 'Id' => 'Id'];
+    $x = ['GCID__c' => 'GCID', 'Name' => 'Name', 'LastModifiedDate' => 'Modified', 'CreatedDate' => 'Created', 'AccountId' => 'AccountId', 'Id' => 'Id'];
     if ($forward) {
         return $x;
     } else {
@@ -80,7 +80,7 @@ function salesforce_settings_provider__get_salesforce_opportunity_field_name_map
  * @return array
  */
 function salesforce_settings_provider__get_salesforce_customer_product_field_name_map($forward = TRUE) {
-    $x = ['GCID__c' => 'GCID', 'LastModifiedDate' => 'Modified','CreatedDate' => 'Created', 'Account__c' => 'Account', 'Id' => 'Id', 'Auxiliary_Circuit_ID__c' => 'AuxiliaryCircuitID'];
+    $x = ['Name' => 'Name', 'LastModifiedDate' => 'Modified', 'CreatedDate' => 'Created', 'Account__c' => 'Account', 'Id' => 'Id', 'Auxiliary_Circuit_ID__c' => 'AuxiliaryCircuitID'];
     if ($forward) {
         return $x;
     } else {
