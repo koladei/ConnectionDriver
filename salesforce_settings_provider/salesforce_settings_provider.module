@@ -88,8 +88,176 @@ function salesforce_settings_provider__get_salesforce_customer_product_field_nam
     }
 }
 
+function salesforce_settings_provider__get_entity_definition($entity_name, $component = NULL) {
+    $entities = [
+        'customer_product' => [
+            'internal_name' => 'Customer_Products__c',
+            'fields' => [
+                'Name' => [
+                    'prefered_name' => 'Name',
+                    'type' => 'string'
+                ],
+                'LastModifiedDate' => [
+                    'prefered_name' => 'Modified',
+                    'type' => 'string'
+                ],
+                'CreatedDate' => [
+                    'prefered_name' => 'Created',
+                    'type' => 'string'
+                ],
+                'Auxiliary_Circuit_ID__c' => [
+                    'prefered_name' => 'AuxiliaryCircuitID',
+                    'type' => 'string'
+                ],
+                'Id' => [
+                    'prefered_name' => 'Id',
+                    'type' => 'string'
+                ],
+                'Account__c' => [
+                    'prefered_name' => 'Account',
+                    'type' => 'string',
+                    'lookup_entity' => 'account'
+                ],
+                'Opportunity__c' => [
+                    'prefered_name' => 'Opportunity',
+                    'type' => 'string',
+                    'lookup_entity' => 'opportunity'
+                ],
+            ]
+        ],
+        'account' => [
+            'internal_name' => 'Account',
+            'fields' => [
+                'Name' => [
+                    'prefered_name' => 'Name',
+                    'type' => 'string'
+                ],
+                'LastModifiedDate' => [
+                    'prefered_name' => 'Modified',
+                    'type' => 'string'
+                ],
+                'CreatedDate' => [
+                    'prefered_name' => 'Created',
+                    'type' => 'string'
+                ],
+                'Auxiliary_Circuit_ID__c' => [
+                    'prefered_name' => 'AuxiliaryCircuitID',
+                    'type' => 'string'
+                ],
+                'Id' => [
+                    'prefered_name' => 'Id',
+                    'type' => 'string'
+                ],
+                'GCID__c' => [
+                    'prefered_name' => 'GCID',
+                    'type' => 'string',
+                ],
+            ]
+        ],
+        'opportunity' => [
+            'internal_name' => 'Opportunity',
+            'fields' => [
+                'Name' => [
+                    'prefered_name' => 'Name',
+                    'type' => 'string'
+                ],
+                'LastModifiedDate' => [
+                    'prefered_name' => 'Modified',
+                    'type' => 'string'
+                ],
+                'CreatedDate' => [
+                    'prefered_name' => 'Created',
+                    'type' => 'string'
+                ],
+                'Auxiliary_Circuit_ID__c' => [
+                    'prefered_name' => 'AuxiliaryCircuitID',
+                    'type' => 'string'
+                ],
+                'Id' => [
+                    'prefered_name' => 'Id',
+                    'type' => 'string'
+                ],
+//                'AccountId' => [
+//                    'prefered_name' => 'AccountId',
+//                    'type' => 'string',
+//                ],
+                'Account' => [
+                    'prefered_name' => 'AccountId',
+                    'type' => 'string',
+                    'lookup_entity' => 'account'
+                ],
+            ],
+        ],
+    ];
+    if ($component) {
+        return $entities[$entity_name][$component];
+    } else {
+        return $entities[$entity_name];
+    }
+}
+
+function salesforce_settings_provider__get_entity_field_name_map($entity_name, $forward = TRUE) {
+    $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
+    $map = [];
+    if ($forward) {
+        array_walk($selected_entity, function($value, $key) use(&$map) {
+            $map[$key] = $value['prefered_name'];
+        });
+    } else {
+        array_walk($selected_entity, function($value, $key) use(&$map) {
+            $map[$value['prefered_name']] = $key;
+        });
+    }
+
+    return $map;
+}
+
+function salesforce_settings_provider__get_entity_field_internal_name($entity_name, $preferred_name) {
+    $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
+    $map = NULL;
+    foreach ($selected_entity as $key => $value) {
+        if ($value['prefered_name'] == $preferred_name) {
+            $map = $key;
+            break;
+        }
+    };
+
+    return $map;
+}
+
+function salesforce_settings_provider__get_entity_field_internal_lookup_name($entity_name, $field_name) {
+    $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
+    $internal_name = salesforce_settings_provider__get_entity_field_internal_name($entity_name, $field_name);
+    $lookup_entity = $selected_entity[$internal_name]['lookup_entity'];
+    return $lookup_entity;
+}
+
+function salesforce_settings_provider__get_compulsary_entity_fields($entity_name) {
+    $x = [
+        'customer_product' => ['Id', 'Account'],
+        'opportunity' => ['Id', 'Account'],
+        'account' => ['Id', 'GCID']
+    ];
+
+    return $x[$entity_name];
+}
+
+function salesforce_settings_provider__get_entity_internal_name($entity_name) {
+
+    return salesforce_settings_provider__get_entity_definition($entity_name, 'internal_name');
+}
+
 /**
- * Substitutes the contenct of the $selected_fields array with values of corresponding keys in the $field_names array.
+ * Renames the fields of the specified entity item.
+ * @param stdClass $entity
+ */
+function salesforce_settings_provider__alter_entity_record_field_names($entity_name, stdClass &$entity) {
+    $field_names = salesforce_settings_provider__get_entity_field_name_map($entity_name);
+    salesforce_settings_provider__rename_returned_object_fields($entity, $field_names);
+}
+
+/**
+ * Substitutes the content of the $selected_fields array with values of corresponding keys in the $field_names array.
  * Should be used to process field select arrays.
  * @param array $selected_fields
  * @param array $field_names
@@ -120,6 +288,16 @@ function salesforce_settings_provider__rename_returned_object_fields(stdClass &$
             unset($entity->{$key});
         }
     }
+}
+
+/**
+ * Implements hook_salesforce_customer_product_field_name_alter
+ * @param stdClass $entity
+ */
+function salesforce_settings_provider__rename_entity_select_field_names($entity_name, array &$selected_fields) {
+    $field_names = salesforce_settings_provider__get_entity_field_name_map($entity_name, FALSE);
+    salesforce_settings_provider__rename_select_fields($selected_fields, $field_names);
+    return $selected_fields;
 }
 
 /**
@@ -177,4 +355,244 @@ function salesforce_settings_provider_salesforce_account_field_name_select_alter
     $field_names = salesforce_settings_provider__get_salesforce_account_field_name_map(FALSE);
     salesforce_settings_provider__rename_select_fields($selected_fields, $field_names);
     return $selected_fields;
+}
+
+/**
+ * Helps to retrieve the lastest Salesforce request token.
+ * @return type
+ */
+function mware_customer_get_request_token() {
+    return salesforce_settings_provider__get_request_token();
+}
+
+/**
+ * Helps to retrieve the lastest Salesforce request token.
+ * @return type
+ */
+function salesforce_settings_provider__get_request_token() {
+    try {
+        $sf_settings = salesforce_settings_provider__get_settings();
+        $uri = $sf_settings->URL;
+        $query_array = [
+            'grant_type' => $sf_settings->GrantType,
+            'client_id' => $sf_settings->ClientID,
+            'client_secret' => $sf_settings->ClientSecret,
+            'username' => $sf_settings->Username,
+            'password' => $sf_settings->Password
+        ];
+
+        // Guzzle is having problems guzzling this request so we are defaulting to traditional cURL
+        $query_string = (drupal_http_build_query($query_array));
+
+        $tokenOption = array(
+            CURLOPT_HTTPHEADER => array('Content-Type: application/x-www-form-urlencoded'),
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_POSTFIELDS => $query_string
+        );
+
+        $feed = mware_blocking_http_request($uri, ['options' => $tokenOption, 'block' => true]);
+        $token_response = json_decode($feed->getContent());
+        return $token_response;
+    } catch (Exception $x) {
+        return FALSE;
+    }
+}
+
+/**
+ * Queries salesforce for items items that match the specified critery in the specified salesforce entity $entity_name
+ * @param string $entity_name
+ * @param array $params
+ * @param stdClass $token_response
+ * @return boolean
+ */
+function salesforce_settings_provider__get_salesforce_entity_items($entity_name, array $params = [], stdClass &$token_response = NULL, array $notable_fields = [], $post_process = NULL) {
+    try {
+        //Get the request token
+        if (($token_response = (!is_null($token_response) ? $token_response : salesforce_settings_provider__get_request_token()))) {
+
+            // Prepare the fields that will be selected
+            $fields = [];
+            if (isset($params['$select'])) {
+                $fields = explode(',', str_replace(' ', '', $params['$select']));
+            }
+
+            // compulsarily set the compulsary fields of the entity
+            $required_fields = salesforce_settings_provider__get_compulsary_entity_fields($entity_name);
+            foreach ($required_fields as $required_field) {
+                if (!in_array($required_field, $fields)) {
+                    $fields[] = $required_field;
+                }
+            }
+
+            // translate the selected field names to the internal names.
+            salesforce_settings_provider__rename_entity_select_field_names($entity_name, $fields);
+
+            // Prepare the filter that will be used
+            $filter = isset($params['$filter']) ? $params['$filter'] : '';
+            $filter = mware_customer_process_filter_expression($filter, salesforce_settings_provider__get_entity_field_name_map($entity_name, FALSE));
+            $filter = strlen($filter) > 0 ? 'WHERE ' . $filter : '';
+
+            // Prepare the limit
+            $limit = isset($params['$top']) ? ' LIMIT ' . $params['$top'] : '';
+            $limit = (strlen($filter) < 1) && (strlen($limit) < 1) ? ' LIMIT 10' : $limit;
+
+            // Prepare the POST request
+            $options = array(
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: Bearer ' . $token_response->access_token
+                ),
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_SSL_VERIFYHOST => 0
+            );
+
+            // Generate the SOQL query to send in the POST request
+            $selected_fields = implode(',', $fields);
+            $entity_internal_name = salesforce_settings_provider__get_entity_internal_name($entity_name);
+            $query_url = drupal_http_build_query(['q' => 'SELECT ' . $selected_fields
+                . ' FROM ' . $entity_internal_name . ' '
+                . $filter
+                . $limit]);
+
+            // Execute the POST request.
+            $new_url = $token_response->instance_url . '/services/data/v35.0/query?' . $query_url;
+            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+
+            // Process the request
+            $res = json_decode($feed->getContent());
+            if (isset($res->records)) {
+                $expanded_field_values = [];
+
+                foreach ($notable_fields as $notable_field) {
+                    $expanded_field_values[$notable_field] = [];
+                }
+
+                $expanded_fields = [];
+                if (isset($params['$expand'])) {
+                    $expanded_field_names = explode(',', str_replace(' ', '', $params['$expand']));
+                    foreach ($expanded_field_names as $expanded_field_name) {
+                        if (!in_array($expanded_field_name, $notable_fields)) {
+                            $notable_fields[] = $expanded_field_name;
+                        }
+
+                        $expanded_field_values[$expanded_field_name] = [];
+                        $x = [];
+                        preg_match_all('/(' . $expanded_field_name . ')\/([\\w]+)/', $params['$select'], $x);
+                        foreach ($x[2] as $sub_field_name) {
+                            $expanded_fields[$expanded_field_name][] = $sub_field_name;
+                        }
+
+                        if (!isset($expanded_fields[$expanded_field_name])) {
+                            $expanded_fields[$expanded_field_name] = [];
+                        }
+                    }
+//                    var_dump($expanded_field_values);
+                }
+
+                array_walk($res->records, function(&$record) use(&$expanded_field_values, $entity_name, $notable_fields) {
+                    unset($record->attributes);
+                    salesforce_settings_provider__alter_entity_record_field_names($entity_name, $record);
+                    foreach ($notable_fields as $notable_field) {
+                        $expanded_field_values[$notable_field][] = $record->{$notable_field};
+                    }
+                });
+
+                if (isset($params['$expand'])) {
+                    foreach ($expanded_fields as $expanded_field => $selected_sub_field_names) {
+                        $field_keys = ($expanded_field_values[$expanded_field]);
+                        $expanded_entity_intenal_name = salesforce_settings_provider__get_entity_field_internal_lookup_name($entity_name, $expanded_field);
+
+                        $relations = salesforce_settings_provider__get_entity_items_by_ids($expanded_entity_intenal_name, $field_keys, $selected_sub_field_names, $token_response);
+
+                        foreach ($res->records as &$record) {
+                            $record->{$expanded_field} = $relations[$record->{$expanded_field}];
+                        }
+                    }
+                }
+
+                if ($post_process) {
+                    $post_process($res->records, $expanded_field_values);
+                }
+
+                return $res->records;
+            } else {
+                echo 'Error 1';
+                return FALSE;
+            }
+        } else {
+            echo 'Error 2';
+            return FALSE;
+        }
+    } catch (Exception $exp) {
+        return FALSE;
+    }
+}
+
+/**
+ * Returns the customer with the GCID matching $gcid
+ * @param string $ids
+ * @param array $select an array containing the fields to return.
+ * @param array $token_response
+ */
+function salesforce_settings_provider__get_entity_items_by_ids($entity_name, array $ids = [], array $select = [], stdClass &$token_response = NULL, callable $callback = NULL) {
+    //Get the request token
+    if (($token_response = (!is_null($token_response)) ? $token_response : salesforce_settings_provider__get_request_token())) {
+
+        // Prepare the fields that will be selected
+        $fields = $select;
+
+
+        $required_fields = salesforce_settings_provider__get_compulsary_entity_fields($entity_name);
+        foreach ($required_fields as $required_field) {
+            if (!in_array($required_field, $fields)) {
+                $fields[] = $required_field;
+            }
+        }
+
+        // Normalize the field names
+        salesforce_settings_provider__rename_entity_select_field_names($entity_name, $fields);
+
+        $id_chunks = array_chunk($ids, 50);
+
+        $records = [];
+        foreach ($id_chunks as $id_chunk) {
+            // Prepare the filter that will be used
+            $filter = 'WHERE Id IN (\'' . implode('\',\'', $id_chunk) . '\')';
+
+            // Prepare the POST request
+            $options = array(
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: Bearer ' . $token_response->access_token
+                ),
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_SSL_VERIFYHOST => 0
+            );
+
+            // Generate the SOQL query to send in the POST request
+            $selected_fields = implode(',', $fields);
+            $entity_internal_name = salesforce_settings_provider__get_entity_internal_name($entity_name);
+            $query_url = drupal_http_build_query(['q' => 'SELECT ' . $selected_fields
+                . ' FROM ' . $entity_internal_name . ' '
+                . $filter
+            ]);
+
+            // Execute the POST request.
+            $new_url = $token_response->instance_url . '/services/data/v35.0/query?' . $query_url;
+            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+
+            // Process the request
+            $res = json_decode($feed->getContent());
+            array_walk($res->records, function(&$record) use($ids, &$records) {
+                unset($record->attributes);
+                salesforce_settings_provider__alter_entity_record_field_names('account', $record);
+                $records[$record->Id] = $record;
+            });
+        }
+        return $records;
+    } else {
+        throw new Exception('Unable to get request token');
+    }
 }
