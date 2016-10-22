@@ -693,7 +693,6 @@ function salesforce_settings_provider__get_entity_items_by_ids($entity_name, arr
     $params['$expand'] = isset($params['$expand']) ? $params['$expand'] : [];
     $params['$expand'] = array_merge($params['$expand'], $notable_fields);
     $id_chunks = array_chunk($ids, 50);
-//    var_dump($params);
 
     foreach ($id_chunks as $id_chunk) {
         $params['$filter'] = 'Id IN (\'' . implode('\',\'', $id_chunk) . '\')';
@@ -701,4 +700,34 @@ function salesforce_settings_provider__get_entity_items_by_ids($entity_name, arr
         $records = array_merge($records, $r);
     }
     return $records;
+}
+
+/**
+ * Returns records of $entity_name that have the specified $ids.
+ * @param type $entity_name
+ * @param array $ids
+ * @param array $select
+ * @param stdClass $token_response
+ * @param callable $callback
+ * @return array
+ * @throws Exception
+ */
+function salesforce_settings_provider__get_entity_items_by_field_values($entity_name, $field_name, array $ids = [], array $select = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], callable $callback = NULL) {
+    $records = [];
+    $params = [
+        '$select' => $select
+    ];
+
+    $params['$expand'] = isset($params['$expand']) ? $params['$expand'] : [];
+    $params['$expand'] = array_merge($params['$expand'], $notable_fields);
+    $id_chunks = array_chunk($ids, 50);
+
+    $field_name = salesforce_settings_provider__get_entity_field_internal_name($entity_name, $field_name);
+    foreach ($id_chunks as $id_chunk) {
+        $params['$filter'] = $field_name . ' IN (\'' . implode('\',\'', $id_chunk) . '\')';
+        
+        $r = salesforce_settings_provider__get_salesforce_entity_items($entity_name, $params, $token_response, $key_field, [], $callback);
+        $records = array_merge($records, $r);
+    }
+    return $records;        
 }
