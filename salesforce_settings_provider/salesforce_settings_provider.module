@@ -34,6 +34,10 @@ function salesforce_settings_provider_library() {
     return $libraries;
 }
 
+/**
+ * Returns the connection settings with which to connect to salesforce.
+ * @return \stdClass
+ */
 function salesforce_settings_provider__get_settings() {
     $s = new stdClass();
     $s->URL = variable_get('SALESFORCE_SETTINGS_ENDPOINT_URL');
@@ -88,6 +92,13 @@ function salesforce_settings_provider__get_salesforce_customer_product_field_nam
     }
 }
 
+/**
+ * Returns the full definition of an entity or the definition of the specified component.
+ * Components include: fields, internal_name
+ * @param string $entity_name
+ * @param string $component
+ * @return array
+ */
 function salesforce_settings_provider__get_entity_definition($entity_name, $component = NULL) {
     $entities = [
         'customer_product' => [
@@ -200,6 +211,13 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
     }
 }
 
+/**
+ * Returns an array of the specified $entity_name fields in a key value pair of internal_name => display_name.
+ * The position is flipped if $forward is set to FALSE.
+ * @param string $entity_name
+ * @param boolean $forward
+ * @return array
+ */
 function salesforce_settings_provider__get_entity_field_name_map($entity_name, $forward = TRUE) {
     $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
     $map = [];
@@ -216,6 +234,13 @@ function salesforce_settings_provider__get_entity_field_name_map($entity_name, $
     return $map;
 }
 
+
+/**
+ * Returns the name internal name of the specified $entity_name's field $preferred_name.
+ * @param string $entity_name
+ * @param string $preferred_name
+ * @return string
+ */
 function salesforce_settings_provider__get_entity_field_internal_name($entity_name, $preferred_name) {
     $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
     $map = NULL;
@@ -229,6 +254,12 @@ function salesforce_settings_provider__get_entity_field_internal_name($entity_na
     return $map;
 }
 
+/**
+ * Returns the name of the entity that an entity field is looking into.
+ * @param string $entity_name
+ * @param string $field_name
+ * @return string
+ */
 function salesforce_settings_provider__get_entity_field_internal_lookup_name($entity_name, $field_name) {
     $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
     $internal_name = salesforce_settings_provider__get_entity_field_internal_name($entity_name, $field_name);
@@ -236,6 +267,12 @@ function salesforce_settings_provider__get_entity_field_internal_lookup_name($en
     return $lookup_entity;
 }
 
+/**
+ * Returns the compulsary fields of the specified $entity_name. This fields will always be returned
+ * when the entity is query, even if they are not selected.
+ * @param string $entity_name
+ * @return array
+ */
 function salesforce_settings_provider__get_compulsary_entity_fields($entity_name) {
     $x = [
         'customer_product' => ['Id', 'Account'],
@@ -304,63 +341,6 @@ function salesforce_settings_provider__rename_returned_object_fields(stdClass &$
  */
 function salesforce_settings_provider__rename_entity_select_field_names($entity_name, array &$selected_fields) {
     $field_names = salesforce_settings_provider__get_entity_field_name_map($entity_name, FALSE);
-    salesforce_settings_provider__rename_select_fields($selected_fields, $field_names);
-    return $selected_fields;
-}
-
-/**
- * Implements hook_salesforce_customer_product_field_name_alter
- * @param stdClass $entity
- */
-function salesforce_settings_provider_salesforce_customer_product_field_name_alter(stdClass &$entity) {
-    $field_names = salesforce_settings_provider__get_salesforce_customer_product_field_name_map();
-    salesforce_settings_provider__rename_returned_object_fields($entity, $field_names);
-}
-
-/**
- * Implements hook_salesforce_customer_product_field_name_select_alter
- * @param stdClass $entity
- */
-function salesforce_settings_provider_salesforce_customer_product_field_name_select_alter(array &$selected_fields) {
-    $field_names = salesforce_settings_provider__get_salesforce_customer_product_field_name_map(FALSE);
-    salesforce_settings_provider__rename_select_fields($selected_fields, $field_names);
-    return $selected_fields;
-}
-
-/**
- * Implements hook_salesforce_opportunity_field_name_alter
- * @param stdClass $entity
- */
-function salesforce_settings_provider_salesforce_opportunity_field_name_alter(stdClass &$entity) {
-    $field_names = salesforce_settings_provider__get_salesforce_opportunity_field_name_map();
-    salesforce_settings_provider__rename_returned_object_fields($entity, $field_names);
-}
-
-/**
- * Implements hook_salesforce_opportunity_field_name_select_alter
- * @param stdClass $entity
- */
-function salesforce_settings_provider_salesforce_opportunity_field_name_select_alter(array &$selected_fields) {
-    $field_names = salesforce_settings_provider__get_salesforce_opportunity_field_name_map(FALSE);
-    salesforce_settings_provider__rename_select_fields($selected_fields, $field_names);
-    return $selected_fields;
-}
-
-/**
- * Implements hook_salesforce_account_field_name_alter
- * @param stdClass $entity
- */
-function salesforce_settings_provider_salesforce_account_field_name_alter(stdClass &$entity) {
-    $field_names = salesforce_settings_provider__get_salesforce_account_field_name_map();
-    salesforce_settings_provider__rename_returned_object_fields($entity, $field_names);
-}
-
-/**
- * Implements hook_salesforce_account_field_name_select_alter
- * @param stdClass $entity
- */
-function salesforce_settings_provider_salesforce_account_field_name_select_alter(array &$selected_fields) {
-    $field_names = salesforce_settings_provider__get_salesforce_account_field_name_map(FALSE);
     salesforce_settings_provider__rename_select_fields($selected_fields, $field_names);
     return $selected_fields;
 }
