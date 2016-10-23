@@ -50,49 +50,6 @@ function salesforce_settings_provider__get_settings() {
 }
 
 /**
- * Returns the mapped names of the salesforce opportunity entity
- * @param bool $forward
- * @return array
- */
-function salesforce_settings_provider__get_salesforce_account_field_name_map($forward = TRUE) {
-//TODO: fetch this from the cache
-    $x = ['GCID__c' => 'GCID', 'LastModifiedDate' => 'Modified', 'CreatedDate' => 'Created', 'Name' => 'Name', 'Id' => 'Id'];
-    if ($forward) {
-        return $x;
-    } else {
-        return array_flip($x);
-    }
-}
-
-/**
- * Returns the mapped names of the salesforce opportunity entity
- * @param bool $forward
- * @return array
- */
-function salesforce_settings_provider__get_salesforce_opportunity_field_name_map($forward = TRUE) {
-    $x = ['GCID__c' => 'GCID', 'Name' => 'Name', 'LastModifiedDate' => 'Modified', 'CreatedDate' => 'Created', 'AccountId' => 'Account', 'Id' => 'Id'];
-    if ($forward) {
-        return $x;
-    } else {
-        return array_flip($x);
-    }
-}
-
-/**
- * Returns the mapped names of the salesforce opportunity entity
- * @param bool $forward
- * @return array
- */
-function salesforce_settings_provider__get_salesforce_customer_product_field_name_map($forward = TRUE) {
-    $x = ['Name' => 'Name', 'LastModifiedDate' => 'Modified', 'CreatedDate' => 'Created', 'Account__c' => 'Account', 'Id' => 'Id', 'Auxiliary_Circuit_ID__c' => 'AuxiliaryCircuitID'];
-    if ($forward) {
-        return $x;
-    } else {
-        return array_flip($x);
-    }
-}
-
-/**
  * Returns the full definition of an entity or the definition of the specified component.
  * Components include: fields, internal_name
  * @param string $entity_name
@@ -105,32 +62,32 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
             'internal_name' => 'Customer_Products__c',
             'fields' => [
                 'Name' => [
-                    'prefered_name' => 'Name',
+                    'preferred_name' => 'Name',
                     'type' => 'string'
                 ],
                 'LastModifiedDate' => [
-                    'prefered_name' => 'Modified',
-                    'type' => 'string'
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime'
                 ],
                 'CreatedDate' => [
-                    'prefered_name' => 'Created',
-                    'type' => 'string'
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime'
                 ],
                 'Auxiliary_Circuit_ID__c' => [
-                    'prefered_name' => 'AuxiliaryCircuitID',
+                    'preferred_name' => 'AuxiliaryCircuitID',
                     'type' => 'string'
                 ],
                 'Id' => [
-                    'prefered_name' => 'Id',
+                    'preferred_name' => 'Id',
                     'type' => 'string'
                 ],
                 'Account__c' => [
-                    'prefered_name' => 'Account',
+                    'preferred_name' => 'Account',
                     'type' => 'string',
                     'lookup_entity' => 'account'
                 ],
                 'Opportunity__c' => [
-                    'prefered_name' => 'Opportunity',
+                    'preferred_name' => 'Opportunity',
                     'type' => 'string',
                     'lookup_entity' => 'opportunity'
                 ],
@@ -139,32 +96,48 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
         'account' => [
             'internal_name' => 'Account',
             'fields' => [
+                'Industry' => [
+                    'preferred_name' => 'Industry',
+                    'type' => 'string'
+                ],
                 'Name' => [
-                    'prefered_name' => 'Name',
+                    'preferred_name' => 'Name',
                     'type' => 'string'
                 ],
                 'LastModifiedDate' => [
-                    'prefered_name' => 'Modified',
-                    'type' => 'string'
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime'
                 ],
                 'CreatedDate' => [
-                    'prefered_name' => 'Created',
-                    'type' => 'string'
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime'
                 ],
                 'Auxiliary_Circuit_ID__c' => [
-                    'prefered_name' => 'AuxiliaryCircuitID',
+                    'preferred_name' => 'AuxiliaryCircuitID',
                     'type' => 'string'
                 ],
                 'Id' => [
-                    'prefered_name' => 'Id',
+                    'preferred_name' => 'Id',
                     'type' => 'string'
                 ],
-                'Rating' => [
-                    'prefered_name' => 'Rating',
+                'Customer_Rating__c' => [
+                    'preferred_name' => 'Rating',
                     'type' => 'string'
                 ],
                 'GCID__c' => [
-                    'prefered_name' => 'GCID',
+                    'preferred_name' => 'GCID',
+                    'type' => 'string',
+                ],
+                'OwnershipId' => [
+                    'preferred_name' => 'Ownership',
+                    'type' => 'string',
+                ],
+                'Description' => [
+                    'preferred_name' => 'Description',
+                    'type' => 'string',
+                ],
+                'Currency__c' => [
+                    'preferred_name' => 'Currency',
                     'type' => 'string',
                 ],
             ]
@@ -173,31 +146,27 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
             'internal_name' => 'Opportunity',
             'fields' => [
                 'Name' => [
-                    'prefered_name' => 'Name',
+                    'preferred_name' => 'Name',
                     'type' => 'string'
                 ],
                 'LastModifiedDate' => [
-                    'prefered_name' => 'Modified',
-                    'type' => 'string'
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime'
                 ],
                 'CreatedDate' => [
-                    'prefered_name' => 'Created',
-                    'type' => 'string'
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime'
                 ],
                 'Auxiliary_Circuit_ID__c' => [
-                    'prefered_name' => 'AuxiliaryCircuitID',
+                    'preferred_name' => 'AuxiliaryCircuitID',
                     'type' => 'string'
                 ],
                 'Id' => [
-                    'prefered_name' => 'Id',
+                    'preferred_name' => 'Id',
                     'type' => 'string'
                 ],
-//                'AccountId' => [
-//                    'prefered_name' => 'AccountId',
-//                    'type' => 'string',
-//                ],
-                'Account' => [
-                    'prefered_name' => 'AccountId',
+                'AccountId' => [
+                    'preferred_name' => 'Account',
                     'type' => 'string',
                     'lookup_entity' => 'account'
                 ],
@@ -218,22 +187,24 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
  * @param boolean $forward
  * @return array
  */
-function salesforce_settings_provider__get_entity_field_name_map($entity_name, $forward = TRUE) {
+function salesforce_settings_provider__get_entity_field_name_map($entity_name, $forward = TRUE, array &$field_type = []) {
     $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
     $map = [];
+
     if ($forward) {
-        array_walk($selected_entity, function($value, $key) use(&$map) {
-            $map[$key] = $value['prefered_name'];
+        array_walk($selected_entity, function($value, $key) use(&$map, &$field_type) {
+            $map[$key] = $value['preferred_name'];
+            $field_type[$key] = $value;
         });
     } else {
-        array_walk($selected_entity, function($value, $key) use(&$map) {
-            $map[$value['prefered_name']] = $key;
+        array_walk($selected_entity, function($value, $key) use(&$map, &$field_type) {
+            $map[$value['preferred_name']] = $key;
+            $field_type[$value['preferred_name']] = $value;
         });
     }
-
+    
     return $map;
 }
-
 
 /**
  * Returns the name internal name of the specified $entity_name's field $preferred_name.
@@ -245,7 +216,7 @@ function salesforce_settings_provider__get_entity_field_internal_name($entity_na
     $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
     $map = NULL;
     foreach ($selected_entity as $key => $value) {
-        if ($value['prefered_name'] == $preferred_name) {
+        if ($value['preferred_name'] == $preferred_name) {
             $map = $key;
             break;
         }
@@ -275,9 +246,9 @@ function salesforce_settings_provider__get_entity_field_internal_lookup_name($en
  */
 function salesforce_settings_provider__get_compulsary_entity_fields($entity_name) {
     $x = [
-        'customer_product' => ['Id', 'Account'],
-        'opportunity' => ['Id', 'Account'],
-        'account' => ['Id', 'GCID']
+        'customer_product' => ['Id', 'Account', 'Name'],
+        'opportunity' => ['Id', 'Account', 'Name'],
+        'account' => ['Id', 'GCID', 'Name']
     ];
 
     return $x[$entity_name];
@@ -297,8 +268,10 @@ function salesforce_settings_provider__get_entity_internal_name($entity_display_
  * @param stdClass $entity
  */
 function salesforce_settings_provider__alter_entity_record_field_names($entity_name, stdClass &$entity) {
-    $field_names = salesforce_settings_provider__get_entity_field_name_map($entity_name);
-    salesforce_settings_provider__rename_returned_object_fields($entity, $field_names);
+    $info = [];
+    $direction = TRUE;
+    $field_names = salesforce_settings_provider__get_entity_field_name_map($entity_name, $direction, $info);
+    salesforce_settings_provider__rename_returned_object_fields($entity, $field_names, $info);
 }
 
 /**
@@ -308,7 +281,7 @@ function salesforce_settings_provider__alter_entity_record_field_names($entity_n
  * @param array $field_names
  * @return array
  */
-function salesforce_settings_provider__rename_select_fields(array &$selected_fields, array $field_names) {
+function salesforce_settings_provider__rename_select_fields(array &$selected_fields, array $field_names = []) {
     $substitues = [];
 
     foreach ($selected_fields as $key) {
@@ -323,14 +296,21 @@ function salesforce_settings_provider__rename_select_fields(array &$selected_fie
 
 /**
  * Renames the keys of the supplied object with the values of the corresponding keys in the $field_names array.
- * @param stdClass $entity
+ * @param stdClass $entity_record
  * @param array $field_names
  */
-function salesforce_settings_provider__rename_returned_object_fields(stdClass &$entity, array $field_names) {
+function salesforce_settings_provider__rename_returned_object_fields(stdClass &$entity_record, array $field_names=[], array $info = []) {
+
     foreach ($field_names as $key => $substitute) {
-        if (isset($entity->{$key}) && $key !== $substitute) {
-            $entity->{$substitute} = $entity->{$key};
-            unset($entity->{$key});
+        if (property_exists($entity_record, $key) && $key !== $substitute) {
+            $field_value = $entity_record->{$key};
+            
+            if (isset($info[$key]) && $info[$key]['type'] == 'datetime' && is_string($entity_record->{$key})) {
+                $field_value = substr($entity_record->{$key}, 0, 19);
+            }
+
+            $entity_record->{$substitute} = $field_value; //$entity_record->{$key};
+            unset($entity_record->{$key});
         }
     }
 }
@@ -627,7 +607,9 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
                 if (isset($params['$expand'])) {
                     foreach ($expanded_fields as $expanded_field => $selected_sub_field_names) {
                         $field_keys = ($expanded_field_values[$expanded_field]);
+                        //print_r($expanded_field_values);
                         $expanded_entity_intenal_name = salesforce_settings_provider__get_entity_field_internal_lookup_name($entity_name, $expanded_field);
+                        //print_r($expanded_field.' '.$expanded_entity_intenal_name);
                         $relations = salesforce_settings_provider__get_entity_items_by_ids($expanded_entity_intenal_name, $field_keys, $selected_sub_field_names, $token_response, 'Id');
 
                         foreach ($res->records as &$record) {
@@ -642,11 +624,9 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
 
                 return $res_records;
             } else {
-                echo 'Error 1';
                 return FALSE;
             }
         } else {
-            echo 'Error 2';
             return FALSE;
         }
     } catch (Exception $exp) {
@@ -705,9 +685,9 @@ function salesforce_settings_provider__get_entity_items_by_field_values($entity_
     $field_name = salesforce_settings_provider__get_entity_field_internal_name($entity_name, $field_name);
     foreach ($id_chunks as $id_chunk) {
         $params['$filter'] = $field_name . ' IN (\'' . implode('\',\'', $id_chunk) . '\')';
-        
+
         $r = salesforce_settings_provider__get_salesforce_entity_items($entity_name, $params, $token_response, $key_field, [], $callback);
         $records = array_merge($records, $r);
     }
-    return $records;        
+    return $records;
 }
