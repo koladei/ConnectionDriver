@@ -81,6 +81,10 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'preferred_name' => 'Id',
                     'type' => 'string'
                 ],
+                'Status__c' => [
+                    'preferred_name' => 'Status',
+                    'type' => 'string'
+                ],
                 'Account__c' => [
                     'preferred_name' => 'Account',
                     'type' => 'string',
@@ -128,9 +132,14 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'preferred_name' => 'GCID',
                     'type' => 'string',
                 ],
-                'OwnershipId' => [
-                    'preferred_name' => 'Ownership',
+                'Status__c'=> [
+                    'preferred_name' => 'Status',
                     'type' => 'string',
+                ],
+                'OwnerId' => [
+                    'preferred_name' => 'Owner',
+                    'type' => 'string',
+                    'lookup_entity' => 'user',
                 ],
                 'Description' => [
                     'preferred_name' => 'Description',
@@ -165,10 +174,92 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'preferred_name' => 'Id',
                     'type' => 'string'
                 ],
+                'Book_Status__c' => [
+                    'preferred_name' => 'BookStatus',
+                    'type' => 'string'
+                ],
+                'Feasibility_Status__c' => [
+                    'preferred_name' => 'FeasibilityStatus',
+                    'type' => 'string'
+                ],
+                'Feasibility_Request_Status__c' => [
+                    'preferred_name' => 'FeasibilityRequestStatus',
+                    'type' => 'string'
+                ],
+                'Negotiation_Status__c' => [
+                    'preferred_name' => 'NegotiationStatus',
+                    'type' => 'string'
+                ],
+                'Commitment_Status__c' => [
+                    'preferred_name' => 'CommitmentStatus',
+                    'type' => 'string'
+                ],
+                'Network_Option__c' => [
+                    'preferred_name' => 'NetworkOption',
+                    'type' => 'string'
+                ],
+                'Sale_Type__c' => [
+                    'preferred_name' => 'SaleType',
+                    'type' => 'string'
+                ],
+                'Amount__c' => [
+                    'preferred_name' => 'Amount',
+                    'type' => 'string'
+                ],
+                'Currency_of_Payment__c' => [
+                    'preferred_name' => 'CurrencyOfPayment',
+                    'type' => 'string'
+                ],
+                'StageName' => [
+                    'preferred_name' => 'StageName',
+                    'type' => 'string'
+                ],
+                'Probability' => [
+                    'preferred_name' => 'Probability',
+                    'type' => 'string'
+                ],
+                'Exchange_Rate__c' => [
+                    'preferred_name' => 'ExchangeRate',
+                    'type' => 'string'
+                ],
+                'Feasibility_Outcome__c' => [
+                    'preferred_name' => 'FeasibilityOutcome',
+                    'type' => 'string'
+                ],
+                'OwnerId' => [
+                    'preferred_name' => 'Owner',
+                    'type' => 'string',
+                    'lookup_entity' => 'user'
+                ],
                 'AccountId' => [
                     'preferred_name' => 'Account',
                     'type' => 'string',
                     'lookup_entity' => 'account'
+                ],
+            ],
+        ],
+        'user' => [
+            'internal_name' => 'User',
+            'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name',
+                    'type' => 'string'
+                ],
+                'LastModifiedDate' => [
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime'
+                ],
+                'CreatedDate' => [
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime'
+                ],
+                'Name' => [
+                    'preferred_name' => 'Name',
+                    'type' => 'string'
+                ],
+                'Id' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'string'
                 ],
             ],
         ],
@@ -248,7 +339,8 @@ function salesforce_settings_provider__get_compulsary_entity_fields($entity_name
     $x = [
         'customer_product' => ['Id', 'Account', 'Name'],
         'opportunity' => ['Id', 'Account', 'Name'],
-        'account' => ['Id', 'GCID', 'Name']
+        'account' => ['Id', 'GCID', 'Name'],
+        'user' => ['Id', 'Name']
     ];
 
     return $x[$entity_name];
