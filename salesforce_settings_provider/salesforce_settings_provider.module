@@ -153,6 +153,11 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'preferred_name' => 'Currency',
                     'type' => 'string',
                 ],
+                '_Opportunities' => [
+                    'preferred_name' => 'Opportunity',
+                    'type' => 'children',
+                    'lookup_entity' => 'Opportunity',
+                ],
             ]
         ],
         'opportunity' => [
@@ -625,9 +630,56 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
                     $fields[] = $required_field;
                 }
             }
-            
+
             // include expanded fields
-            
+            $expanded_fields = [];
+            $expanded_field_names = [];
+            if (isset($params['$expand'])) {
+                $expanded_field_names = is_array($params['$expand']) ? $params['$expand'] : explode(',', str_replace(' ', '', $params['$expand']));
+                foreach ($expanded_field_names as $expanded_field_name) {
+                    if (!in_array($expanded_field_name, $fields)) {
+                        $fields[] = $expanded_field_name;
+                    }
+
+                    if (!in_array($expanded_field_name, $notable_fields)) {
+                        $notable_fields[] = $expanded_field_name;
+                    }
+
+                    $expanded_field_values[$expanded_field_name] = [];
+                    $x = [];
+                    $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
+
+                    preg_match_all('/(' . $expanded_field_name . ')\/([\\w]+)/', $glued_select, $x);
+                    foreach ($x[2] as $sub_field_name) {
+                        $expanded_fields[$expanded_field_name][] = $sub_field_name;
+                    }
+
+                    if (!isset($expanded_fields[$expanded_field_name])) {
+                        $expanded_fields[$expanded_field_name] = [];
+                    }
+                }
+            }
+
+            // include expanded fields
+            $children_fields = [];
+            $children_field_names = [];
+            if (isset($params['$show'])) {
+                $children_field_names = is_array($params['$show']) ? $params['$show'] : explode(',', str_replace(' ', '', $params['$show']));
+                foreach ($children_field_names as $children_field_name) {
+                    $expanded_field_values[$children_field_name] = [];
+                    $x = [];
+                    $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
+
+                    preg_match_all('/(' . $children_field_name . ')\/([\\w]+)/', $glued_select, $x);
+                    foreach ($x[2] as $sub_field_name) {
+                        $children_fields[$children_field_name][] = $sub_field_name;
+                    }
+
+                    if (!isset($children_fields[$children_field_name])) {
+                        $children_fields[$children_field_name] = [];
+                    }
+                }
+            }
 
             // translate the selected field names to the internal names, also removes invalid fields
             salesforce_settings_provider__rename_entity_select_field_names($entity_name, $fields);
@@ -674,35 +726,39 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
                     $expanded_field_values[$notable_field] = [];
                 }
 
-                $expanded_fields = [];
-                if (isset($params['$expand'])) {
-                    $expanded_field_names = is_array($params['$expand']) ? $params['$expand'] : explode(',', str_replace(' ', '', $params['$expand']));
-                    foreach ($expanded_field_names as $expanded_field_name) {
-                        if (!in_array($expanded_field_name, $notable_fields)) {
-                            $notable_fields[] = $expanded_field_name;
-                        }
+//                $expanded_fields = [];
+//                if (isset($params['$expand'])) {
+//                    $expanded_field_names = is_array($params['$expand']) ? $params['$expand'] : explode(',', str_replace(' ', '', $params['$expand']));
+//                    foreach ($expanded_field_names as $expanded_field_name) {
+//                        if (!in_array($expanded_field_name, $notable_fields)) {
+//                            $notable_fields[] = $expanded_field_name;
+//                        }
+//
+//                        $expanded_field_values[$expanded_field_name] = [];
+//                        $x = [];
+//                        $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
+//
+//                        preg_match_all('/(' . $expanded_field_name . ')\/([\\w]+)/', $glued_select, $x);
+//                        foreach ($x[2] as $sub_field_name) {
+//                            $expanded_fields[$expanded_field_name][] = $sub_field_name;
+//                        }
+//
+//                        if (!isset($expanded_fields[$expanded_field_name])) {
+//                            $expanded_fields[$expanded_field_name] = [];
+//                        }
+//                    }
+//                }
 
-                        $expanded_field_values[$expanded_field_name] = [];
-                        $x = [];
-                        $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
-
-                        preg_match_all('/(' . $expanded_field_name . ')\/([\\w]+)/', $glued_select, $x);
-                        foreach ($x[2] as $sub_field_name) {
-                            $expanded_fields[$expanded_field_name][] = $sub_field_name;
-                        }
-
-                        if (!isset($expanded_fields[$expanded_field_name])) {
-                            $expanded_fields[$expanded_field_name] = [];
-                        }
-                    }
-                }
-
-                array_walk($res->records, function(&$record) use($keyed, &$expanded_field_values, $entity_name, $notable_fields, &$res_records) {
+                array_walk($res->records, function(&$record) use($keyed, &$expanded_field_values, $entity_name, $notable_fields, &$res_records, $children_field_names) {
                     unset($record->attributes);
+                    foreach ($children_field_names as $children_field_name) {
+                        $record->{$children_field_name} = [];
+                    }
                     salesforce_settings_provider__alter_entity_record_field_names($entity_name, $record);
                     foreach ($notable_fields as $notable_field) {
                         $expanded_field_values[$notable_field][] = $record->{$notable_field};
                     }
+
                     if ($keyed) {
                         $res_records[$record->{$keyed}] = $record;
                     } else {
@@ -710,6 +766,7 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
                     }
                 });
 
+                // Load the expanded fields data
                 if (isset($params['$expand'])) {
                     foreach ($expanded_fields as $expanded_field => $selected_sub_field_names) {
                         $field_keys = ($expanded_field_values[$expanded_field]);
