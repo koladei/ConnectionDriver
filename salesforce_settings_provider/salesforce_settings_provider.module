@@ -63,7 +63,8 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
             'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name',
-                    'type' => 'string'
+                    'type' => 'string',
+                    'mandatory' => 1,
                 ],
                 'LastModifiedDate' => [
                     'preferred_name' => 'Modified',
@@ -79,7 +80,8 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                 ],
                 'Id' => [
                     'preferred_name' => 'Id',
-                    'type' => 'string'
+                    'type' => 'string',
+                    'mandatory' => 1,
                 ],
                 'Status__c' => [
                     'preferred_name' => 'Status',
@@ -102,11 +104,12 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
             'fields' => [
                 'Industry' => [
                     'preferred_name' => 'Industry',
-                    'type' => 'string'
+                    'type' => 'string',
                 ],
                 'Name' => [
                     'preferred_name' => 'Name',
-                    'type' => 'string'
+                    'type' => 'string',
+                    'mandatory' => 1,
                 ],
                 'LastModifiedDate' => [
                     'preferred_name' => 'Modified',
@@ -122,7 +125,8 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                 ],
                 'Id' => [
                     'preferred_name' => 'Id',
-                    'type' => 'string'
+                    'type' => 'string',
+                    'mandatory' => 1,
                 ],
                 'Customer_Rating__c' => [
                     'preferred_name' => 'Rating',
@@ -132,14 +136,14 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'preferred_name' => 'GCID',
                     'type' => 'string',
                 ],
-                'Status__c'=> [
+                'Status__c' => [
                     'preferred_name' => 'Status',
                     'type' => 'string',
                 ],
                 'OwnerId' => [
                     'preferred_name' => 'Owner',
                     'type' => 'string',
-                    'lookup_entity' => 'user',
+                    'lookup_entity' => 'salesforce_user',
                 ],
                 'Description' => [
                     'preferred_name' => 'Description',
@@ -156,7 +160,8 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
             'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name',
-                    'type' => 'string'
+                    'type' => 'string',
+                    'mandatory' => 1,
                 ],
                 'LastModifiedDate' => [
                     'preferred_name' => 'Modified',
@@ -172,7 +177,8 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                 ],
                 'Id' => [
                     'preferred_name' => 'Id',
-                    'type' => 'string'
+                    'type' => 'string',
+                    'mandatory' => 1,
                 ],
                 'Book_Status__c' => [
                     'preferred_name' => 'BookStatus',
@@ -229,16 +235,17 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                 'OwnerId' => [
                     'preferred_name' => 'Owner',
                     'type' => 'string',
-                    'lookup_entity' => 'user'
+                    'lookup_entity' => 'salesforce_user'
                 ],
                 'AccountId' => [
                     'preferred_name' => 'Account',
                     'type' => 'string',
-                    'lookup_entity' => 'account'
+                    'lookup_entity' => 'account',
+                    'mandatory' => 1,
                 ],
             ],
         ],
-        'user' => [
+        'salesforce_user' => [
             'internal_name' => 'User',
             'fields' => [
                 'Name' => [
@@ -259,7 +266,8 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                 ],
                 'Id' => [
                     'preferred_name' => 'Id',
-                    'type' => 'string'
+                    'type' => 'string',
+                    'mandatory' => 1
                 ],
             ],
         ],
@@ -293,7 +301,7 @@ function salesforce_settings_provider__get_entity_field_name_map($entity_name, $
             $field_type[$value['preferred_name']] = $value;
         });
     }
-    
+
     return $map;
 }
 
@@ -336,14 +344,15 @@ function salesforce_settings_provider__get_entity_field_internal_lookup_name($en
  * @return array
  */
 function salesforce_settings_provider__get_compulsary_entity_fields($entity_name) {
-    $x = [
-        'customer_product' => ['Id', 'Account', 'Name'],
-        'opportunity' => ['Id', 'Account', 'Name'],
-        'account' => ['Id', 'GCID', 'Name'],
-        'user' => ['Id', 'Name']
-    ];
+    $entity_fields = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
+    $required = [];
+    foreach ($entity_fields as $entity_field) {
+        if (isset($entity_field['mandatory']) && $entity_field['mandatory'] == 1) {
+            $required[] = $entity_field['preferred_name'];
+        }
+    }
 
-    return $x[$entity_name];
+    return $required;
 }
 
 /**
@@ -391,12 +400,12 @@ function salesforce_settings_provider__rename_select_fields(array &$selected_fie
  * @param stdClass $entity_record
  * @param array $field_names
  */
-function salesforce_settings_provider__rename_returned_object_fields(stdClass &$entity_record, array $field_names=[], array $info = []) {
+function salesforce_settings_provider__rename_returned_object_fields(stdClass &$entity_record, array $field_names = [], array $info = []) {
 
     foreach ($field_names as $key => $substitute) {
         if (property_exists($entity_record, $key) && $key !== $substitute) {
             $field_value = $entity_record->{$key};
-            
+
             if (isset($info[$key]) && $info[$key]['type'] == 'datetime' && is_string($entity_record->{$key})) {
                 $field_value = substr($entity_record->{$key}, 0, 19);
             }
@@ -446,6 +455,7 @@ function salesforce_settings_provider__get_request_token() {
 
         $tokenOption = array(
             CURLOPT_HTTPHEADER => array('Content-Type: application/x-www-form-urlencoded'),
+            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
             CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
             CURLOPT_SSL_VERIFYPEER => 0,
             CURLOPT_SSL_VERIFYHOST => 0,
@@ -608,13 +618,16 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
                 $fields = is_array($params['$select']) ? $params['$select'] : explode(',', str_replace(' ', '', $params['$select']));
             }
 
-            // compulsarily set the compulsary fields of the entity
+            // set the compulsary fields of the entity
             $required_fields = salesforce_settings_provider__get_compulsary_entity_fields($entity_name);
             foreach ($required_fields as $required_field) {
                 if (!in_array($required_field, $fields)) {
                     $fields[] = $required_field;
                 }
             }
+            
+            // include expanded fields
+            
 
             // translate the selected field names to the internal names, also removes invalid fields
             salesforce_settings_provider__rename_entity_select_field_names($entity_name, $fields);
@@ -635,7 +648,8 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
                 ),
                 CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
                 CURLOPT_SSL_VERIFYPEER => 0,
-                CURLOPT_SSL_VERIFYHOST => 0
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
             );
 
             // Generate the SOQL query to send in the POST request
