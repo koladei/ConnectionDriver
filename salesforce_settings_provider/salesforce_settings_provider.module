@@ -154,9 +154,13 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'type' => 'string',
                 ],
                 '_Opportunities' => [
-                    'preferred_name' => 'Opportunity',
-                    'type' => 'children',
-                    'lookup_entity' => 'Opportunity',
+                    'preferred_name' => 'Opportunities',
+                    'type' => 'detail',
+                    'lookup_entity' => 'opportunity',
+                    'relationship' => [
+                        'parent' => 'Id',
+                        'child' => 'Account'
+                    ],
                 ],
             ]
         ],
@@ -340,6 +344,31 @@ function salesforce_settings_provider__get_entity_field_internal_lookup_name($en
     $internal_name = salesforce_settings_provider__get_entity_field_internal_name($entity_name, $field_name);
     $lookup_entity = $selected_entity[$internal_name]['lookup_entity'];
     return $lookup_entity;
+}
+
+/**
+ * Returns the field definition of the specified entity field.
+ * @param string $entity_name
+ * @param string $field_name
+ * @return string
+ */
+function salesforce_settings_provider__get_entity_field_definition($entity_name, $field_name) {
+    $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
+    $internal_name = salesforce_settings_provider__get_entity_field_internal_name($entity_name, $field_name);
+    $field_definition = $selected_entity[$internal_name];
+    return $field_definition;
+}
+
+/**
+ * Returns the field property of the specified entity field.
+ * @param string $entity_name
+ * @param string $field_name
+ * @return string
+ */
+function salesforce_settings_provider__get_entity_field_property($entity_name, $field_name, $property_name) {
+    $selected_field_definition = salesforce_settings_provider__get_entity_field_definition($entity_name, $field_name);
+    $property = $selected_field_definition[$property_name];
+    return $property;
 }
 
 /**
@@ -612,11 +641,15 @@ function salesforce_settings_provider__process_filter_expression($filter, $field
  * @param stdClass $token_response
  * @return boolean
  */
-function salesforce_settings_provider__get_salesforce_entity_items($entity_name, array $params = [], stdClass &$token_response = NULL, $keyed = NULL, array $notable_fields = [], $post_process = NULL) {
+function salesforce_settings_provider__get_salesforce_entity_items($entity_name, array $params = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], $post_process = NULL) {
     try {
+        $array_key = is_array($key_field);
+        $keyed = $array_key?$key_field[0]:$key_field;
+        
         //Get the request token
         if (($token_response = (!is_null($token_response) ? $token_response : salesforce_settings_provider__get_request_token()))) {
 
+            
             // Prepare the fields that will be selected
             $fields = [];
             if (isset($params['$select'])) {
@@ -721,46 +754,38 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
             $res_records = [];
             if (isset($res->records)) {
                 $expanded_field_values = [];
+                $shown_field_values = [];
 
                 foreach ($notable_fields as $notable_field) {
                     $expanded_field_values[$notable_field] = [];
                 }
 
-//                $expanded_fields = [];
-//                if (isset($params['$expand'])) {
-//                    $expanded_field_names = is_array($params['$expand']) ? $params['$expand'] : explode(',', str_replace(' ', '', $params['$expand']));
-//                    foreach ($expanded_field_names as $expanded_field_name) {
-//                        if (!in_array($expanded_field_name, $notable_fields)) {
-//                            $notable_fields[] = $expanded_field_name;
-//                        }
-//
-//                        $expanded_field_values[$expanded_field_name] = [];
-//                        $x = [];
-//                        $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
-//
-//                        preg_match_all('/(' . $expanded_field_name . ')\/([\\w]+)/', $glued_select, $x);
-//                        foreach ($x[2] as $sub_field_name) {
-//                            $expanded_fields[$expanded_field_name][] = $sub_field_name;
-//                        }
-//
-//                        if (!isset($expanded_fields[$expanded_field_name])) {
-//                            $expanded_fields[$expanded_field_name] = [];
-//                        }
-//                    }
-//                }
+                // scan through the result set and currect property names.
+                array_walk($res->records, function(&$record) use($keyed, $array_key, &$expanded_field_values, $entity_name, $notable_fields, &$res_records, $children_field_names, &$shown_field_values) {
+                    unset($record->attributes); // remove the attributes property
+                    // rename the fields to match the model definition
+                    salesforce_settings_provider__alter_entity_record_field_names($entity_name, $record);
 
-                array_walk($res->records, function(&$record) use($keyed, &$expanded_field_values, $entity_name, $notable_fields, &$res_records, $children_field_names) {
-                    unset($record->attributes);
+                    // make note of the shown child field
                     foreach ($children_field_names as $children_field_name) {
+                        $shown_field_values[$children_field_name][$record->Id] = [];
                         $record->{$children_field_name} = [];
                     }
-                    salesforce_settings_provider__alter_entity_record_field_names($entity_name, $record);
+
+                    // take note of the expanded fields
                     foreach ($notable_fields as $notable_field) {
                         $expanded_field_values[$notable_field][] = $record->{$notable_field};
                     }
 
                     if ($keyed) {
-                        $res_records[$record->{$keyed}] = $record;
+                        if ($array_key) {
+                            if (!isset($res_records[$record->{$keyed}])) {
+                                $res_records[$record->{$keyed}] = [];
+                            }
+                            $res_records[$record->{$keyed}][] = $record;
+                        } else {
+                            $res_records[$record->{$keyed}] = $record;
+                        }
                     } else {
                         $res_records[] = $record;
                     }
@@ -770,13 +795,31 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
                 if (isset($params['$expand'])) {
                     foreach ($expanded_fields as $expanded_field => $selected_sub_field_names) {
                         $field_keys = ($expanded_field_values[$expanded_field]);
-                        //print_r($expanded_field_values);
+
                         $expanded_entity_intenal_name = salesforce_settings_provider__get_entity_field_internal_lookup_name($entity_name, $expanded_field);
-                        //print_r($expanded_field.' '.$expanded_entity_intenal_name);
+
                         $relations = salesforce_settings_provider__get_entity_items_by_ids($expanded_entity_intenal_name, $field_keys, $selected_sub_field_names, $token_response, 'Id');
 
                         foreach ($res->records as &$record) {
                             $record->{$expanded_field} = $relations[$record->{$expanded_field}];
+                        }
+                    }
+                }
+
+                // Load the expanded fields data
+                if (isset($params['$show'])) {
+                    foreach ($children_fields as $expanded_field => $selected_sub_field_names) {
+                        $field_keys = array_keys($shown_field_values[$expanded_field]);
+
+
+                        $field_definition = salesforce_settings_provider__get_entity_field_definition($entity_name, $expanded_field);
+                        $lookup_entity = $field_definition['lookup_entity'];
+                        $related_child_field = $field_definition['relationship']['child'];
+                        $related_parent_field = $field_definition['relationship']['parent'];
+                        $relations = salesforce_settings_provider__get_entity_items_by_field_values($lookup_entity, $related_child_field, $field_keys, $selected_sub_field_names, $token_response, [$related_child_field]);
+                        
+                        foreach ($res->records as &$record) {
+                            $record->{$expanded_field} = $relations[$record->{$related_parent_field}];
                         }
                     }
                 }
@@ -819,7 +862,7 @@ function salesforce_settings_provider__get_entity_items_by_ids($entity_name, arr
 
     foreach ($id_chunks as $id_chunk) {
         $params['$filter'] = 'Id IN (\'' . implode('\',\'', $id_chunk) . '\')';
-        $r = salesforce_settings_provider__get_salesforce_entity_items($entity_name, $params, $token_response, $key_field, [], $callback);
+        $r = salesforce_settings_provider__get_salesforce_entity_items($entity_name, $params, $token_response, $key_field);
         $records = array_merge($records, $r);
     }
     return $records;
