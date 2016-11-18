@@ -38,14 +38,25 @@ function salesforce_settings_provider_library() {
  * Returns the connection settings with which to connect to salesforce.
  * @return \stdClass
  */
-function salesforce_settings_provider__get_settings() {
+function salesforce_settings_provider__get_settings($settings = 'default') {
     $s = new stdClass();
-    $s->URL = variable_get('SALESFORCE_SETTINGS_ENDPOINT_URL');
-    $s->Username = variable_get('SALESFORCE_SETTINGS_USERNAME');
-    $s->Password = variable_get('SALESFORCE_SETTINGS_PASSWORD');
-    $s->GrantType = variable_get('SALESFORCE_SETTINGS_GRANT_TYPE');
-    $s->ClientID = variable_get('SALESFORCE_SETTINGS_CLIENT_ID');
-    $s->ClientSecret = variable_get('SALESFORCE_SETTINGS_CLIENT_SECRET');
+    $sT = $settings == 'default' ? variable_get('SALESFORCE_SETTINGS_USE_PRODUCTION', FALSE) : ($settings == 'production' ? TRUE : FALSE);
+
+    if ($sT == FALSE) {
+        $s->URL = variable_get('SALESFORCE_SANDBOX_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('SALESFORCE_SANDBOX_SETTINGS_USERNAME');
+        $s->Password = variable_get('SALESFORCE_SANDBOX_SETTINGS_PASSWORD');
+        $s->GrantType = variable_get('SALESFORCE_SANDBOX_SETTINGS_GRANT_TYPE');
+        $s->ClientID = variable_get('SALESFORCE_SANDBOX_SETTINGS_CLIENT_ID');
+        $s->ClientSecret = variable_get('SALESFORCE_SANDBOX_SETTINGS_CLIENT_SECRET');
+    } else {
+        $s->URL = variable_get('SALESFORCE_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('SALESFORCE_SETTINGS_USERNAME');
+        $s->Password = variable_get('SALESFORCE_SETTINGS_PASSWORD');
+        $s->GrantType = variable_get('SALESFORCE_SETTINGS_GRANT_TYPE');
+        $s->ClientID = variable_get('SALESFORCE_SETTINGS_CLIENT_ID');
+        $s->ClientSecret = variable_get('SALESFORCE_SETTINGS_CLIENT_SECRET');
+    }
     return $s;
 }
 
@@ -58,6 +69,104 @@ function salesforce_settings_provider__get_settings() {
  */
 function salesforce_settings_provider__get_entity_definition($entity_name, $component = NULL) {
     $entities = [
+        'cash_inflow' => [
+            'internal_name' => 'Cash_Inflow__c',
+            'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ],
+                'LastModifiedDate' => [
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime'
+                ],
+                'CreatedDate' => [
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime'
+                ],
+                'Due_Date__c' => [
+                    'preferred_name' => 'DueDate',
+                    'type' => 'datetime'
+                ],
+                'Year__c' => [
+                    'preferred_name' => 'Year',
+                    'type' => 'integer'
+                ],
+                'Value_Date__c' => [
+                    'preferred_name' => 'ValueDate',
+                    'type' => 'datetime'
+                ],
+                'Type__c' => [
+                    'preferred_name' => 'Type',
+                    'type' => 'string'
+                ],
+                'Amount__c' => [
+                    'preferred_name' => 'Amount',
+                    'type' => 'string'
+                ],
+                'Commission__c' => [
+                    'preferred_name' => 'Commission',
+                    'type' => 'string'
+                ],
+                'Conversion_Rate__c' => [
+                    'preferred_name' => 'ConversionRate',
+                    'type' => 'string'
+                ],
+                'Commission_Computed__c' => [
+                    'preferred_name' => 'CommissionComputed',
+                    'type' => 'string'
+                ],
+                'Narrative__c' => [
+                    'preferred_name' => 'Narrative',
+                    'type' => 'string'
+                ],
+                'Original_Currency__c' => [
+                    'preferred_name' => 'OriginalCurrency',
+                    'type' => 'string'
+                ],
+                'Conversion_Rate__c' => [
+                    'preferred_name' => 'ConversionRate',
+                    'type' => 'string'
+                ],
+                'Quarter__c' => [
+                    'preferred_name' => 'Quarter',
+                    'type' => 'string'
+                ],
+                'Id' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ],
+                'Account_Manager__c' => [
+                    'preferred_name' => 'AccountManager',
+                    'type' => 'string',
+                    'lookup_entity' => 'salesforce_user'
+                ],
+                'Related_Account__c' => [
+                    'preferred_name' => 'Account',
+                    'type' => 'string',
+                    'lookup_entity' => 'account',
+                    'mandatory' => 1,
+                ],
+                'Related_Opportunity__c' => [
+                    'preferred_name' => 'Opportunity',
+                    'type' => 'string',
+                    'lookup_entity' => 'opportunity',
+                    'mandatory' => 1,
+                ],
+                'Related_Customer_Product__c' => [
+                    'preferred_name' => 'CustomerProduct',
+                    'type' => 'string',
+                    'lookup_entity' => 'customer_product',
+                    'mandatory' => 1,
+                ],
+                'Related_Payable_Commission__c' => [
+                    'preferred_name' => 'RelatedPayableCommission',
+                    'type' => 'string',
+                ],
+            ]
+        ],
         'customer_product' => [
             'internal_name' => 'Customer_Products__c',
             'fields' => [
@@ -90,12 +199,22 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                 'Account__c' => [
                     'preferred_name' => 'Account',
                     'type' => 'string',
-                    'lookup_entity' => 'account'
+                    'lookup_entity' => 'account',
+                    'mandatory' => 1,
                 ],
                 'Opportunity__c' => [
                     'preferred_name' => 'Opportunity',
                     'type' => 'string',
                     'lookup_entity' => 'opportunity'
+                ],
+                '_CashInflows' => [
+                    'preferred_name' => 'CashInflows',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cash_inflow',
+                    'relationship' => [
+                        'parent' => 'Id',
+                        'child' => 'CustomerProduct'
+                    ],
                 ],
             ]
         ],
@@ -135,6 +254,7 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                 'GCID__c' => [
                     'preferred_name' => 'GCID',
                     'type' => 'string',
+                    'mandatory' => 1,
                 ],
                 'Status__c' => [
                     'preferred_name' => 'Status',
@@ -143,7 +263,7 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                 'OwnerId' => [
                     'preferred_name' => 'Owner',
                     'type' => 'string',
-                    'lookup_entity' => 'salesforce_user',
+                    'lookup_entity' => 'salesforce_user'
                 ],
                 'Description' => [
                     'preferred_name' => 'Description',
@@ -157,6 +277,24 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'preferred_name' => 'Opportunities',
                     'type' => 'detail',
                     'lookup_entity' => 'opportunity',
+                    'relationship' => [
+                        'parent' => 'Id',
+                        'child' => 'Account'
+                    ],
+                ],
+                '_Products' => [
+                    'preferred_name' => 'Products',
+                    'type' => 'detail',
+                    'lookup_entity' => 'customer_product',
+                    'relationship' => [
+                        'parent' => 'Id',
+                        'child' => 'Account'
+                    ],
+                ],
+                '_CashInflows' => [
+                    'preferred_name' => 'CashInflows',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cash_inflow',
                     'relationship' => [
                         'parent' => 'Id',
                         'child' => 'Account'
@@ -246,11 +384,43 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'type' => 'string',
                     'lookup_entity' => 'salesforce_user'
                 ],
+                'Parent_Opportunity__c' => [
+                    'preferred_name' => 'ParentOpportunity',
+                    'type' => 'string',
+                    'lookup_entity' => 'opportunity'
+                ],
                 'AccountId' => [
                     'preferred_name' => 'Account',
                     'type' => 'string',
                     'lookup_entity' => 'account',
                     'mandatory' => 1,
+                ],
+                '_Opportunities' => [
+                    'preferred_name' => 'Opportunities',
+                    'type' => 'detail',
+                    'lookup_entity' => 'opportunity',
+                    'relationship' => [
+                        'parent' => 'Id',
+                        'child' => 'ParentOpportunity'
+                    ],
+                ],
+                '_Products' => [
+                    'preferred_name' => 'Products',
+                    'type' => 'detail',
+                    'lookup_entity' => 'customer_product',
+                    'relationship' => [
+                        'parent' => 'Id',
+                        'child' => 'Opportunity'
+                    ],
+                ],
+                '_CashInflows' => [
+                    'preferred_name' => 'CashInflows',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cash_inflow',
+                    'relationship' => [
+                        'parent' => 'Id',
+                        'child' => 'Account'
+                    ],
                 ],
             ],
         ],
@@ -273,18 +443,44 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'preferred_name' => 'Name',
                     'type' => 'string'
                 ],
+                'Email' => [
+                    'preferred_name' => 'Email',
+                    'type' => 'string'
+                ],
+                'Username' => [
+                    'preferred_name' => 'Username',
+                    'type' => 'string'
+                ],
                 'Id' => [
                     'preferred_name' => 'Id',
                     'type' => 'string',
                     'mandatory' => 1
                 ],
+                '_Accounts' => [
+                    'preferred_name' => 'Accounts',
+                    'type' => 'detail',
+                    'lookup_entity' => 'account',
+                    'relationship' => [
+                        'parent' => 'Id',
+                        'child' => 'Owner'
+                    ],
+                ],
+                '_Opportunities' => [
+                    'preferred_name' => 'Opportunities',
+                    'type' => 'detail',
+                    'lookup_entity' => 'opportunity',
+                    'relationship' => [
+                        'parent' => 'Id',
+                        'child' => 'Owner'
+                    ],
+                ],
             ],
         ],
     ];
     if ($component) {
-        return $entities[$entity_name][$component];
+        return isset($entities[$entity_name]) && isset($entities[$entity_name][$component]) ? $entities[$entity_name][$component] : NULL;
     } else {
-        return $entities[$entity_name];
+        return isset($entities[$entity_name]) ? $entities[$entity_name] : NULL;
     }
 }
 
@@ -328,7 +524,7 @@ function salesforce_settings_provider__get_entity_field_internal_name($entity_na
             $map = $key;
             break;
         }
-    };
+    }
 
     return $map;
 }
@@ -342,6 +538,7 @@ function salesforce_settings_provider__get_entity_field_internal_name($entity_na
 function salesforce_settings_provider__get_entity_field_internal_lookup_name($entity_name, $field_name) {
     $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
     $internal_name = salesforce_settings_provider__get_entity_field_internal_name($entity_name, $field_name);
+
     $lookup_entity = $selected_entity[$internal_name]['lookup_entity'];
     return $lookup_entity;
 }
@@ -354,8 +551,11 @@ function salesforce_settings_provider__get_entity_field_internal_lookup_name($en
  */
 function salesforce_settings_provider__get_entity_field_definition($entity_name, $field_name) {
     $selected_entity = salesforce_settings_provider__get_entity_definition($entity_name, 'fields');
+    if (is_null($selected_entity)) {
+        return NULL;
+    }
     $internal_name = salesforce_settings_provider__get_entity_field_internal_name($entity_name, $field_name);
-    $field_definition = $selected_entity[$internal_name];
+    $field_definition = !is_null($internal_name) && ($selected_entity[$internal_name]) ? $selected_entity[$internal_name] : NULL;
     return $field_definition;
 }
 
@@ -366,8 +566,10 @@ function salesforce_settings_provider__get_entity_field_definition($entity_name,
  * @return string
  */
 function salesforce_settings_provider__get_entity_field_property($entity_name, $field_name, $property_name) {
+
     $selected_field_definition = salesforce_settings_provider__get_entity_field_definition($entity_name, $field_name);
-    $property = $selected_field_definition[$property_name];
+    $property = !is_null($selected_field_definition) && isset($selected_field_definition[$property_name]) ? $selected_field_definition[$property_name] : NULL;
+//    var_dump([func_get_args() ,$field_name,$selected_field_definition, 'FFF']);
     return $property;
 }
 
@@ -395,16 +597,17 @@ function salesforce_settings_provider__get_compulsary_entity_fields($entity_name
  * @return string
  */
 function salesforce_settings_provider__get_entity_internal_name($entity_display_name) {
-    return salesforce_settings_provider__get_entity_definition($entity_display_name, 'internal_name');
+
+    $return = salesforce_settings_provider__get_entity_definition($entity_display_name, 'internal_name');
+    return $return;
 }
 
 /**
  * Renames the fields of the specified entity item.
  * @param stdClass $entity
  */
-function salesforce_settings_provider__alter_entity_record_field_names($entity_name, stdClass &$entity) {
+function salesforce_settings_provider__alter_entity_record_field_names($entity_name, stdClass &$entity, $direction = TRUE) {
     $info = [];
-    $direction = TRUE;
     $field_names = salesforce_settings_provider__get_entity_field_name_map($entity_name, $direction, $info);
     salesforce_settings_provider__rename_returned_object_fields($entity, $field_names, $info);
 }
@@ -472,9 +675,9 @@ function mware_customer_get_request_token() {
  * Helps to retrieve the lastest Salesforce request token.
  * @return type
  */
-function salesforce_settings_provider__get_request_token() {
+function salesforce_settings_provider__get_request_token($settings = 'default') {
     try {
-        $sf_settings = salesforce_settings_provider__get_settings();
+        $sf_settings = salesforce_settings_provider__get_settings($settings);
         $uri = $sf_settings->URL;
         $query_array = [
             'grant_type' => $sf_settings->GrantType,
@@ -564,12 +767,15 @@ function salesforce_settings_provider__process_filter_expression($filter, $field
         [
             'pattern' => '/(' . $field_selector . ')[\s]+(eq)[\s]+(([\'|\"])(' . $value_selector . ')(\\4))/',
             'replacement' => '${1} = ${3}',
-            'type' => 'comparison'
+            'field_name' => 1,
+            'type' => 'comparison',
+            'is_date' => FALSE
         ],
         [
             'pattern' => '/(' . $field_selector . ')[\s]+(lt)[\s]+(' . $int_value_selector . ')/',
             'replacement' => '${1} < ${3}',
             'field_name' => 1,
+            'is_date' => FALSE
         ],
         [
             'pattern' => '/(' . $field_selector . ')[\s]+(le)[\s]+(' . $int_value_selector . ')/',
@@ -580,31 +786,37 @@ function salesforce_settings_provider__process_filter_expression($filter, $field
             'pattern' => '/(' . $field_selector . ')[\s]+(gt)[\s]+(' . $int_value_selector . ')/',
             'replacement' => '${1}>${3}',
             'field_name' => 1,
+            'is_date' => FALSE,
         ],
         [
             'pattern' => '/(' . $field_selector . ')[\s]+(ge)[\s]+(' . $int_value_selector . ')/',
             'replacement' => '${1} >= ${3}',
             'field_name' => 1,
+            'is_date' => FALSE,
         ],
         [
-            'pattern' => '/(substringof\\()\s*(' . $field_selector . ')\s*,(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
+            'pattern' => '/(substringof\\()\s*(' . $field_selector . ')\s*\\,\s*(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
             'replacement' => '${2} LIKE \'%${4}%\'',
             'field_name' => 2,
+            'is_date' => FALSE,
         ],
         [
-            'pattern' => '/(startswith\\()\s*(' . $field_selector . ')\s*,(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
+            'pattern' => '/(startswith\\()\s*(' . $field_selector . ')\s*\\,\s*(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
             'replacement' => '${2} LIKE \'${4}%\'',
             'field_name' => 2,
+            'is_date' => FALSE,
         ],
         [
-            'pattern' => '/(endswith\\()\s*(' . $field_selector . ')\s*,(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
+            'pattern' => '/(endswith\\()\s*(' . $field_selector . ')\s*\\,\s*(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
             'replacement' => '${2} LIKE \'%${4}\'',
             'field_name' => 2,
+            'is_date' => FALSE,
         ],
         [
-            'pattern' => '/(' . $field_selector . ')\*(in\\()\s*(' . $in_value_selector . ')\s*(\\))/',
+            'pattern' => '/(' . $field_selector . ')\s*(in\\()\s*(' . $in_value_selector . ')\s*(\\))/',
             'replacement' => '${1} IN (${3})',
             'field_name' => 2,
+            'is_date' => FALSE,
         ],
     ];
 
@@ -642,162 +854,189 @@ function salesforce_settings_provider__process_filter_expression($filter, $field
  * @return boolean
  */
 function salesforce_settings_provider__get_salesforce_entity_items($entity_name, array $params = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], $post_process = NULL) {
-    try {
-        $array_key = is_array($key_field);
-        $keyed = $array_key?$key_field[0]:$key_field;
-        
-        //Get the request token
-        if (($token_response = (!is_null($token_response) ? $token_response : salesforce_settings_provider__get_request_token()))) {
+//    try {
+    $array_key = is_array($key_field);
+    $keyed = $array_key ? $key_field[0] : $key_field;
 
-            
-            // Prepare the fields that will be selected
-            $fields = [];
-            if (isset($params['$select'])) {
-                $fields = is_array($params['$select']) ? $params['$select'] : explode(',', str_replace(' ', '', $params['$select']));
+    //Get the request token
+    if (($token_response = (!is_null($token_response) ? $token_response : salesforce_settings_provider__get_request_token()))) {
+
+
+        // Prepare the fields that will be selected
+        $fields = [];
+        if (isset($params['$select'])) {
+            $fields = is_array($params['$select']) ? $params['$select'] : explode(',', str_replace(' ', '', $params['$select']));
+        }
+
+        // set the compulsary fields of the entity
+        $required_fields = salesforce_settings_provider__get_compulsary_entity_fields($entity_name);
+        foreach ($required_fields as $required_field) {
+            if (!in_array($required_field, $fields)) {
+                $fields[] = $required_field;
             }
+        }
 
-            // set the compulsary fields of the entity
-            $required_fields = salesforce_settings_provider__get_compulsary_entity_fields($entity_name);
-            foreach ($required_fields as $required_field) {
-                if (!in_array($required_field, $fields)) {
-                    $fields[] = $required_field;
+        // include expanded fields
+        $expanded_fields = [];
+        $expanded_field_names = [];
+
+
+        // include expanded fields
+        $children_fields = [];
+        $children_field_names = [];
+
+        if (isset($params['$expand'])) {
+            $expanded_field_names_x = is_array($params['$expand']) ? $params['$expand'] : explode(',', str_replace(' ', '', $params['$expand']));
+
+            // separate real fields from virtual fields
+            foreach ($expanded_field_names_x as $expanded_field_name_x) {
+                $x = salesforce_settings_provider__get_entity_field_property($entity_name, $expanded_field_name_x, 'type');
+                if ($x == 'detail') {
+                    $children_field_names[] = $expanded_field_name_x;
+                } else if (!is_null($x)) {
+                    $expanded_field_names[] = $expanded_field_name_x;
+                } else {
+//                    var_dump([$x, $expanded_field_names_x, $entity_name]);
+//                    $ms = "Unknown field \"$expanded_field_name_x\" found in the \$expand parameter. It may have been delected by another user.";
+                    throw new Exception("Unknown field \"{$expanded_field_name_x}\" in entity \"{$entity_name}\" cannot be expanded. It was found in the \$expand parameter. It doesnot exist or it may have been delected by another user.");
                 }
             }
 
-            // include expanded fields
-            $expanded_fields = [];
-            $expanded_field_names = [];
-            if (isset($params['$expand'])) {
-                $expanded_field_names = is_array($params['$expand']) ? $params['$expand'] : explode(',', str_replace(' ', '', $params['$expand']));
-                foreach ($expanded_field_names as $expanded_field_name) {
-                    if (!in_array($expanded_field_name, $fields)) {
-                        $fields[] = $expanded_field_name;
-                    }
+            $params['$expand'] = $expanded_field_names;
+            $params['$show'] = $children_field_names;
 
-                    if (!in_array($expanded_field_name, $notable_fields)) {
-                        $notable_fields[] = $expanded_field_name;
-                    }
+            foreach ($expanded_field_names as $expanded_field_name) {
+                if (!in_array($expanded_field_name, $fields)) {
+                    $fields[] = $expanded_field_name;
+                }
 
-                    $expanded_field_values[$expanded_field_name] = [];
-                    $x = [];
-                    $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
+                if (!in_array($expanded_field_name, $notable_fields)) {
+                    $notable_fields[] = $expanded_field_name;
+                }
 
-                    preg_match_all('/(' . $expanded_field_name . ')\/([\\w]+)/', $glued_select, $x);
-                    foreach ($x[2] as $sub_field_name) {
-                        $expanded_fields[$expanded_field_name][] = $sub_field_name;
-                    }
+                $expanded_field_values[$expanded_field_name] = [];
+                $x = [];
+                $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
 
-                    if (!isset($expanded_fields[$expanded_field_name])) {
-                        $expanded_fields[$expanded_field_name] = [];
-                    }
+                preg_match_all('/(' . $expanded_field_name . ')\/([\\w]+)/', $glued_select, $x);
+                foreach ($x[2] as $sub_field_name) {
+                    $expanded_fields[$expanded_field_name][] = $sub_field_name;
+                }
+
+                if (!isset($expanded_fields[$expanded_field_name])) {
+                    $expanded_fields[$expanded_field_name] = [];
                 }
             }
+        }
 
-            // include expanded fields
-            $children_fields = [];
-            $children_field_names = [];
-            if (isset($params['$show'])) {
-                $children_field_names = is_array($params['$show']) ? $params['$show'] : explode(',', str_replace(' ', '', $params['$show']));
+        if (isset($params['$show'])) {
+
+            foreach ($children_field_names as $children_field_name) {
+                $expanded_field_values[$children_field_name] = [];
+                $x = [];
+                $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
+
+                preg_match_all('/(' . $children_field_name . ')\/([\\w]+)/', $glued_select, $x);
+                foreach ($x[2] as $sub_field_name) {
+                    $children_fields[$children_field_name][] = $sub_field_name;
+                }
+
+                if (!isset($children_fields[$children_field_name])) {
+                    $children_fields[$children_field_name] = [];
+                }
+            }
+        }
+
+        // translate the selected field names to the internal names, also removes invalid fields
+        salesforce_settings_provider__rename_entity_select_field_names($entity_name, $fields);
+
+        // Prepare the filter that will be used
+        $filter = isset($params['$filter']) ? $params['$filter'] : '';
+        $salesforce_settings_provider__get_entity_field_name_map = salesforce_settings_provider__get_entity_field_name_map($entity_name, FALSE);
+        $filter = salesforce_settings_provider__process_filter_expression($filter, $salesforce_settings_provider__get_entity_field_name_map);
+        $filter = strlen($filter) > 0 ? 'WHERE ' . $filter : '';
+
+        // Prepare the limit
+        $limit = isset($params['$top']) ? ' LIMIT ' . $params['$top'] : '';
+        $limit = (strlen($filter) < 1) && (strlen($limit) < 1) ? ' LIMIT 10' : $limit;
+
+        // Prepare the POST request
+        $options = array(
+            CURLOPT_HTTPHEADER => array(
+                'Authorization: Bearer ' . $token_response->access_token
+            ),
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
+        );
+
+        // Generate the SOQL query to send in the POST request
+        $selected_fields = implode(',', $fields);
+        $entity_internal_name = salesforce_settings_provider__get_entity_internal_name($entity_name);
+        $query_url = drupal_http_build_query(['q' => 'SELECT ' . $selected_fields
+            . ' FROM ' . $entity_internal_name . ' '
+            . $filter
+            . $limit]);
+
+        // Execute the POST request.
+        $new_url = $token_response->instance_url . '/services/data/v35.0/query?' . $query_url;
+        $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+
+        // Process the request
+        $res = json_decode($feed->getContent());
+
+//        var_dump([ 'SELECT ' . $selected_fields
+//            . ' FROM ' . $entity_internal_name . ' '
+//            . $filter
+//            . $limit, $res]);
+        $res_records = [];
+        if (isset($res->records)) {
+            $expanded_field_values = [];
+            $shown_field_values = [];
+
+            foreach ($notable_fields as $notable_field) {
+                $expanded_field_values[$notable_field] = [];
+            }
+
+            // scan through the result set and currect property names.
+            array_walk($res->records, function(&$record) use($keyed, $array_key, &$expanded_field_values, $entity_name, $notable_fields, &$res_records, $children_field_names, &$shown_field_values) {
+                unset($record->attributes); // remove the attributes property
+                // rename the fields to match the model definition
+                salesforce_settings_provider__alter_entity_record_field_names($entity_name, $record);
+
+                // make note of the shown child field
                 foreach ($children_field_names as $children_field_name) {
-                    $expanded_field_values[$children_field_name] = [];
-                    $x = [];
-                    $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
-
-                    preg_match_all('/(' . $children_field_name . ')\/([\\w]+)/', $glued_select, $x);
-                    foreach ($x[2] as $sub_field_name) {
-                        $children_fields[$children_field_name][] = $sub_field_name;
-                    }
-
-                    if (!isset($children_fields[$children_field_name])) {
-                        $children_fields[$children_field_name] = [];
-                    }
+                    $shown_field_values[$children_field_name][$record->Id] = [];
+                    $record->{$children_field_name} = NULL;
                 }
-            }
 
-            // translate the selected field names to the internal names, also removes invalid fields
-            salesforce_settings_provider__rename_entity_select_field_names($entity_name, $fields);
-
-            // Prepare the filter that will be used
-            $filter = isset($params['$filter']) ? $params['$filter'] : '';
-            $filter = salesforce_settings_provider__process_filter_expression($filter, salesforce_settings_provider__get_entity_field_name_map($entity_name, FALSE));
-            $filter = strlen($filter) > 0 ? 'WHERE ' . $filter : '';
-
-            // Prepare the limit
-            $limit = isset($params['$top']) ? ' LIMIT ' . $params['$top'] : '';
-            $limit = (strlen($filter) < 1) && (strlen($limit) < 1) ? ' LIMIT 10' : $limit;
-
-            // Prepare the POST request
-            $options = array(
-                CURLOPT_HTTPHEADER => array(
-                    'Authorization: Bearer ' . $token_response->access_token
-                ),
-                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
-                CURLOPT_SSL_VERIFYPEER => 0,
-                CURLOPT_SSL_VERIFYHOST => 0,
-                CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
-            );
-
-            // Generate the SOQL query to send in the POST request
-            $selected_fields = implode(',', $fields);
-            $entity_internal_name = salesforce_settings_provider__get_entity_internal_name($entity_name);
-            $query_url = drupal_http_build_query(['q' => 'SELECT ' . $selected_fields
-                . ' FROM ' . $entity_internal_name . ' '
-                . $filter
-                . $limit]);
-
-            // Execute the POST request.
-            $new_url = $token_response->instance_url . '/services/data/v35.0/query?' . $query_url;
-            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
-
-            // Process the request
-            $res = json_decode($feed->getContent());
-            $res_records = [];
-            if (isset($res->records)) {
-                $expanded_field_values = [];
-                $shown_field_values = [];
-
+                // take note of the expanded fields
                 foreach ($notable_fields as $notable_field) {
-                    $expanded_field_values[$notable_field] = [];
+                    $expanded_field_values[$notable_field][] = $record->{$notable_field};
                 }
 
-                // scan through the result set and currect property names.
-                array_walk($res->records, function(&$record) use($keyed, $array_key, &$expanded_field_values, $entity_name, $notable_fields, &$res_records, $children_field_names, &$shown_field_values) {
-                    unset($record->attributes); // remove the attributes property
-                    // rename the fields to match the model definition
-                    salesforce_settings_provider__alter_entity_record_field_names($entity_name, $record);
-
-                    // make note of the shown child field
-                    foreach ($children_field_names as $children_field_name) {
-                        $shown_field_values[$children_field_name][$record->Id] = [];
-                        $record->{$children_field_name} = [];
-                    }
-
-                    // take note of the expanded fields
-                    foreach ($notable_fields as $notable_field) {
-                        $expanded_field_values[$notable_field][] = $record->{$notable_field};
-                    }
-
-                    if ($keyed) {
-                        if ($array_key) {
-                            if (!isset($res_records[$record->{$keyed}])) {
-                                $res_records[$record->{$keyed}] = [];
-                            }
-                            $res_records[$record->{$keyed}][] = $record;
-                        } else {
-                            $res_records[$record->{$keyed}] = $record;
+                if ($keyed) {
+                    if ($array_key) {
+                        if (!isset($res_records[$record->{$keyed}])) {
+                            $res_records[$record->{$keyed}] = [];
                         }
+                        $res_records[$record->{$keyed}][] = $record;
                     } else {
-                        $res_records[] = $record;
+                        $res_records[$record->{$keyed}] = $record;
                     }
-                });
+                } else {
+                    $res_records[] = $record;
+                }
+            });
 
-                // Load the expanded fields data
-                if (isset($params['$expand'])) {
-                    foreach ($expanded_fields as $expanded_field => $selected_sub_field_names) {
-                        $field_keys = ($expanded_field_values[$expanded_field]);
+            // Load the expanded fields data
+            if (isset($params['$expand'])) {
+                foreach ($expanded_fields as $expanded_field => $selected_sub_field_names) {
+                    $field_keys = ($expanded_field_values[$expanded_field]);
 
-                        $expanded_entity_intenal_name = salesforce_settings_provider__get_entity_field_internal_lookup_name($entity_name, $expanded_field);
-
+                    $expanded_entity_intenal_name = salesforce_settings_provider__get_entity_field_internal_lookup_name($entity_name, $expanded_field);
+                    if (!is_null($expanded_entity_intenal_name)) {
                         $relations = salesforce_settings_provider__get_entity_items_by_ids($expanded_entity_intenal_name, $field_keys, $selected_sub_field_names, $token_response, 'Id');
 
                         foreach ($res->records as &$record) {
@@ -805,38 +1044,145 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
                         }
                     }
                 }
+            }
 
-                // Load the expanded fields data
-                if (isset($params['$show'])) {
-                    foreach ($children_fields as $expanded_field => $selected_sub_field_names) {
-                        $field_keys = array_keys($shown_field_values[$expanded_field]);
+            // Load the expanded fields data
+            if (isset($params['$show'])) {
+                foreach ($children_fields as $expanded_field => $selected_sub_field_names) {
+                    $field_keys = array_keys($shown_field_values[$expanded_field]);
 
 
-                        $field_definition = salesforce_settings_provider__get_entity_field_definition($entity_name, $expanded_field);
+                    $field_definition = salesforce_settings_provider__get_entity_field_definition($entity_name, $expanded_field);
+
+                    if (!is_null($field_definition)) {
                         $lookup_entity = $field_definition['lookup_entity'];
                         $related_child_field = $field_definition['relationship']['child'];
                         $related_parent_field = $field_definition['relationship']['parent'];
-                        $relations = salesforce_settings_provider__get_entity_items_by_field_values($lookup_entity, $related_child_field, $field_keys, $selected_sub_field_names, $token_response, [$related_child_field]);
-                        
+                        $relations = salesforce_settings_provider__get_entity_items_by_field_values($lookup_entity, $related_child_field, $field_keys, $selected_sub_field_names, $token_response, [$related_child_field], [$related_child_field]);
+
                         foreach ($res->records as &$record) {
                             $record->{$expanded_field} = $relations[$record->{$related_parent_field}];
                         }
                     }
+                    continue;
                 }
+            }
 
-                if ($post_process) {
-                    $post_process($res->records, $expanded_field_values);
-                }
+            if ($post_process) {
+                $post_process($res->records, $expanded_field_values);
+            }
 
-                return $res_records;
+            return $res_records;
+        } else {
+            throw new Exception("{$res[0]->message}. ErrorCode: {$res[0]->errorCode}");
+        }
+    } else {
+        throw new Exception('Unable to connect to Salesforce. Invalid request token');
+    }
+}
+
+/**
+ * Queries salesforce for items items that match the specified critery in the specified salesforce entity $entity_name
+ * @param string $entity_name
+ * @param array $object
+ * @param stdClass $token_response
+ * @return boolean
+ */
+function salesforce_settings_provider__create_salesforce_entity_item($entity_name, $object, stdClass &$token_response = NULL) {
+    
+    // Get the internal name of the entity
+    $entity_internal_name = salesforce_settings_provider__get_entity_internal_name($entity_name);
+    if (!is_null($entity_internal_name)) {
+
+        // Get the request token
+        if (($token_response = (!is_null($token_response) ? $token_response : salesforce_settings_provider__get_request_token()))) {
+
+            // translate the selected field names to the internal names, also removes invalid fields
+            salesforce_settings_provider__alter_entity_record_field_names($entity_name, $object, FALSE);
+            $object = json_encode($object);
+
+            // Prepare the POST request
+            $options = array(
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: Bearer ' . $token_response->access_token,
+                    'Content-Type: application/json'
+                ),
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
+                CURLOPT_POSTFIELDS => $object
+            );
+
+            // Execute the POST request.
+            $new_url = $token_response->instance_url . '/services/data/v35.0/sobjects/' . $entity_internal_name;
+            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+
+            // Process the request
+            $res = json_decode($feed->getContent());
+            if (is_array($res)) {
+                throw new Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else {
-                return FALSE;
+                return $res;
             }
         } else {
-            return FALSE;
+            throw new Exception('Unable to connect to Salesforce.');
         }
-    } catch (Exception $exp) {
-        return FALSE;
+    } else {
+        throw new Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
+    }
+}
+
+/**
+ * Queries salesforce for items items that match the specified critery in the specified salesforce entity $entity_name
+ * @param string $entity_name
+ * @param array $object
+ * @param stdClass $token_response
+ * @return boolean
+ */
+function salesforce_settings_provider__update_salesforce_entity_item($entity_name, $object, stdClass &$token_response = NULL) {
+
+    // Get the internal name of the entity
+    $entity_internal_name = salesforce_settings_provider__get_entity_internal_name($entity_name);
+    if (!is_null($entity_internal_name)) {
+
+        // Get the request token
+        if (($token_response = (!is_null($token_response) ? $token_response : salesforce_settings_provider__get_request_token()))) {
+
+            // translate the selected field names to the internal names, also removes invalid fields
+            salesforce_settings_provider__alter_entity_record_field_names($entity_name, $object, FALSE);
+            $object = json_encode($object);
+
+            // Prepare the POST request
+            $options = [
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $token_response->access_token,
+                    'Content-Type: application/json',
+                ],
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
+                CURLOPT_POSTFIELDS => $object,
+                CURLOPT_CUSTOMREQUEST => 'PATCH'
+            ];
+
+            // Execute the POST request.
+            $new_url = $token_response->instance_url . '/services/data/v35.0/sobjects/' . $entity_internal_name;
+            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+
+            // Process the request
+            $res = json_decode($feed->getContent());
+            if (is_array($res)) {
+                throw new Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+            } else {
+                return $res;
+            }
+        } else {
+            throw new Exception('Unable to connect to Salesforce.');
+        }
+    } else {
+        throw new Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
     }
 }
 
@@ -893,7 +1239,10 @@ function salesforce_settings_provider__get_entity_items_by_field_values($entity_
         $params['$filter'] = $field_name . ' IN (\'' . implode('\',\'', $id_chunk) . '\')';
 
         $r = salesforce_settings_provider__get_salesforce_entity_items($entity_name, $params, $token_response, $key_field, [], $callback);
-        $records = array_merge($records, $r);
+
+        if (is_array($r)) {
+            $records = array_merge($records, $r);
+        }
     }
     return $records;
 }

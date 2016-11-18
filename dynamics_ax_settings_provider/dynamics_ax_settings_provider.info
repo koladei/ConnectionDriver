@@ -1,4 +1,4 @@
-name = MSSQL Server Settings Provider
+name = Dynamics AX Settings Provider
 description = Implements a webservice API that can be queried to get certain information about a customer.
 configure = admin/config/administration/settings_provider
 dependencies[] = settings_provider
