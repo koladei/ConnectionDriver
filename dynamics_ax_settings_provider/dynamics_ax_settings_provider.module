@@ -135,6 +135,22 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'Amount',
                     'type' => 'datetime',
                 ],
+                'SETTLEAMOUNTCUR' => [
+                    'preferred_name' => 'AmountSettled',
+                    'type' => 'int',
+                ],
+                'SETTLEMENT' => [
+                    'preferred_name' => 'Settlement',
+                    'type' => 'int',
+                ],
+                'Txt' => [
+                    'preferred_name' => 'Narrative',
+                    'type' => 'string',
+                ],
+                'TRANSTYPE' => [
+                    'preferred_name' => 'TransactionType',
+                    'type' => 'int',
+                ],
                 'APPROVED' => [
                     'preferred_name' => 'ApprovalStatus',
                     'type' => 'int',
@@ -143,16 +159,32 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'IsCorrection',
                     'type' => 'int',
                 ],
+                'CANCELLEDPAYMENT' => [
+                    'preferred_name' => 'IsCancelled',
+                    'type' => 'int',
+                ],
                 'CURRENCYCODE' => [
                     'preferred_name' => 'CurrencyCode',
                     'type' => 'string',
+                ],
+                'TRANSDATE' => [
+                    'preferred_name' => 'TransactionDate',
+                    'type' => 'datetime',
                 ],
                 'CLOSED' => [
                     'preferred_name' => 'Closed',
                     'type' => 'datetime',
                 ],
+                'DUEDATE' => [
+                    'preferred_name' => 'DueDate',
+                    'type' => 'datetime',
+                ],
                 'INVOICE' => [
                     'preferred_name' => 'Invoice',
+                    'type' => 'string',
+                ],
+                'PAYMID' => [
+                    'preferred_name' => 'PaymentId',
                     'type' => 'string',
                 ],
                 '_ENTITY' => [
@@ -489,7 +521,7 @@ function dynamics_ax_settings_provider__get_request_token($settings = 'default')
  */
 function dynamics_ax_settings_provider__process_filter_expression($filter, $fields) {
     $field_selector = '[\\w][\\w\\d\\_]+';
-    $value_selector = '[\\w\\d\\.\\s]+';
+    $value_selector = '[\\w\\d\\.\\s\\-_\\$\\,\\.]+';
     $in_value_selector = '[\\w\\d\\.\\s\\,\'\\-_\\$#@\\^\\&\\(\\)\\~`]+[^\\)]';
     $int_value_selector = '[\\d]+';
     $datetime_value_selector_0 = '(([\\d]{4})\\-([\\d]{2})\\-([\\d]{2})(\\T([\\d]{2})\\:([\\d]{2})(\\:([\\d]{2}))?)?)';
@@ -828,7 +860,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
 
                     $field_definition = dynamics_ax_settings_provider__get_entity_field_definition($entity_name, $expanded_field);
 
-                    if (!is_null($field_definition)) {
+                    if (!is_null($field_definition) && is_array($field_keys)) {
                         $lookup_entity = $field_definition['lookup_entity'];
                         $related_child_field = $field_definition['relationship']['remote_field'];
                         $related_parent_field = $field_definition['relationship']['local_field'];
