@@ -128,7 +128,32 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                 ],
                 'ACCOUNTNUM' => [
                     'preferred_name' => 'AccountNumber',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ],
+                'AMOUNTCUR' => [
+                    'preferred_name' => 'Amount',
                     'type' => 'datetime',
+                ],
+                'APPROVED' => [
+                    'preferred_name' => 'ApprovalStatus',
+                    'type' => 'int',
+                ],
+                'CORRECT' => [
+                    'preferred_name' => 'IsCorrection',
+                    'type' => 'int',
+                ],
+                'CURRENCYCODE' => [
+                    'preferred_name' => 'CurrencyCode',
+                    'type' => 'string',
+                ],
+                'CLOSED' => [
+                    'preferred_name' => 'Closed',
+                    'type' => 'datetime',
+                ],
+                'INVOICE' => [
+                    'preferred_name' => 'Invoice',
+                    'type' => 'string',
                 ],
                 '_ENTITY' => [
                     'preferred_name' => 'EntityName',
@@ -161,19 +186,23 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
  * @param boolean $forward
  * @return array
  */
-function dynamics_ax_settings_provider__get_entity_field_name_map($entity_name, $forward = TRUE, array &$field_type = []) {
+function dynamics_ax_settings_provider__get_entity_field_name_map($entity_name, $forward = TRUE, array &$field_collection = []) {
     $selected_entity = dynamics_ax_settings_provider__get_entity_definition($entity_name, 'fields');
     $map = [];
 
     if ($forward) {
-        array_walk($selected_entity, function($value, $key) use(&$map, &$field_type) {
+        array_walk($selected_entity, function($value, $key) use(&$map, &$field_collection) {
             $map[$key] = $value['preferred_name'];
-            $field_type[$key] = $value;
+            $field_collection[$key] = $value;
         });
     } else {
-        array_walk($selected_entity, function($value, $key) use(&$map, &$field_type) {
-            $map[$value['preferred_name']] = $key;
-            $field_type[$value['preferred_name']] = $value;
+        array_walk($selected_entity, function($value, $key) use(&$map, &$field_collection, $entity_name) {
+            $lookup_field = '';
+            if ($value['type'] == 'detail') {
+                $lookup_field = dynamics_ax_settings_provider__get_entity_field_internal_name($entity_name, $value['relationship']['local_field']);
+            }
+            $map[$value['preferred_name']] = ($value['type'] == 'detail' && strlen($lookup_field) > 0) ? $lookup_field : $key;
+            $field_collection[$value['preferred_name']] = $value;
         });
     }
 
@@ -603,17 +632,17 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
 function dynamics_ax_settings_provider__get_items($entity_name, array $params = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], $post_process = NULL) {
     // Before any paparazi, check if the entity exists
     $exists = dynamics_ax_settings_provider__get_entity_definition($entity_name);
-    
-    if(!$exists || $exists == NULL){
+
+    if (!$exists || $exists == NULL) {
         throw new Exception("Error, the requested entity {$entity_name} could not found. It either doesnot exist or it may have been deleted by another user.");
     }
-    
+
     $array_key = is_array($key_field);
     $keyed = $array_key ? $key_field[0] : $key_field;
 
     //Get the request token
     if (($token_response = (!is_null($token_response) ? $token_response : dynamics_ax_settings_provider__get_request_token()))) {
-        
+
         // Prepare the fields that will be selected
         $fields = [];
         if (isset($params['$select'])) {
@@ -627,7 +656,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                 $fields[] = $required_field;
             }
         }
-        
+
         // include expanded fields
         $expanded_fields = [];
         $expanded_field_names = [];
@@ -682,6 +711,10 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
         if (isset($params['$show'])) {
 
             foreach ($children_field_names as $children_field_name) {
+                if (!in_array($children_field_name, $fields)) {
+                    $fields[] = $children_field_name;
+                }
+
                 $expanded_field_values[$children_field_name] = [];
                 $x = [];
                 $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
@@ -704,19 +737,19 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
         $filter = isset($params['$filter']) ? $params['$filter'] : '';
         $dynamics_ax_settings_provider__get_entity_field_name_map = dynamics_ax_settings_provider__get_entity_field_name_map($entity_name, FALSE);
         $filter = dynamics_ax_settings_provider__process_filter_expression($filter, $dynamics_ax_settings_provider__get_entity_field_name_map);
-//        $filter = strlen($filter) > 0 ? 'WHERE ' . $filter : '';
+
         // Prepare the limit
-        $limit = isset($params['$top']) ? ' LIMIT ' . $params['$top'] : '';
-        $limit = (strlen($filter) < 1) && (strlen($limit) < 1) ? ' LIMIT 10' : $limit;
+        $limit = isset($params['$top']) ? $params['$top'] : '100';
 
         $entity_internal_name = dynamics_ax_settings_provider__get_entity_internal_name($entity_name);
         $selected_fields = implode(',', $fields);
 
         $invoice_params = [
             '$filter' => $filter,
-            '$select' => $selected_fields
+            '$select' => $selected_fields,
+            '$top' => $limit
         ];
-        
+
         $query_string = drupal_http_build_query($invoice_params);
         $url = "http://molsptest:82/drp/CPortalService.svc/QueryTable/[~]/{$entity_internal_name}?{$query_string}";
         $tokenOption = array(
@@ -802,6 +835,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                         $related_entity_type = $field_definition['relationship']['remote_type'];
                         $relations = dynamics_ax_settings_provider__get_entity_items_by_field_values($lookup_entity, $related_child_field, $field_keys, $selected_sub_field_names, $token_response, [$related_child_field], [$related_child_field]);
 
+//                        var_dump(['relations', $field_keys]);
 //                        foreach ($res->d as &$record) {
 //                            $record->{$expanded_field} = array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
 //                                if ($record->EntityName == $item->EntityName) {
@@ -888,13 +922,20 @@ function dynamics_ax_settings_provider__get_entity_items_by_ids($entity_name, ar
     $params['$expand'] = array_merge($params['$expand'], $notable_fields);
     $id_chunks = array_chunk($ids, 50);
 
+    $field_def = dynamics_ax_settings_provider__get_entity_field_definition($entity_name, 'Id');
+    $field_type = $field_def['type'];
     foreach ($id_chunks as $id_chunk) {
+        if ($field_type == 'int') {
+            $params['$filter'] = 'Id IN(' . implode(',', $id_chunk) . ')';
+        } else {
+            $params['$filter'] = 'Id IN(\'' . implode('\',\'', $id_chunk) . '\')';
+        }
+
         $params['$filter'] = 'Id IN(' . implode(',', $id_chunk) . ')';
-//        var_dump($params);
         $r = dynamics_ax_settings_provider__get_items($entity_name, $params, $token_response, $key_field);
         $records = array_merge($records, $r);
     }
-    
+
     return $records;
 }
 
