@@ -115,7 +115,7 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
             'fields' => [
                 'RECID' => [
                     'preferred_name' => 'Id',
-                    'type' => 'string',
+                    'type' => 'int',
                     'mandatory' => 1,
                 ],
                 'MODIFIEDDATETIME' => [
@@ -601,12 +601,19 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
  * @return boolean
  */
 function dynamics_ax_settings_provider__get_items($entity_name, array $params = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], $post_process = NULL) {
+    // Before any paparazi, check if the entity exists
+    $exists = dynamics_ax_settings_provider__get_entity_definition($entity_name);
+    
+    if(!$exists || $exists == NULL){
+        throw new Exception("Error, the requested entity {$entity_name} could not found. It either doesnot exist or it may have been deleted by another user.");
+    }
+    
     $array_key = is_array($key_field);
     $keyed = $array_key ? $key_field[0] : $key_field;
 
     //Get the request token
     if (($token_response = (!is_null($token_response) ? $token_response : dynamics_ax_settings_provider__get_request_token()))) {
-
+        
         // Prepare the fields that will be selected
         $fields = [];
         if (isset($params['$select'])) {
@@ -620,7 +627,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                 $fields[] = $required_field;
             }
         }
-
+        
         // include expanded fields
         $expanded_fields = [];
         $expanded_field_names = [];
@@ -709,7 +716,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
             '$filter' => $filter,
             '$select' => $selected_fields
         ];
-
+        
         $query_string = drupal_http_build_query($invoice_params);
         $url = "http://molsptest:82/drp/CPortalService.svc/QueryTable/[~]/{$entity_internal_name}?{$query_string}";
         $tokenOption = array(
@@ -813,8 +820,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                                     return false;
                                 });
                             }
-                        }
-                        else if($related_entity_type == 'parent'){
+                        } else if ($related_entity_type == 'parent') {
                             foreach ($res->d as &$record) {
                                 $collection = array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
                                     if ($record->EntityName == $item->EntityName) {
@@ -822,7 +828,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                                     }
                                     return false;
                                 });
-                                
+
                                 //If they are siblings there is no need to embed the sibling in an array.
                                 $record->{$expanded_field} = count($collection) > 0 ? $collection[0] : NULL;
                             }
@@ -856,6 +862,22 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
  * @return array
  * @throws Exception
  */
+function dynamics_ax_settings_provider__get_entity_items_by_id($entity_name, $ids, array $select = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], callable $callback = NULL) {
+    $records = dynamics_ax_settings_provider__get_entity_items_by_ids($entity_name, [$ids], $select, $token_response, $key_field, $notable_fields, $callback);
+
+    return count($records) > 0 ? $records[0] : NULL;
+}
+
+/**
+ * Returns records of $entity_name that have the specified $ids.
+ * @param type $entity_name
+ * @param array $ids
+ * @param array $select
+ * @param stdClass $token_response
+ * @param callable $callback
+ * @return array
+ * @throws Exception
+ */
 function dynamics_ax_settings_provider__get_entity_items_by_ids($entity_name, array $ids = [], array $select = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], callable $callback = NULL) {
     $records = [];
     $params = [
@@ -867,10 +889,12 @@ function dynamics_ax_settings_provider__get_entity_items_by_ids($entity_name, ar
     $id_chunks = array_chunk($ids, 50);
 
     foreach ($id_chunks as $id_chunk) {
-        $params['$filter'] = 'Id IN (\'' . implode('\',\'', $id_chunk) . '\')';
+        $params['$filter'] = 'Id IN(' . implode(',', $id_chunk) . ')';
+//        var_dump($params);
         $r = dynamics_ax_settings_provider__get_items($entity_name, $params, $token_response, $key_field);
         $records = array_merge($records, $r);
     }
+    
     return $records;
 }
 
