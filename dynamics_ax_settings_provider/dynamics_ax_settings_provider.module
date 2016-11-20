@@ -92,13 +92,13 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                 ],
                 'ACCOUNTNUM' => [
                     'preferred_name' => 'AccountNumber',
-                    'type' => 'datetime',
+                    'type' => 'string',
                 ],
                 '_ENTITY' => [
                     'preferred_name' => 'EntityName',
                     'type' => 'string',
                 ],
-                '_Transactions' => [
+                '_TRANSACTIONS' => [
                     'preferred_name' => 'Transactions',
                     'type' => 'detail',
                     'lookup_entity' => 'cust_trans',
@@ -201,6 +201,16 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                         'remote_type' => 'parent'
                     ],
                 ],
+                '_CUSTOMER' => [
+                    'preferred_name' => 'Customer',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_table',
+                    'relationship' => [
+                        'local_field' => 'AccountNumber',
+                        'remote_field' => 'AccountNumber',
+                        'remote_type' => 'parent'
+                    ],
+                ],
             ]
         ],
         'cust_invoice_table' => [
@@ -239,6 +249,16 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                 '_ENTITY' => [
                     'preferred_name' => 'EntityName',
                     'type' => 'string',
+                ],
+                '_CUSTOMER' => [
+                    'preferred_name' => 'Customer',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_table',
+                    'relationship' => [
+                        'local_field' => 'AccountNumber',
+                        'remote_field' => 'AccountNumber',
+                        'remote_type' => 'parent'
+                    ],
                 ],
                 '_TRANSACTIONS' => [
                     'preferred_name' => 'Transactions',
@@ -570,7 +590,7 @@ function dynamics_ax_settings_provider__get_request_token($settings = 'default')
  */
 function dynamics_ax_settings_provider__process_filter_expression($filter, $fields) {
     $field_selector = '[\\w][\\w\\d\\_]+';
-    $value_selector = '[\\w\\d\\.\\s\\-_\\$\\,\\.]+';
+    $value_selector = '[\\w\\d\\.\\s\\-_\\$\\,\\.]{0,}';
     $in_value_selector = '[\\w\\d\\.\\s\\,\'\\-_\\$#@\\^\\&\\(\\)\\~`]+[^\\)]';
     $int_value_selector = '[\\d]+';
     $datetime_value_selector_0 = '(([\\d]{4})\\-([\\d]{2})\\-([\\d]{2})(\\T([\\d]{2})\\:([\\d]{2})(\\:([\\d]{2}))?)?)';
@@ -621,7 +641,7 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
             'is_date' => TRUE
         ],
         [
-            'pattern' => '/(' . $field_selector . ')[\\s]+(eq)[\\s]+(([\'|"]?)(' . $value_selector . ')(\\4))/',
+            'pattern' => '/(' . $field_selector . ')[\s]+(eq)[\s]+(([\'"]?)(' . $value_selector . ')(\\4))/',
             'replacement' => '${1} eq ${3}',
             'field_name' => 1,
             'type' => 'comparison',
@@ -916,17 +936,6 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                         $related_entity_type = $field_definition['relationship']['remote_type'];
                         $relations = dynamics_ax_settings_provider__get_entity_items_by_field_values($lookup_entity, $related_child_field, $field_keys, $selected_sub_field_names, $token_response, [$related_child_field], [$related_child_field]);
 
-//                        var_dump([$related_child_field, $field_keys]);
-//                        var_dump(['relations', $field_keys]);
-//                        foreach ($res->d as &$record) {
-//                            $record->{$expanded_field} = array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
-//                                if ($record->EntityName == $item->EntityName) {
-//                                    return true;
-//                                }
-//                                return false;
-//                            });
-//                        }
-//                        echo $related_entity_type;
                         if ($related_entity_type == 'child') {
                             foreach ($res->d as &$record) {
                                 $record->{$expanded_field} = array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
@@ -946,7 +955,8 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                                 });
 
                                 //If they are siblings there is no need to embed the sibling in an array.
-                                $record->{$expanded_field} = count($collection) > 0 ? $collection[0] : NULL;
+                                $key = key($collection);
+                                $record->{$expanded_field} = !is_null($key)  ? $collection[$key] : NULL;
                             }
                         }
                     }
