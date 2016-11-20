@@ -229,6 +229,18 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'Created',
                     'type' => 'datetime',
                 ],
+                'DUEDATE' => [
+                    'preferred_name' => 'DueDate',
+                    'type' => 'datetime',
+                ],
+                'ENDDATE' => [
+                    'preferred_name' => 'EndDate',
+                    'type' => 'datetime',
+                ],
+                'ITEMPAIDFOR' => [
+                    'preferred_name' => 'ItemPaidFor',
+                    'type' => 'datetime',
+                ],
                 'INVOICEACCOUNT' => [
                     'preferred_name' => 'AccountNumber',
                     'type' => 'string',
@@ -238,11 +250,11 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'InvoiceNumber',
                     'type' => 'string',
                 ],
-                'SALESFORCEOPPORTUNITYID' => [
+                'SALEFORCEOPPORTUNITYID' => [
                     'preferred_name' => 'OpportunityId',
                     'type' => 'string',
                 ],
-                'SALESFORCECUSTOMERPRODUCTID' => [
+                'SALEFORCECUSTOMERPRODUCTID' => [
                     'preferred_name' => 'CustomerProductId',
                     'type' => 'string',
                 ],
@@ -641,6 +653,13 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
             'is_date' => TRUE
         ],
         [
+            'pattern' => '/(' . $field_selector . ')[\\s]+(ne)[\\s]+(([\'"]?)(' . $value_selector . ')(\\4))/',
+            'replacement' => '${1} eq ${3}',
+            'field_name' => 1,
+            'type' => 'comparison',
+            'is_date' => FALSE
+        ],
+        [
             'pattern' => '/(' . $field_selector . ')[\s]+(eq)[\s]+(([\'"]?)(' . $value_selector . ')(\\4))/',
             'replacement' => '${1} eq ${3}',
             'field_name' => 1,
@@ -938,12 +957,14 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
 
                         if ($related_entity_type == 'child') {
                             foreach ($res->d as &$record) {
-                                $record->{$expanded_field} = array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
-                                    if ($record->EntityName == $item->EntityName) {
-                                        return true;
-                                    }
-                                    return false;
-                                });
+                                $collection = array_values(array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
+                                            if ($record->EntityName == $item->EntityName) {
+                                                return true;
+                                            }
+                                            return false;
+                                        })
+                                );
+                                $record->{$expanded_field} = ($collection);
                             }
                         } else if ($related_entity_type == 'parent') {
                             foreach ($res->d as &$record) {
@@ -956,7 +977,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
 
                                 //If they are siblings there is no need to embed the sibling in an array.
                                 $key = key($collection);
-                                $record->{$expanded_field} = !is_null($key)  ? $collection[$key] : NULL;
+                                $record->{$expanded_field} = !is_null($key) ? $collection[$key] : NULL;
                             }
                         }
                     }
