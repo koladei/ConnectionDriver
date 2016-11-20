@@ -239,7 +239,7 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                 ],
                 'ITEMPAIDFOR' => [
                     'preferred_name' => 'ItemPaidFor',
-                    'type' => 'datetime',
+                    'type' => 'string',
                 ],
                 'INVOICEACCOUNT' => [
                     'preferred_name' => 'AccountNumber',
@@ -653,21 +653,21 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
             'is_date' => TRUE
         ],
         [
-            'pattern' => '/(' . $field_selector . ')[\\s]+(ne)[\\s]+(([\'"]?)(' . $value_selector . ')(\\4))/',
+            'pattern' => '/(' . $field_selector . ')[\\s]+(ne)[\\s]+(([\'"])(' . $value_selector . ')(\\4)|' . $int_value_selector . ')/',
+            'replacement' => '${1} ne ${3}',
+            'field_name' => 1,
+            'type' => 'comparison',
+            'is_date' => FALSE
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\\s]+(eq)[\\s]+(([\'"]?)(' . $value_selector . ')(\\4)|' . $int_value_selector . ')/',
             'replacement' => '${1} eq ${3}',
             'field_name' => 1,
             'type' => 'comparison',
             'is_date' => FALSE
         ],
         [
-            'pattern' => '/(' . $field_selector . ')[\s]+(eq)[\s]+(([\'"]?)(' . $value_selector . ')(\\4))/',
-            'replacement' => '${1} eq ${3}',
-            'field_name' => 1,
-            'type' => 'comparison',
-            'is_date' => FALSE
-        ],
-        [
-            'pattern' => '/(' . $field_selector . ')[\s]+(lt)[\s]+(' . $int_value_selector . ')/',
+            'pattern' => '/(' . $field_selector . ')[\\s]+(lt)[\\s]+(' . $int_value_selector . ')/',
             'replacement' => '${1} lt ${3}',
             'field_name' => 1,
             'is_date' => FALSE
@@ -678,25 +678,25 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
             'field_name' => 1,
         ],
         [
-            'pattern' => '/(' . $field_selector . ')[\s]+(gt)[\s]+(' . $int_value_selector . ')/',
+            'pattern' => '/(' . $field_selector . ')[\\s]+(gt)[\\s]+(' . $int_value_selector . ')/',
             'replacement' => '${1} gt ${3}',
             'field_name' => 1,
             'is_date' => FALSE,
         ],
         [
-            'pattern' => '/(' . $field_selector . ')[\s]+(ge)[\s]+(' . $int_value_selector . ')/',
+            'pattern' => '/(' . $field_selector . ')[\\s]+(ge)[\\s]+(' . $int_value_selector . ')/',
             'replacement' => '${1} ge ${3}',
             'field_name' => 1,
             'is_date' => FALSE,
         ],
         [
-            'pattern' => '/(substringof\\()[\s]*(' . $field_selector . ')[\s]*\\,[\s]*(\'|")(' . $value_selector . ')(\\3)[\s]*(\\))/',
+            'pattern' => '/(substringof\\()[\\s]*(' . $field_selector . ')[\\s]*\\,[\\s]*(\'|")(' . $value_selector . ')(\\3)[\s]*(\\))/',
             'replacement' => '${2} LIKE \'%${4}%\'',
             'field_name' => 2,
             'is_date' => FALSE,
         ],
         [
-            'pattern' => '/(startswith\\()\s*(' . $field_selector . ')\s*\\,\s*(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
+            'pattern' => '/(startswith\\()\s*(' . $field_selector . ')\\s*\\,\s*(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
             'replacement' => 'startswith(${2}, \'${4}\')',
             'field_name' => 2,
             'is_date' => FALSE,
@@ -719,23 +719,28 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
 
         //get the field name in the expression.
         $mats = [];
-        preg_match($p['pattern'], $return, $mats);
-        $f = isset($mats[$p['field_name']]) ? $mats[$p['field_name']] : '';
+        preg_match_all($p['pattern'], $return, $mats);
+        $count = count($mats[0]) - 1;
+        
+        while ($count >= 0) {
+            $f = isset($mats[$p['field_name']][$count]) ? $mats[$p['field_name']][$count] : '';
 
-        if (strlen($f) > 0) {
-            //get the mapped name of the field
-            $w = [$mats[$p['field_name']]];
+            if (strlen($f) > 0) {
+                //get the mapped name of the field
+                $w = [$mats[$p['field_name']][$count]];
 
-            dynamics_ax_settings_provider__rename_select_fields($w, $fields);
-            $r = $w[0];
+                dynamics_ax_settings_provider__rename_select_fields($w, $fields);
+                $r = $w[0];
 
-            $return = str_replace($f, $r, $return);
-            $return = preg_replace($p['pattern'], $p['replacement'], $return);
+                $return = str_replace($f, $r, $return);
+                $return = preg_replace($p['pattern'], $p['replacement'], $return);
 
-            //fix date fields.
-            if (isset($p['is_date'])) {
-                $return = $fix_date($return);
+                //fix date fields.
+                if (isset($p['is_date'])) {
+                    $return = $fix_date($return);
+                }
             }
+            $count--;
         }
     }
 
