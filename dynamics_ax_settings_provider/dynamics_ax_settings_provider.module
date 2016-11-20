@@ -143,7 +143,7 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'Settlement',
                     'type' => 'int',
                 ],
-                'Txt' => [
+                'TXT' => [
                     'preferred_name' => 'Narrative',
                     'type' => 'string',
                 ],
@@ -180,7 +180,7 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'type' => 'datetime',
                 ],
                 'INVOICE' => [
-                    'preferred_name' => 'Invoice',
+                    'preferred_name' => 'InvoiceNumber',
                     'type' => 'string',
                 ],
                 'PAYMID' => [
@@ -191,18 +191,67 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'EntityName',
                     'type' => 'string',
                 ],
-                '_CUSTOMER' => [
-                    'preferred_name' => 'Customer',
+                '_INVOICE' => [
+                    'preferred_name' => 'Invoice',
                     'type' => 'detail',
-                    'lookup_entity' => 'cust_table',
+                    'lookup_entity' => 'cust_invoice_table',
                     'relationship' => [
-                        'local_field' => 'AccountNumber',
-                        'remote_field' => 'AccountNumber',
+                        'local_field' => 'InvoiceNumber',
+                        'remote_field' => 'InvoiceNumber',
                         'remote_type' => 'parent'
                     ],
                 ],
             ]
         ],
+        'cust_invoice_table' => [
+            'internal_name' => 'CustInvoiceTable',
+            'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'int',
+                    'mandatory' => 1,
+                ],
+                'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime',
+                ],
+                'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime',
+                ],
+                'INVOICEACCOUNT' => [
+                    'preferred_name' => 'AccountNumber',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ],
+                'INVOICEID' => [
+                    'preferred_name' => 'InvoiceNumber',
+                    'type' => 'string',
+                ],
+                'SALESFORCEOPPORTUNITYID' => [
+                    'preferred_name' => 'OpportunityId',
+                    'type' => 'string',
+                ],
+                'SALESFORCECUSTOMERPRODUCTID' => [
+                    'preferred_name' => 'CustomerProductId',
+                    'type' => 'string',
+                ],
+                '_ENTITY' => [
+                    'preferred_name' => 'EntityName',
+                    'type' => 'string',
+                ],
+                '_TRANSACTIONS' => [
+                    'preferred_name' => 'Transactions',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_trans',
+                    'relationship' => [
+                        'local_field' => 'InvoiceNumber',
+                        'remote_field' => 'InvoiceNumber',
+                        'remote_type' => 'child'
+                    ],
+                ],
+            ]
+        ]
     ];
     if ($component) {
         return isset($entities[$entity_name]) && isset($entities[$entity_name][$component]) ? $entities[$entity_name][$component] : NULL;
@@ -534,8 +583,8 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
             '/(' . $field_selector . ')[\s]+([><=]+)[\s]+(' . $datetime_value_selector_1 . ')Z/',
             '/(' . $field_selector . ')[\s]+([><=]+)[\s]+(' . $datetime_value_selector_2 . ')Z/'
                 ], [
-            '${1} ${2} ${3}:00Z',
-            '${1} ${2} ${3}T00:00:00Z'
+            '${1} ${2} ${3}:00',
+            '${1} ${2} ${3}T00:00:00'
                 ], $date);
     };
 
@@ -543,31 +592,31 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
     $pr = [
         [
             'pattern' => '/(' . $field_selector . ')[\\s]+(eq)[\\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
-            'replacement' => '${1} = ${5}Z',
+            'replacement' => '${1} eq datetime\'${5}\'',
             'field_name' => 1,
             'is_date' => TRUE
         ],
         [
             'pattern' => '/(' . $field_selector . ')[\s]+(lt)[\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
-            'replacement' => '${1} < ${5}Z',
+            'replacement' => '${1} lt ${5}',
             'field_name' => 1,
             'is_date' => TRUE
         ],
         [
             'pattern' => '/(' . $field_selector . ')[\s]+(gt)[\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
-            'replacement' => '${1} > ${5}Z',
+            'replacement' => '${1} gt datetime\'${5}\'',
             'field_name' => 1,
             'is_date' => TRUE
         ],
         [
             'pattern' => '/(' . $field_selector . ')[\s]+(le)[\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
-            'replacement' => '${1} <= ${5}Z',
+            'replacement' => '${1} le datetime\'${5}\'',
             'field_name' => 1,
             'is_date' => TRUE
         ],
         [
             'pattern' => '/(' . $field_selector . ')[\s]+(ge)[\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
-            'replacement' => '${1} ge ${5}Z',
+            'replacement' => '${1} ge datetime\'${5}\'',
             'field_name' => 1,
             'is_date' => TRUE
         ],
@@ -771,7 +820,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
         $filter = dynamics_ax_settings_provider__process_filter_expression($filter, $dynamics_ax_settings_provider__get_entity_field_name_map);
 
         // Prepare the limit
-        $limit = isset($params['$top']) ? $params['$top'] : '100';
+        $limit = isset($params['$top']) ? $params['$top'] : '2000';
 
         $entity_internal_name = dynamics_ax_settings_provider__get_entity_internal_name($entity_name);
         $selected_fields = implode(',', $fields);
@@ -867,6 +916,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                         $related_entity_type = $field_definition['relationship']['remote_type'];
                         $relations = dynamics_ax_settings_provider__get_entity_items_by_field_values($lookup_entity, $related_child_field, $field_keys, $selected_sub_field_names, $token_response, [$related_child_field], [$related_child_field]);
 
+//                        var_dump([$related_child_field, $field_keys]);
 //                        var_dump(['relations', $field_keys]);
 //                        foreach ($res->d as &$record) {
 //                            $record->{$expanded_field} = array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
