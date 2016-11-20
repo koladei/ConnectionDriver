@@ -1089,7 +1089,7 @@ function salesforce_settings_provider__get_salesforce_entity_items($entity_name,
  * @return boolean
  */
 function salesforce_settings_provider__create_salesforce_entity_item($entity_name, $object, stdClass &$token_response = NULL) {
-    
+
     // Get the internal name of the entity
     $entity_internal_name = salesforce_settings_provider__get_entity_internal_name($entity_name);
     if (!is_null($entity_internal_name)) {
@@ -1122,11 +1122,13 @@ function salesforce_settings_provider__create_salesforce_entity_item($entity_nam
             $res = json_decode($feed->getContent());
             if (is_array($res)) {
                 throw new Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+            } else if (is_null($res)) {
+                throw new Exception('Something went wrong. Communication with Salesforce failed.');
             } else {
                 return $res;
             }
         } else {
-            throw new Exception('Unable to connect to Salesforce.');
+            throw new Exception('Unable to connect to Salesforce due to invalid token.');
         }
     } else {
         throw new Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
