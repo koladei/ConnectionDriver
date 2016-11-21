@@ -183,6 +183,14 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'InvoiceNumber',
                     'type' => 'string',
                 ],
+                'VOUCHER' => [
+                    'preferred_name' => 'VoucherNumber',
+                    'type' => 'string',
+                ],
+                'LASTSETTLEVOUCHER' => [
+                    'preferred_name' => 'LastSettlementVoucherNumber',
+                    'type' => 'string',
+                ],
                 'PAYMID' => [
                     'preferred_name' => 'PaymentId',
                     'type' => 'string',
@@ -190,6 +198,17 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                 '_ENTITY' => [
                     'preferred_name' => 'EntityName',
                     'type' => 'string',
+                ],
+                '_INVOICE_INFORMATION' => [
+                    'preferred_name' => 'InvoiceInformation',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_trans',
+                    'relationship' => [
+                        'local_field' => 'LastSettlementVoucherNumber',
+                        'remote_field' => 'VoucherNumber',
+                        'remote_type' => 'parent',
+                        'filter' => 'InvoiceNumber ne \'\''
+                    ],
                 ],
                 '_INVOICE' => [
                     'preferred_name' => 'Invoice',
@@ -209,6 +228,16 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                         'local_field' => 'AccountNumber',
                         'remote_field' => 'AccountNumber',
                         'remote_type' => 'parent'
+                    ],
+                ],
+                '_TRANSACTIONS' => [
+                    'preferred_name' => 'Transactions',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_trans',
+                    'relationship' => [
+                        'local_field' => 'VoucherNumber',
+                        'remote_field' => 'LastSettlementVoucherNumber',
+                        'remote_type' => 'child'
                     ],
                 ],
             ]
@@ -721,7 +750,7 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
         $mats = [];
         preg_match_all($p['pattern'], $return, $mats);
         $count = count($mats[0]) - 1;
-        
+
         while ($count >= 0) {
             $f = isset($mats[$p['field_name']][$count]) ? $mats[$p['field_name']][$count] : '';
 
@@ -958,7 +987,8 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                         $related_child_field = $field_definition['relationship']['remote_field'];
                         $related_parent_field = $field_definition['relationship']['local_field'];
                         $related_entity_type = $field_definition['relationship']['remote_type'];
-                        $relations = dynamics_ax_settings_provider__get_entity_items_by_field_values($lookup_entity, $related_child_field, $field_keys, $selected_sub_field_names, $token_response, [$related_child_field], [$related_child_field]);
+                        $additional_filter = isset($field_definition['relationship']['filter']) ? $field_definition['relationship']['filter'] : NULL;
+                        $relations = dynamics_ax_settings_provider__get_entity_items_by_field_values($lookup_entity, $related_child_field, $field_keys, $selected_sub_field_names, $token_response, [$related_child_field], [$related_child_field], $additional_filter);
 
                         if ($related_entity_type == 'child') {
                             foreach ($res->d as &$record) {
@@ -969,6 +999,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                                             return false;
                                         })
                                 );
+
                                 $record->{$expanded_field} = ($collection);
                             }
                         } else if ($related_entity_type == 'parent') {
@@ -1014,7 +1045,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
  * @return array
  * @throws Exception
  */
-function dynamics_ax_settings_provider__get_entity_items_by_id($entity_name, $ids, array $options = [], stdClass &$token_response = NULL, $key_field = NULL, callable $callback = NULL) {
+function dynamics_ax_settings_provider__get_entity_item_by_id($entity_name, $ids, array $options = [], stdClass &$token_response = NULL, $key_field = NULL, callable $callback = NULL) {
     $records = dynamics_ax_settings_provider__get_entity_items_by_ids($entity_name, [$ids], $options, $token_response, $key_field, $callback);
 
     return count($records) > 0 ? $records[0] : NULL;
@@ -1069,7 +1100,7 @@ function dynamics_ax_settings_provider__get_entity_items_by_ids($entity_name, ar
  * @return array
  * @throws Exception
  */
-function dynamics_ax_settings_provider__get_entity_items_by_field_values($entity_name, $field_name, array $ids = [], array $select = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], callable $callback = NULL) {
+function dynamics_ax_settings_provider__get_entity_items_by_field_values($entity_name, $field_name, array $ids = [], array $select = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], $additional_filter = NULL, callable $callback = NULL) {
     $records = [];
     $params = [
         '$select' => $select
@@ -1089,6 +1120,8 @@ function dynamics_ax_settings_provider__get_entity_items_by_field_values($entity
             $params['$filter'] = $field_name . ' IN(\'' . implode('\',\'', $id_chunk) . '\')';
         }
 
+        $params['$filter'] = $params['$filter'] . (!is_null($additional_filter) ? ' and ' . $additional_filter : '');
+        
         $r = dynamics_ax_settings_provider__get_items($entity_name, $params, $token_response, $key_field, [], $callback);
 
         if (is_array($r)) {
