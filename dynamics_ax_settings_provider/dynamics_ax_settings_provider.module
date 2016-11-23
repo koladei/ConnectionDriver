@@ -167,6 +167,10 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'CurrencyCode',
                     'type' => 'string',
                 ],
+                'EXCHRATE' => [
+                    'preferred_name' => 'ExchangeRate',
+                    'type' => 'int',
+                ],
                 'TRANSDATE' => [
                     'preferred_name' => 'TransactionDate',
                     'type' => 'datetime',
