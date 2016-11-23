@@ -302,16 +302,27 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                         'remote_type' => 'parent'
                     ],
                 ],
-                '_TRANSACTIONS' => [
-                    'preferred_name' => 'Transactions',
+                '_INVOICE_INFO' => [
+                    'preferred_name' => 'InvoiceInformation',
                     'type' => 'detail',
                     'lookup_entity' => 'cust_trans',
                     'relationship' => [
                         'local_field' => 'InvoiceNumber',
                         'remote_field' => 'InvoiceNumber',
-                        'remote_type' => 'child'
+                        'filter' => 'InvoiceNumber ne \'\'',
+                        'remote_type' => 'parent'
                     ],
                 ],
+//                '_TRANSACTIONS' => [
+//                    'preferred_name' => 'Transactions',
+//                    'type' => 'detail',
+//                    'lookup_entity' => 'cust_trans',
+//                    'relationship' => [
+//                        'local_field' => 'VoucherNumber',
+//                        'remote_field' => 'LastSettlementVoucherNumber',
+//                        'remote_type' => 'child'
+//                    ],
+//                ],
             ]
         ]
     ];
@@ -746,11 +757,11 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
     ];
 
     foreach ($pr as $p) {
-        
+
         //get the field name in the expression.
         $matss = [];
         preg_match_all($p['pattern'], $return, $matss, PREG_SET_ORDER);
-        
+
         foreach ($matss as $mats) {
             $f = isset($mats[$p['field_name']]) ? $mats[$p['field_name']] : '';
 
@@ -761,14 +772,14 @@ function dynamics_ax_settings_provider__process_filter_expression($filter, $fiel
                 dynamics_ax_settings_provider__rename_select_fields($w, $fields);
                 $r = $w[0];
 
-                if(strlen($r)>0){
+                if (strlen($r) > 0) {
 //                $return = str_replace($f, $r, $return);
-                $return = preg_replace($p['pattern'], $p['replacement'], str_replace($f, $r, $return));
-                
-                //fix date fields.
-                if (isset($p['is_date'])) {
-                    $return = $fix_date($return);
-                }
+                    $return = preg_replace($p['pattern'], $p['replacement'], str_replace($f, $r, $return));
+
+                    //fix date fields.
+                    if (isset($p['is_date'])) {
+                        $return = $fix_date($return);
+                    }
                 }
             }
         }
@@ -967,7 +978,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
 
                     $expanded_entity_intenal_name = dynamics_ax_settings_provider__get_entity_field_internal_lookup_name($entity_name, $expanded_field);
                     if (!is_null($expanded_entity_intenal_name)) {
-                        $relations = dynamics_ax_settings_provider__get_entity_items_by_ids($expanded_entity_intenal_name, $field_keys, $selected_sub_field_names, $token_response, 'Id');
+                        $relations = dynamics_ax_settings_provider__get_items_by_ids($expanded_entity_intenal_name, $field_keys, $selected_sub_field_names, $token_response, 'Id');
 
                         foreach ($res->records as &$record) {
                             $record->{$expanded_field} = $relations[$record->{$expanded_field}];
@@ -1040,16 +1051,16 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
 /**
  * Returns records of $entity_name that have the specified $ids.
  * @param type $entity_name
- * @param array $ids
- * @param array $options
+ * @param array $id
+ * @param array $selections
  * @param stdClass $token_response
  * @param callable $callback
  * @return array
  * @throws Exception
  */
-function dynamics_ax_settings_provider__get_entity_item_by_id($entity_name, $ids, array $options = [], stdClass &$token_response = NULL, $key_field = NULL, callable $callback = NULL) {
-    $records = dynamics_ax_settings_provider__get_entity_items_by_ids($entity_name, [$ids], $options, $token_response, $key_field, $callback);
+function dynamics_ax_settings_provider__get_item_by_id($entity_name, $id, array $selections = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = []) {
 
+    $records = dynamics_ax_settings_provider__get_items_by_ids($entity_name, [$id], $selections, $token_response, $key_field, $notable_fields);
     return count($records) > 0 ? $records[0] : NULL;
 }
 
@@ -1057,52 +1068,55 @@ function dynamics_ax_settings_provider__get_entity_item_by_id($entity_name, $ids
  * Returns records of $entity_name that have the specified $ids.
  * @param type $entity_name
  * @param array $ids
- * @param array $params
+ * @param array $selections
  * @param stdClass $token_response
  * @param callable $callback
  * @return array
  * @throws Exception
  */
-function dynamics_ax_settings_provider__get_entity_items_by_ids($entity_name, array $ids = [], array $params = [], stdClass &$token_response = NULL, $key_field = NULL, callable $callback = NULL) {
-    $records = [];
-
-    // Ensure that there are $select and $expand statement parameters
-    $params['$select'] = isset($params['$select']) ? $params['$select'] : [];
-    $params['$expand'] = isset($params['$expand']) ? $params['$expand'] : [];
-
-    // Devide collection into chunks of 50.
-    $id_chunks = array_chunk($ids, 50);
-
-    $field_def = dynamics_ax_settings_provider__get_entity_field_definition($entity_name, 'Id');
-    $field_type = isset($field_def['type']) ? $field_def['type'] : 'int';
-    foreach ($id_chunks as $id_chunk) {
-        if (count($id_chunk) > 0) {
-            if ($field_type == 'int') {
-                $params['$filter'] = 'Id IN(' . implode(',', $id_chunk) . ')';
-            } else {
-                $params['$filter'] = 'Id IN(\'' . implode('\',\'', $id_chunk) . '\')';
-            }
-
-            // Fetch and store the data in $records
-            $r = dynamics_ax_settings_provider__get_items($entity_name, $params, $token_response, $key_field);
-            $records = array_merge($records, $r);
-        }
-    }
-
-    return $records;
+function dynamics_ax_settings_provider__get_items_by_ids($entity_name, array $ids = [], array $selections = ['Id'], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = []) {
+//    var_dump($ids);
+    return dynamics_ax_settings_provider__get_entity_items_by_field_values($entity_name, 'Id', $ids, $selections, $token_response, $key_field, $notable_fields);
+//    var_dump($ids);
+//    $records = [];
+//
+//    // Ensure that there are $select and $expand statement parameters
+//    $params['$select'] = isset($params['$select']) ? $params['$select'] : [];
+//    $params['$expand'] = isset($params['$expand']) ? $params['$expand'] : [];
+//
+//    // Devide collection into chunks of 50.
+//    $id_chunks = array_chunk($ids, 50);
+//
+//    $field_def = dynamics_ax_settings_provider__get_entity_field_definition($entity_name, 'Id');
+//    $field_type = isset($field_def['type']) ? $field_def['type'] : 'int';
+//    foreach ($id_chunks as $id_chunk) {
+//        if (count($id_chunk) > 0) {
+//            if ($field_type == 'int') {
+//                $params['$filter'] = 'Id IN(' . implode(',', $id_chunk) . ')';
+//            } else {
+//                $params['$filter'] = 'Id IN(\'' . implode('\',\'', $id_chunk) . '\')';
+//            }
+//
+//            // Fetch and store the data in $records
+//            $r = dynamics_ax_settings_provider__get_items($entity_name, $params, $token_response, $key_field);
+//            $records = array_merge($records, $r);
+//        }
+//    }
+//
+//    return $records;
 }
 
 /**
  * Returns records of $entity_name that have the specified $ids.
  * @param type $entity_name
- * @param array $ids
+ * @param array $values
  * @param array $select
  * @param stdClass $token_response
  * @param callable $callback
  * @return array
  * @throws Exception
  */
-function dynamics_ax_settings_provider__get_entity_items_by_field_values($entity_name, $field_name, array $ids = [], array $select = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], $additional_filter = NULL, callable $callback = NULL) {
+function dynamics_ax_settings_provider__get_entity_items_by_field_values($entity_name, $field_name, array $values = [], array $select = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], $additional_filter = NULL, callable $callback = NULL) {
     $records = [];
     $params = [
         '$select' => $select
@@ -1110,7 +1124,7 @@ function dynamics_ax_settings_provider__get_entity_items_by_field_values($entity
 
     $params['$expand'] = isset($params['$expand']) ? $params['$expand'] : [];
     $params['$expand'] = array_merge($params['$expand'], $notable_fields);
-    $id_chunks = array_chunk($ids, 50);
+    $id_chunks = array_chunk($values, 50);
 
     $field_def = dynamics_ax_settings_provider__get_entity_field_definition($entity_name, $field_name);
 //    $field_name = $field_def['internal_name'];
@@ -1129,7 +1143,8 @@ function dynamics_ax_settings_provider__get_entity_items_by_field_values($entity
         $params['$filter'] = $params['$filter'] . (!is_null($additional_filter) ? ' and ' . $additional_filter : '');
 
 
-//        var_dump(['$additional_filter', $entity_name, $params['$filter'], $field_def]);
+//        var_dump($params);
+//        var_dump(['$additional_filter', $entity_name, $field_name, $values, $params['$filter'], $field_def]);
 
         $r = dynamics_ax_settings_provider__get_items($entity_name, $params, $token_response, $key_field, [], $callback);
 
@@ -1137,5 +1152,6 @@ function dynamics_ax_settings_provider__get_entity_items_by_field_values($entity
             $records = array_merge($records, $r);
         }
     }
+//    var_dump($records);
     return $records;
 }
