@@ -122,7 +122,7 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'type' => 'string'
                 ],
                 'Original_Currency__c' => [
-                    'preferred_name' => 'OriginalCurrency',
+                    'preferred_name' => 'Currency',
                     'type' => 'string'
                 ],
                 'Conversion_Rate__c' => [
@@ -162,7 +162,7 @@ function salesforce_settings_provider__get_entity_definition($entity_name, $comp
                     'mandatory' => 1,
                 ],
                 'Related_Payable_Commission__c' => [
-                    'preferred_name' => 'RelatedPayableCommission',
+                    'preferred_name' => 'PayableCommission',
                     'type' => 'string',
                 ],
             ]
