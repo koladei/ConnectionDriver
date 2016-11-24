@@ -930,12 +930,17 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
         );
 
         $feed = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
+        watchdog('mware_scoms', print_r([$feed->getContent(),$url], true));
         $res = (json_decode($feed->getContent()));
 
         $res_records = [];
-        if (isset($res->d)) {
+        if (property_exists($res, 'd')) {
             //merge the results in each entity together.
-            $res->d = array_merge(...array_values(get_object_vars($res->d)));
+            $res->d = get_object_vars($res->d);
+            if(count($res->d) > 0){
+            
+            
+            $res->d = array_merge(...array_values($res->d));
             $expanded_field_values = [];
             $shown_field_values = [];
 
@@ -994,6 +999,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
             // Load the expanded fields data
             if (isset($params['$show'])) {
                 foreach ($children_fields as $expanded_field => $selected_sub_field_names) {
+                    if(isset($shown_field_values[$expanded_field])){
                     $field_keys = array_keys($shown_field_values[$expanded_field]);
 
                     $field_definition = dynamics_ax_settings_provider__get_entity_field_definition($entity_name, $expanded_field);
@@ -1037,11 +1043,12 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                     continue;
                 }
             }
+            }
 
             if ($post_process) {
                 $post_process($res->records, $expanded_field_values);
             }
-
+            }
             return $res_records;
         } else {
             $rror = print_r($res, true);
