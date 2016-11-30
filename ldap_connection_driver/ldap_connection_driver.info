@@ -1,0 +1,7 @@
+name = LDAP Connection Driver
+description = Implements a webservice API that can be queried to get certain information about a customer.
+configure = admin/config/administration/settings_provider
+dependencies[] = settings_provider
+package = MainOne
+version = 7.x-1.0 
+core = 7.x

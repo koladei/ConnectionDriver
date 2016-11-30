@@ -1,5 +1,19 @@
 <?php
 
+$module_path = drupal_get_path('module', 'settings_provider');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/MiddlewareConnectionDriver.php');
+
+use  com\mainone\middleware\MiddlewareConnectionDriver;
+
+function mware_connection_driver__get_driver($driver_name) {    
+    $data = [];
+    drupal_alter(['connection_driver', 'connection_driver_' . $driver_name], $data);
+    return $data;
+}
+
+//$x = mware_connection_driver__get_driver('ldap');
+//drupal_set_message(print_r($x['ldap_connection_driver']->parseExpression(), true));
+
 /**
  * Implement hook_menu().
  */

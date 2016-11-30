@@ -1,0 +1,1132 @@
+<?php
+
+module_load_include('php', 'settings_provider', 'MiddlewareConnectionDriver');
+$module_path= drupal_get_path('module', 'ldap_connection_driver');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/LDAPConnectionDriver.php');
+
+use  com\mainone\middleware\LDAPConnectionDriver;
+
+function ldap_connection_driver_connection_driver_ldap_alter(&$container) {
+    $container['ldap_connection_driver'] = new LDAPConnectionDriver();
+}
+
+/**
+ * Implement hook_menu().
+ */
+function ldap_connection_driver_menu() {
+    $items = [];
+
+    return $items;
+}
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function ldap_connection_driver_permission() {
+    $permission = [];
+    return $permission;
+}
+
+function ldap_connection_driver__user_access($args) {
+    return true;
+}
+
+/**
+ * Implements hook_library
+ * @return array
+ */
+function ldap_connection_driver_library() {
+    $libraries = array();
+
+    return $libraries;
+}
+
+/**
+ * Returns the connection settings with which to connect to salesforce.
+ * @return \stdClass
+ */
+function ldap_connection_driver__get_settings($settings = 'default') {
+    $s = new stdClass();
+    $sT = $settings == 'default' ? variable_get('SALESFORCE_SETTINGS_USE_PRODUCTION', FALSE) : ($settings == 'production' ? TRUE : FALSE);
+
+    if ($sT == FALSE) {
+        $s->URL = variable_get('SALESFORCE_SANDBOX_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('SALESFORCE_SANDBOX_SETTINGS_USERNAME');
+        $s->Password = variable_get('SALESFORCE_SANDBOX_SETTINGS_PASSWORD');
+        $s->GrantType = variable_get('SALESFORCE_SANDBOX_SETTINGS_GRANT_TYPE');
+        $s->ClientID = variable_get('SALESFORCE_SANDBOX_SETTINGS_CLIENT_ID');
+        $s->ClientSecret = variable_get('SALESFORCE_SANDBOX_SETTINGS_CLIENT_SECRET');
+    } else {
+        $s->URL = variable_get('SALESFORCE_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('SALESFORCE_SETTINGS_USERNAME');
+        $s->Password = variable_get('SALESFORCE_SETTINGS_PASSWORD');
+        $s->GrantType = variable_get('SALESFORCE_SETTINGS_GRANT_TYPE');
+        $s->ClientID = variable_get('SALESFORCE_SETTINGS_CLIENT_ID');
+        $s->ClientSecret = variable_get('SALESFORCE_SETTINGS_CLIENT_SECRET');
+    }
+    return $s;
+}
+
+/**
+ * Returns the full definition of an entity or the definition of the specified component.
+ * Components include: fields, internal_name
+ * @param string $entity_name
+ * @param string $component
+ * @return array
+ */
+function ldap_connection_driver__get_entity_definition($entity_name, $component = NULL) {
+    $entities = [
+        'cust_table' => [
+            'internal_name' => 'CustTable',
+            'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ],
+                'GCID' => [
+                    'preferred_name' => 'GCID',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ],
+                'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime',
+                ],
+                'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime',
+                ],
+                'ACCOUNTNUM' => [
+                    'preferred_name' => 'AccountNumber',
+                    'type' => 'string',
+                ],
+                '_ENTITY' => [
+                    'preferred_name' => 'EntityName',
+                    'type' => 'string',
+                ],
+                '_TRANSACTIONS' => [
+                    'preferred_name' => 'Transactions',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_trans',
+                    'relationship' => [
+                        'local_field' => 'AccountNumber',
+                        'remote_field' => 'AccountNumber',
+                        'remote_type' => 'child'
+                    ],
+                ],
+            ]
+        ],
+        'cust_trans' => [
+            'internal_name' => 'CustTrans',
+            'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'int',
+                    'mandatory' => 1,
+                ],
+                'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime',
+                ],
+                'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime',
+                ],
+                'ACCOUNTNUM' => [
+                    'preferred_name' => 'AccountNumber',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ],
+                'AMOUNTCUR' => [
+                    'preferred_name' => 'Amount',
+                    'type' => 'datetime',
+                ],
+                'SETTLEAMOUNTCUR' => [
+                    'preferred_name' => 'AmountSettled',
+                    'type' => 'int',
+                ],
+                'SETTLEMENT' => [
+                    'preferred_name' => 'Settlement',
+                    'type' => 'int',
+                ],
+                'TXT' => [
+                    'preferred_name' => 'Narrative',
+                    'type' => 'string',
+                ],
+                'TRANSTYPE' => [
+                    'preferred_name' => 'TransactionType',
+                    'type' => 'int',
+                ],
+                'APPROVED' => [
+                    'preferred_name' => 'ApprovalStatus',
+                    'type' => 'int',
+                ],
+                'CORRECT' => [
+                    'preferred_name' => 'IsCorrection',
+                    'type' => 'int',
+                ],
+                'CANCELLEDPAYMENT' => [
+                    'preferred_name' => 'IsCancelled',
+                    'type' => 'int',
+                ],
+                'CURRENCYCODE' => [
+                    'preferred_name' => 'CurrencyCode',
+                    'type' => 'string',
+                ],
+                'EXCHRATE' => [
+                    'preferred_name' => 'ExchangeRate',
+                    'type' => 'int',
+                ],
+                'TRANSDATE' => [
+                    'preferred_name' => 'TransactionDate',
+                    'type' => 'datetime',
+                ],
+                'CLOSED' => [
+                    'preferred_name' => 'Closed',
+                    'type' => 'datetime',
+                ],
+                'DUEDATE' => [
+                    'preferred_name' => 'DueDate',
+                    'type' => 'datetime',
+                ],
+                'INVOICE' => [
+                    'preferred_name' => 'InvoiceNumber',
+                    'type' => 'string',
+                ],
+                'VOUCHER' => [
+                    'preferred_name' => 'VoucherNumber',
+                    'type' => 'string',
+                ],
+                'LASTSETTLEVOUCHER' => [
+                    'preferred_name' => 'LastSettlementVoucherNumber',
+                    'type' => 'string',
+                ],
+                'PAYMID' => [
+                    'preferred_name' => 'PaymentId',
+                    'type' => 'string',
+                ],
+                '_ENTITY' => [
+                    'preferred_name' => 'EntityName',
+                    'type' => 'string',
+                ],
+                '_INVOICE_INFORMATION' => [
+                    'preferred_name' => 'InvoiceInformation',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_trans',
+                    'relationship' => [
+                        'local_field' => 'LastSettlementVoucherNumber',
+                        'remote_field' => 'VoucherNumber',
+                        'remote_type' => 'parent',
+                        'filter' => 'InvoiceNumber ne \'\''
+                    ],
+                ],
+                '_INVOICE' => [
+                    'preferred_name' => 'Invoice',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_invoice_table',
+                    'relationship' => [
+                        'local_field' => 'InvoiceNumber',
+                        'remote_field' => 'InvoiceNumber',
+                        'remote_type' => 'parent',
+                        'filter' => 'InvoiceNumber ne \'\''
+                    ],
+                ],
+                '_CUSTOMER' => [
+                    'preferred_name' => 'Customer',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_table',
+                    'relationship' => [
+                        'local_field' => 'AccountNumber',
+                        'remote_field' => 'AccountNumber',
+                        'remote_type' => 'parent'
+                    ],
+                ],
+                '_TRANSACTIONS' => [
+                    'preferred_name' => 'Transactions',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_trans',
+                    'relationship' => [
+                        'local_field' => 'VoucherNumber',
+                        'remote_field' => 'LastSettlementVoucherNumber',
+                        'remote_type' => 'child'
+                    ],
+                ],
+            ]
+        ],
+        'cust_invoice_table' => [
+            'internal_name' => 'CustInvoiceTable',
+            'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'int',
+                    'mandatory' => 1,
+                ],
+                'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime',
+                ],
+                'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime',
+                ],
+                'DUEDATE' => [
+                    'preferred_name' => 'DueDate',
+                    'type' => 'datetime',
+                ],
+                'ENDDATE' => [
+                    'preferred_name' => 'EndDate',
+                    'type' => 'datetime',
+                ],
+                'ITEMPAIDFOR' => [
+                    'preferred_name' => 'ItemPaidFor',
+                    'type' => 'string',
+                ],
+                'INVOICEACCOUNT' => [
+                    'preferred_name' => 'AccountNumber',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ],
+                'INVOICEID' => [
+                    'preferred_name' => 'InvoiceNumber',
+                    'type' => 'string',
+                ],
+                'SALEFORCEOPPORTUNITYID' => [
+                    'preferred_name' => 'OpportunityId',
+                    'type' => 'string',
+                ],
+                'SALEFORCECUSTOMERPRODUCTID' => [
+                    'preferred_name' => 'CustomerProductId',
+                    'type' => 'string',
+                ],
+                '_ENTITY' => [
+                    'preferred_name' => 'EntityName',
+                    'type' => 'string',
+                ],
+                '_CUSTOMER' => [
+                    'preferred_name' => 'Customer',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_table',
+                    'relationship' => [
+                        'local_field' => 'AccountNumber',
+                        'remote_field' => 'AccountNumber',
+                        'remote_type' => 'parent'
+                    ],
+                ],
+                '_INVOICE_INFO' => [
+                    'preferred_name' => 'InvoiceInformation',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_trans',
+                    'relationship' => [
+                        'local_field' => 'InvoiceNumber',
+                        'remote_field' => 'InvoiceNumber',
+                        'filter' => 'InvoiceNumber ne \'\'',
+                        'remote_type' => 'parent'
+                    ],
+                ],
+            ]
+        ]
+    ];
+    if ($component) {
+        return isset($entities[$entity_name]) && isset($entities[$entity_name][$component]) ? $entities[$entity_name][$component] : NULL;
+    } else {
+        return isset($entities[$entity_name]) ? $entities[$entity_name] : NULL;
+    }
+}
+
+/**
+ * Returns an array of the specified $entity_name fields in a key value pair of internal_name => display_name.
+ * The position is flipped if $forward is set to FALSE.
+ * @param string $entity_name
+ * @param boolean $forward
+ * @return array
+ */
+function ldap_connection_driver__get_entity_field_name_map($entity_name, $forward = TRUE, array &$field_collection = []) {
+    $selected_entity = ldap_connection_driver__get_entity_definition($entity_name, 'fields');
+    $map = [];
+
+    if ($forward) {
+        array_walk($selected_entity, function($value, $key) use(&$map, &$field_collection) {
+            $map[$key] = $value['preferred_name'];
+            $field_collection[$key] = $value;
+        });
+    } else {
+        array_walk($selected_entity, function($value, $key) use(&$map, &$field_collection, $entity_name) {
+            $lookup_field = '';
+            if ($value['type'] == 'detail') {
+                $lookup_field = ldap_connection_driver__get_entity_field_internal_name($entity_name, $value['relationship']['local_field']);
+            }
+            $map[$value['preferred_name']] = ($value['type'] == 'detail' && strlen($lookup_field) > 0) ? $lookup_field : $key;
+            $field_collection[$value['preferred_name']] = $value;
+        });
+    }
+
+    return $map;
+}
+
+/**
+ * Returns the name internal name of the specified $entity_name's field $preferred_name.
+ * @param string $entity_name
+ * @param string $preferred_name
+ * @return string
+ */
+function ldap_connection_driver__get_entity_field_internal_name($entity_name, $preferred_name) {
+    $selected_entity = ldap_connection_driver__get_entity_definition($entity_name, 'fields');
+    $map = NULL;
+    foreach ($selected_entity as $key => $value) {
+        if ($value['preferred_name'] == $preferred_name) {
+            $map = $key;
+            break;
+        }
+    }
+
+    return $map;
+}
+
+/**
+ * Returns the name of the entity that an entity field is looking into.
+ * @param string $entity_name
+ * @param string $field_name
+ * @return string
+ */
+function ldap_connection_driver__get_entity_field_internal_lookup_name($entity_name, $field_name) {
+
+    $selected_entity = ldap_connection_driver__get_entity_definition($entity_name, 'fields');
+    $internal_name = ldap_connection_driver__get_entity_field_internal_name($entity_name, $field_name);
+
+    $lookup_entity = isset($selected_entity[$internal_name]['lookup_entity']) ? $selected_entity[$internal_name]['lookup_entity'] : NULL;
+    return $lookup_entity;
+}
+
+/**
+ * Queries salesforce for items items that match the specified critery in the specified salesforce entity $entity_name
+ * @param string $entity_name
+ * @param array $object
+ * @param stdClass $token_response
+ * @return boolean
+ */
+function ldap_connection_driver__create_salesforce_entity_item($entity_name, $object, stdClass &$token_response = NULL) {
+
+    // Get the internal name of the entity
+    $entity_internal_name = ldap_connection_driver__get_entity_internal_name($entity_name);
+    if (!is_null($entity_internal_name)) {
+
+        // Get the request token
+        if (($token_response = (!is_null($token_response) ? $token_response : ldap_connection_driver__get_request_token()))) {
+
+            // translate the selected field names to the internal names, also removes invalid fields
+            ldap_connection_driver__alter_entity_record_field_names($entity_name, $object, FALSE);
+            $object = json_encode($object);
+
+            // Prepare the POST request
+            $options = array(
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: Bearer ' . $token_response->access_token,
+                    'Content-Type: application/json'
+                ),
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
+                CURLOPT_POSTFIELDS => $object
+            );
+
+            // Execute the POST request.
+            $new_url = $token_response->instance_url . '/services/data/v35.0/sobjects/' . $entity_internal_name;
+            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+
+            // Process the request
+            $res = json_decode($feed->getContent());
+            if (is_array($res)) {
+                throw new Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+            } else {
+                return $res;
+            }
+        } else {
+            throw new Exception('Unable to connect to Salesforce.');
+        }
+    } else {
+        throw new Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
+    }
+}
+
+/**
+ * Queries salesforce for items items that match the specified critery in the specified salesforce entity $entity_name
+ * @param string $entity_name
+ * @param array $object
+ * @param stdClass $token_response
+ * @return boolean
+ */
+function ldap_connection_driver__update_salesforce_entity_item($entity_name, $object, stdClass &$token_response = NULL) {
+
+    // Get the internal name of the entity
+    $entity_internal_name = ldap_connection_driver__get_entity_internal_name($entity_name);
+    if (!is_null($entity_internal_name)) {
+
+        // Get the request token
+        if (($token_response = (!is_null($token_response) ? $token_response : ldap_connection_driver__get_request_token()))) {
+
+            // translate the selected field names to the internal names, also removes invalid fields
+            ldap_connection_driver__alter_entity_record_field_names($entity_name, $object, FALSE);
+            $object = json_encode($object);
+
+            // Prepare the POST request
+            $options = [
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $token_response->access_token,
+                    'Content-Type: application/json',
+                ],
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
+                CURLOPT_POSTFIELDS => $object,
+                CURLOPT_CUSTOMREQUEST => 'PATCH'
+            ];
+
+            // Execute the POST request.
+            $new_url = $token_response->instance_url . '/services/data/v35.0/sobjects/' . $entity_internal_name;
+            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+
+            // Process the request
+            $res = json_decode($feed->getContent());
+            if (is_array($res)) {
+                throw new Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+            } else {
+                return $res;
+            }
+        } else {
+            throw new Exception('Unable to connect to Salesforce.');
+        }
+    } else {
+        throw new Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
+    }
+}
+
+/**
+ * Returns the field definition of the specified entity field.
+ * @param string $entity_name
+ * @param string $field_name
+ * @return string
+ */
+function ldap_connection_driver__get_entity_field_definition($entity_name, $field_name) {
+    $selected_entity = ldap_connection_driver__get_entity_definition($entity_name, 'fields');
+    if (is_null($selected_entity)) {
+        return NULL;
+    }
+    $internal_name = ldap_connection_driver__get_entity_field_internal_name($entity_name, $field_name);
+    $field_definition = !is_null($internal_name) && ($selected_entity[$internal_name]) ? $selected_entity[$internal_name] : NULL;
+    $field_definition['internal_name'] = $internal_name;
+    return $field_definition;
+}
+
+/**
+ * Returns the field property of the specified entity field.
+ * @param string $entity_name
+ * @param string $field_name
+ * @return string
+ */
+function ldap_connection_driver__get_entity_field_property($entity_name, $field_name, $property_name) {
+
+    $selected_field_definition = ldap_connection_driver__get_entity_field_definition($entity_name, $field_name);
+    $property = !is_null($selected_field_definition) && isset($selected_field_definition[$property_name]) ? $selected_field_definition[$property_name] : NULL;
+    return $property;
+}
+
+/**
+ * Returns the compulsary fields of the specified $entity_name. This fields will always be returned
+ * when the entity is query, even if they are not selected.
+ * @param string $entity_name
+ * @return array
+ */
+function ldap_connection_driver__get_compulsary_entity_fields($entity_name) {
+    $entity_fields = ldap_connection_driver__get_entity_definition($entity_name, 'fields');
+    $required = [];
+    foreach ($entity_fields as $entity_field) {
+        if (isset($entity_field['mandatory']) && $entity_field['mandatory'] == 1) {
+            $required[] = $entity_field['preferred_name'];
+        }
+    }
+
+    return $required;
+}
+
+/**
+ * Returns the internal name of the specified salesforce entity.
+ * @param string $entity_display_name
+ * @return string
+ */
+function ldap_connection_driver__get_entity_internal_name($entity_display_name) {
+
+    $return = ldap_connection_driver__get_entity_definition($entity_display_name, 'internal_name');
+    return $return;
+}
+
+/**
+ * Renames the fields of the specified entity item.
+ * @param stdClass $entity
+ */
+function ldap_connection_driver__alter_entity_record_field_names($entity_name, stdClass &$entity, $direction = TRUE) {
+    $info = [];
+    $field_names = ldap_connection_driver__get_entity_field_name_map($entity_name, $direction, $info);
+    ldap_connection_driver__rename_returned_object_fields($entity, $field_names, $info);
+}
+
+/**
+ * Substitutes the content of the $selected_fields array with values of corresponding keys in the $field_names array.
+ * Should be used to process field select arrays.
+ * @param array $selected_fields
+ * @param array $field_names
+ * @return array
+ */
+function ldap_connection_driver__rename_select_fields(array &$selected_fields, array $field_names = []) {
+    $substitues = [];
+
+    foreach ($selected_fields as $key) {
+        if (array_key_exists($key, $field_names)) {
+            $substitues[] = $field_names[$key];
+        }
+    }
+
+    $selected_fields = $substitues;
+    return $selected_fields;
+}
+
+/**
+ * Renames the keys of the supplied object with the values of the corresponding keys in the $field_names array.
+ * @param stdClass $entity_record
+ * @param array $field_names
+ */
+function ldap_connection_driver__rename_returned_object_fields(stdClass &$entity_record, array $field_names = [], array $info = []) {
+
+    foreach ($field_names as $key => $substitute) {
+        if (property_exists($entity_record, $key) && $key !== $substitute) {
+            $field_value = $entity_record->{$key};
+
+            if (isset($info[$key]) && $info[$key]['type'] == 'datetime' && is_string($entity_record->{$key})) {
+                $field_value = substr($entity_record->{$key}, 0, 19);
+            }
+
+            $entity_record->{$substitute} = $field_value; //$entity_record->{$key};
+            unset($entity_record->{$key});
+        }
+    }
+}
+
+/**
+ * Implements hook_salesforce_customer_product_field_name_alter
+ * @param stdClass $entity
+ */
+function ldap_connection_driver__rename_entity_select_field_names($entity_name, array &$selected_fields) {
+    $field_names = ldap_connection_driver__get_entity_field_name_map($entity_name, FALSE);
+    ldap_connection_driver__rename_select_fields($selected_fields, $field_names);
+    return $selected_fields;
+}
+
+/**
+ * Helps to retrieve the lastest Salesforce request token.
+ * @return type
+ */
+function ldap_connection_driver__get_request_token($settings = 'default') {
+    try {
+//        $sf_settings = ldap_connection_driver__get_settings($settings);
+        $client = new stdClass();
+
+        return $client;
+    } catch (Exception $x) {
+        return FALSE;
+    }
+}
+
+/**
+ * Convert OData $filter syntax into SOQL/SQL syntax
+ * @param string $return The OData filter string.
+ * @return string
+ */
+function ldap_connection_driver__process_filter_expression($filter, $fields) {
+    $field_selector = '[\\w][\\w\\d\\_]+';
+    $value_selector = '[\\w\\d\\.\\s\\-_\\$\\,\\.]{0,}';
+    $in_value_selector = '[\\w\\d\\.\\s\\,\'\\-_\\$#@\\^\\&\\(\\)\\~`]+[^\\)]{0,}';
+    $int_value_selector = '[\\d]+';
+    $datetime_value_selector_0 = '(([\\d]{4})\\-([\\d]{2})\\-([\\d]{2})(\\T([\\d]{2})\\:([\\d]{2})(\\:([\\d]{2}))?)?)';
+    $datetime_value_selector_1 = '(([\\d]{4})\\-([\\d]{2})\\-([\\d]{2})(\\T([\\d]{2})\\:([\\d]{2})))';
+    $datetime_value_selector_2 = '([\\d]{4})\\-([\\d]{2})\\-([\\d]{2})';
+
+    $fix_date = function($date) use($field_selector, $datetime_value_selector_0, $datetime_value_selector_1, $datetime_value_selector_2) {
+
+        return preg_replace([
+            '/(' . $field_selector . ')[\s]+([><=]+)[\s]+(' . $datetime_value_selector_1 . ')Z/',
+            '/(' . $field_selector . ')[\s]+([><=]+)[\s]+(' . $datetime_value_selector_2 . ')Z/'
+                ], [
+            '${1} ${2} ${3}:00',
+            '${1} ${2} ${3}T00:00:00'
+                ], $date);
+    };
+
+    $return = $filter;
+    $pr = [
+        [
+            'pattern' => '/(' . $field_selector . ')[\\s]+(eq)[\\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
+            'replacement' => '${1} eq datetime\'${5}\'',
+            'field_name' => 1,
+            'is_date' => TRUE
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\s]+(lt)[\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
+            'replacement' => '${1} lt ${5}',
+            'field_name' => 1,
+            'is_date' => TRUE
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\s]+(gt)[\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
+            'replacement' => '${1} gt datetime\'${5}\'',
+            'field_name' => 1,
+            'is_date' => TRUE
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\s]+(le)[\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
+            'replacement' => '${1} le datetime\'${5}\'',
+            'field_name' => 1,
+            'is_date' => TRUE
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\s]+(ge)[\s]+(datetime([\'])' . $datetime_value_selector_0 . '(\\4))/',
+            'replacement' => '${1} ge datetime\'${5}\'',
+            'field_name' => 1,
+            'is_date' => TRUE
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\\s]+(ne)[\\s]+((([\'"])(' . $value_selector . ')(\\5))|(' . $int_value_selector . '))/',
+            'replacement' => '${1} ne ${3}',
+            'field_name' => 1,
+            'type' => 'comparison',
+            'is_date' => FALSE
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\\s]+(eq)[\\s]+((([\'"])(' . $value_selector . ')(\\5))|(' . $int_value_selector . '))/',
+            'replacement' => '${1} eq ${3}',
+            'field_name' => 1,
+            'type' => 'comparison',
+            'is_date' => FALSE
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\\s]+(lt)[\\s]+(' . $int_value_selector . ')/',
+            'replacement' => '${1} lt ${3}',
+            'field_name' => 1,
+            'is_date' => FALSE
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\s]+(le)[\s]+(' . $int_value_selector . ')/',
+            'replacement' => '${1} le ${3}',
+            'field_name' => 1,
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\\s]+(gt)[\\s]+(' . $int_value_selector . ')/',
+            'replacement' => '${1} gt ${3}',
+            'field_name' => 1,
+            'is_date' => FALSE,
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\\s]+(ge)[\\s]+(' . $int_value_selector . ')/',
+            'replacement' => '${1} ge ${3}',
+            'field_name' => 1,
+            'is_date' => FALSE,
+        ],
+        [
+            'pattern' => '/(substringof\\()[\\s]*(' . $field_selector . ')[\\s]*\\,[\\s]*(\'|")(' . $value_selector . ')(\\3)[\s]*(\\))/',
+            'replacement' => '${2} LIKE \'%${4}%\'',
+            'field_name' => 2,
+            'is_date' => FALSE,
+        ],
+        [
+            'pattern' => '/(startswith\\()\s*(' . $field_selector . ')\\s*\\,\s*(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
+            'replacement' => 'startswith(${2}, \'${4}\')',
+            'field_name' => 2,
+            'is_date' => FALSE,
+        ],
+        [
+            'pattern' => '/(endswith\\()\s*(' . $field_selector . ')\s*\\,\s*(\'|")(' . $value_selector . ')(\\3)\s*(\\))/',
+            'replacement' => 'endswith(${2}, \'${4}\')',
+            'field_name' => 2,
+            'is_date' => FALSE,
+        ],
+        [
+            'pattern' => '/(' . $field_selector . ')[\\s]*(IN[\\s]*[\\(])[\\s]*(' . $in_value_selector . ')([\\s]*[\\)])/',
+            'replacement' => '${1} IN(${3})',
+            'field_name' => 1,
+            'is_date' => FALSE,
+        ],
+    ];
+
+    foreach ($pr as $p) {
+
+        //get the field name in the expression.
+        $matss = [];
+        preg_match_all($p['pattern'], $return, $matss, PREG_SET_ORDER);
+
+        foreach ($matss as $mats) {
+            $f = isset($mats[$p['field_name']]) ? $mats[$p['field_name']] : '';
+
+            if (strlen($f) > 0) {
+                //get the mapped name of the field
+                $w = [$mats[$p['field_name']]];
+
+                ldap_connection_driver__rename_select_fields($w, $fields);
+                $r = isset($w[0]) ? $w[0] : '';
+
+                if (strlen($r) > 0) {
+                    $return = preg_replace($p['pattern'], $p['replacement'], str_replace($f, $r, $return));
+
+                    //fix date fields.
+                    if (isset($p['is_date'])) {
+                        $return = $fix_date($return);
+                    }
+                }
+            }
+        }
+    }
+
+    return $return;
+}
+
+/**
+ * Queries salesforce for items items that match the specified critery in the specified salesforce entity $entity_name
+ * @param string $entity_name
+ * @param array $params
+ * @param stdClass $token_response
+ * @return boolean
+ */
+function ldap_connection_driver__get_items($entity_name, array $params = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], $post_process = NULL) {
+    // Before any paparazi, check if the entity exists
+    $exists = ldap_connection_driver__get_entity_definition($entity_name);
+
+    if (!$exists || $exists == NULL) {
+        throw new Exception("Error, the requested entity {$entity_name} could not found. It either doesnot exist or it may have been deleted by another user.");
+    }
+
+    $array_key = is_array($key_field);
+    $keyed = $array_key ? $key_field[0] : $key_field;
+
+    //Get the request token
+    if (($token_response = (!is_null($token_response) ? $token_response : ldap_connection_driver__get_request_token()))) {
+
+        // Prepare the fields that will be selected
+        $fields = [];
+        if (isset($params['$select'])) {
+            $fields = is_array($params['$select']) ? $params['$select'] : explode(',', str_replace(' ', '', $params['$select']));
+        }
+
+        // set the compulsary fields of the entity
+        $required_fields = ldap_connection_driver__get_compulsary_entity_fields($entity_name);
+        foreach ($required_fields as $required_field) {
+            if (!in_array($required_field, $fields)) {
+                $fields[] = $required_field;
+            }
+        }
+
+        // include expanded fields
+        $expanded_fields = [];
+        $expanded_field_names = [];
+
+
+        // include expanded fields
+        $children_fields = [];
+        $children_field_names = [];
+
+        if (isset($params['$expand'])) {
+            $expanded_field_names_x = is_array($params['$expand']) ? $params['$expand'] : explode(',', str_replace(' ', '', $params['$expand']));
+
+            // separate real fields from virtual fields
+            foreach ($expanded_field_names_x as $expanded_field_name_x) {
+                $x = ldap_connection_driver__get_entity_field_property($entity_name, $expanded_field_name_x, 'type');
+                if ($x == 'detail') {
+                    $children_field_names[] = $expanded_field_name_x;
+                } else if (!is_null($x)) {
+                    $expanded_field_names[] = $expanded_field_name_x;
+                } else {
+                    throw new Exception("Unknown field \"{$expanded_field_name_x}\" in entity \"$entity_name\"cannot be expanded. It was found in the \$expand parameter. It doesnot exist or it may have been delected by another user.");
+                }
+            }
+
+            $params['$expand'] = $expanded_field_names;
+            $params['$show'] = $children_field_names;
+
+            foreach ($expanded_field_names as $expanded_field_name) {
+                if (!in_array($expanded_field_name, $fields)) {
+                    $fields[] = $expanded_field_name;
+                }
+
+                if (!in_array($expanded_field_name, $notable_fields)) {
+                    $notable_fields[] = $expanded_field_name;
+                }
+
+                $expanded_field_values[$expanded_field_name] = [];
+                $x = [];
+                $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
+
+                preg_match_all('/(' . $expanded_field_name . ')\/([\\w]+)/', $glued_select, $x);
+                foreach ($x[2] as $sub_field_name) {
+                    $expanded_fields[$expanded_field_name][] = $sub_field_name;
+                }
+
+                if (!isset($expanded_fields[$expanded_field_name])) {
+                    $expanded_fields[$expanded_field_name] = [];
+                }
+            }
+        }
+
+        if (isset($params['$show'])) {
+
+            foreach ($children_field_names as $children_field_name) {
+                if (!in_array($children_field_name, $fields)) {
+                    $fields[] = $children_field_name;
+                }
+
+                $expanded_field_values[$children_field_name] = [];
+                $x = [];
+                $glued_select = is_array($params['$select']) ? implode(',', $params['$select']) : $params['$select'];
+
+                preg_match_all('/(' . $children_field_name . ')\/([\\w]+)/', $glued_select, $x);
+                foreach ($x[2] as $sub_field_name) {
+                    $children_fields[$children_field_name][] = $sub_field_name;
+                }
+
+                if (!isset($children_fields[$children_field_name])) {
+                    $children_fields[$children_field_name] = [];
+                }
+            }
+        }
+
+        // translate the selected field names to the internal names, also removes invalid fields
+        ldap_connection_driver__rename_entity_select_field_names($entity_name, $fields);
+
+        // Prepare the filter that will be used
+        $filter = isset($params['$filter']) ? $params['$filter'] : '';
+        $ldap_connection_driver__get_entity_field_name_map = ldap_connection_driver__get_entity_field_name_map($entity_name, FALSE);
+        $filter = ldap_connection_driver__process_filter_expression($filter, $ldap_connection_driver__get_entity_field_name_map);
+
+        // Prepare the limit
+        $limit = isset($params['$top']) ? $params['$top'] : '2000';
+
+        $entity_internal_name = ldap_connection_driver__get_entity_internal_name($entity_name);
+        $selected_fields = implode(',', $fields);
+
+        $invoice_params = [
+            '$filter' => $filter,
+            '$select' => $selected_fields,
+            '$top' => $limit
+        ];
+
+        $query_string = drupal_http_build_query($invoice_params);
+        $url = "http://molsptest:82/drp/CPortalService.svc/QueryTable/[~]/{$entity_internal_name}?{$query_string}";
+        $tokenOption = array(
+            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP,
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0,
+        );
+
+        $feed = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
+        $res = (json_decode($feed->getContent()));
+
+        $res_records = [];
+        if (property_exists($res, 'd')) {
+            //merge the results in each entity together.
+            $res->d = get_object_vars($res->d);
+            if (count($res->d) > 0) {
+
+
+                $res->d = array_merge(...array_values($res->d));
+                $expanded_field_values = [];
+                $shown_field_values = [];
+
+                foreach ($notable_fields as $notable_field) {
+                    $expanded_field_values[$notable_field] = [];
+                }
+
+                // scan through the result set and currect property names.
+                array_walk($res->d, function(&$record) use($keyed, $array_key, &$expanded_field_values, $entity_name, $notable_fields, &$res_records, $children_field_names, &$shown_field_values) {
+                    // rename the fields to match the model definition
+                    ldap_connection_driver__alter_entity_record_field_names($entity_name, $record);
+
+                    // make note of the shown child field
+                    foreach ($children_field_names as $children_field_name) {
+                        $field_definition = ldap_connection_driver__get_entity_field_definition($entity_name, $children_field_name);
+                        $related_parent_field = $field_definition['relationship']['local_field'];
+                        $shown_field_values[$children_field_name][$record->{$related_parent_field}] = [];
+                        $record->{$children_field_name} = NULL;
+                    }
+
+                    // take note of the expanded fields
+                    array_walk($notable_fields, function($notable_field) use(&$record, $expanded_field_values) {
+                        $expanded_field_values[$notable_field][] = $record->{$notable_field};
+                    });
+
+                    if ($keyed) {
+                        if ($array_key) {
+                            if (!isset($res_records[$record->{$keyed}])) {
+                                $res_records[$record->{$keyed}] = [];
+                            }
+                            $res_records[$record->{$keyed}][] = $record;
+                        } else {
+                            $res_records[$record->{$keyed}] = $record;
+                        }
+                    } else {
+                        $res_records[] = $record;
+                    }
+                });
+
+                // Load the expanded fields data
+                if (isset($params['$expand'])) {
+                    foreach ($expanded_fields as $expanded_field => $selected_sub_field_names) {
+                        $field_keys = ($expanded_field_values[$expanded_field]);
+
+                        $expanded_entity_intenal_name = ldap_connection_driver__get_entity_field_internal_lookup_name($entity_name, $expanded_field);
+                        if (!is_null($expanded_entity_intenal_name)) {
+                            $relations = ldap_connection_driver__get_items_by_ids($expanded_entity_intenal_name, $field_keys, $selected_sub_field_names, $token_response, 'Id');
+
+                            foreach ($res->records as &$record) {
+                                $record->{$expanded_field} = $relations[$record->{$expanded_field}];
+                            }
+                        }
+                    }
+                }
+
+                // Load the expanded fields data
+                if (isset($params['$show'])) {
+                    foreach ($children_fields as $expanded_field => $selected_sub_field_names) {
+                        if (isset($shown_field_values[$expanded_field])) {
+                            $field_keys = array_keys($shown_field_values[$expanded_field]);
+
+                            $field_definition = ldap_connection_driver__get_entity_field_definition($entity_name, $expanded_field);
+
+                            if (!is_null($field_definition) && is_array($field_keys)) {
+                                $lookup_entity = $field_definition['lookup_entity'];
+                                $related_child_field = $field_definition['relationship']['remote_field'];
+                                $related_parent_field = $field_definition['relationship']['local_field'];
+                                $related_entity_type = $field_definition['relationship']['remote_type'];
+                                $additional_filter = isset($field_definition['relationship']['filter']) ? $field_definition['relationship']['filter'] : NULL;
+
+                                $relations = ldap_connection_driver__get_entity_items_by_field_values($lookup_entity, $related_child_field, $field_keys, $selected_sub_field_names, $token_response, [$related_child_field], [$related_child_field], $additional_filter);
+
+                                if ($related_entity_type == 'child') {
+                                    foreach ($res->d as &$record) {
+                                        $collection = array_values(array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
+                                                    if ($record->EntityName == $item->EntityName) {
+                                                        return true;
+                                                    }
+                                                    return false;
+                                                })
+                                        );
+
+                                        $record->{$expanded_field} = ($collection);
+                                    }
+                                } else if ($related_entity_type == 'parent') {
+                                    foreach ($res->d as &$record) {
+                                        $collection = array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
+                                            if ($record->EntityName == $item->EntityName) {
+                                                return true;
+                                            }
+                                            return false;
+                                        });
+
+                                        //If they are siblings there is no need to embed the sibling in an array.
+                                        $key = key($collection);
+                                        $record->{$expanded_field} = !is_null($key) ? $collection[$key] : NULL;
+                                    }
+                                }
+                            }
+                            continue;
+                        }
+                    }
+                }
+
+                if ($post_process) {
+                    $post_process($res->records, $expanded_field_values);
+                }
+            }
+            return $res_records;
+        } else {
+            $rror = print_r($res, true);
+            throw new Exception("{$rror}. ErrorCode");
+        }
+    } else {
+        throw new Exception('Unable to connect to Salesforce. Invalid request token');
+    }
+}
+
+/**
+ * Returns records of $entity_name that have the specified $ids.
+ * @param type $entity_name
+ * @param array $id
+ * @param array $selections
+ * @param stdClass $token_response
+ * @param callable $callback
+ * @return array
+ * @throws Exception
+ */
+function ldap_connection_driver__get_item_by_id($entity_name, $id, array $selections = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = []) {
+
+    $records = ldap_connection_driver__get_items_by_ids($entity_name, [$id], $selections, $token_response, $key_field, $notable_fields);
+    return count($records) > 0 ? $records[0] : NULL;
+}
+
+/**
+ * Returns records of $entity_name that have the specified $ids.
+ * @param type $entity_name
+ * @param array $ids
+ * @param array $selections
+ * @param stdClass $token_response
+ * @param callable $callback
+ * @return array
+ * @throws Exception
+ */
+function ldap_connection_driver__get_items_by_ids($entity_name, array $ids = [], array $selections = ['Id'], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = []) {
+    return ldap_connection_driver__get_entity_items_by_field_values($entity_name, 'Id', $ids, $selections, $token_response, $key_field, $notable_fields);
+}
+
+/**
+ * Returns records of $entity_name that have the specified $ids.
+ * @param type $entity_name
+ * @param array $values
+ * @param array $select
+ * @param stdClass $token_response
+ * @param callable $callback
+ * @return array
+ * @throws Exception
+ */
+function ldap_connection_driver__get_entity_items_by_field_values($entity_name, $field_name, array $values = [], array $select = [], stdClass &$token_response = NULL, $key_field = NULL, array $notable_fields = [], $additional_filter = NULL, callable $callback = NULL) {
+    $records = [];
+    $params = [
+        '$select' => $select
+    ];
+
+    $params['$expand'] = isset($params['$expand']) ? $params['$expand'] : [];
+    $params['$expand'] = array_merge($params['$expand'], $notable_fields);
+    $id_chunks = array_chunk($values, 50);
+
+    $field_def = ldap_connection_driver__get_entity_field_definition($entity_name, $field_name);
+    $field_type = $field_def['type'];
+
+
+    foreach ($id_chunks as $id_chunk) {
+        if ($field_type == 'int') {
+            $implosion = implode(',', $id_chunk);
+            $params['$filter'] = (strlen($implosion) > 0) ? $field_name . ' IN(' . $implosion . ')' : '';
+        } else {
+            $implosion = implode('\',\'', $id_chunk);
+            $params['$filter'] = (strlen($implosion) > 0) ? $field_name . ' IN(\'' . $implosion . '\')' : $field_name . ' eq \'\'';
+        }
+
+        $params['$filter'] = $params['$filter'] . (!is_null($additional_filter) ? ' and ' . $additional_filter : '');
+
+        $r = ldap_connection_driver__get_items($entity_name, $params, $token_response, $key_field, [], $callback);
+
+        if (is_array($r)) {
+            $records = array_merge($records, $r);
+        }
+    }
+
+    return $records;
+}
