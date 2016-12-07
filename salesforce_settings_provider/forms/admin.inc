@@ -20,7 +20,8 @@ function salesforce_settings_provider_form_settings_provider_admin_alter(&$form,
         '#type' => 'fieldset',
         '#title' => t('Salesforce connection settings'),
         '#description' => t('A sample configuration value'),
-        '#collapsible' => TRUE,
+        '#collapsible' => TRUE
+        , '#group' => 'general_settings'
     ];
 
     $form['salesforce_settings']['SALESFORCE_SETTINGS_USE_PRODUCTION'] = [
