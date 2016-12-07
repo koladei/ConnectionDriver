@@ -1,16 +1,14 @@
 <?php
 
 $module_path = drupal_get_path('module', 'settings_provider');
-$middleware_driver_path = str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/MiddlewareConnectionDriver.php');
+$middleware_driver_path = str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/');
 
 use com\mainone\middleware\MiddlewareConnectionDriver;
 
 spl_autoload_register(function ($class_name) use($middleware_driver_path) {
-    if ($class_name == 'MiddlewareConnectionDriver') {
 
-        return (file_exists($middleware_driver_path) ? require_once $middleware_driver_path : false);
-    }
-    return false;
+    $file = $middleware_driver_path . "{$class_name}.php";
+    return (file_exists($file) ? require_once $file : false);
 });
 
 function mware_connection_driver__get_driver($driver_name) {
