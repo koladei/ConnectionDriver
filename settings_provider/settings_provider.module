@@ -1,11 +1,19 @@
 <?php
 
 $module_path = drupal_get_path('module', 'settings_provider');
-include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/MiddlewareConnectionDriver.php');
+$middleware_driver_path = str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/MiddlewareConnectionDriver.php');
 
-use  com\mainone\middleware\MiddlewareConnectionDriver;
+use com\mainone\middleware\MiddlewareConnectionDriver;
 
-function mware_connection_driver__get_driver($driver_name) {    
+spl_autoload_register(function ($class_name) use($middleware_driver_path) {
+    if ($class_name == 'MiddlewareConnectionDriver') {
+
+        return (file_exists($middleware_driver_path) ? require_once $middleware_driver_path : false);
+    }
+    return false;
+});
+
+function mware_connection_driver__get_driver($driver_name) {
     $data = [];
     drupal_alter(['connection_driver', 'connection_driver_' . $driver_name], $data);
     return $data;
