@@ -13,6 +13,12 @@ use com\mainone\middleware\MiddlewareQueryFragment;
 class LDAPConnectionDriver extends MiddlewareConnectionDriver {
 
     private $query = NULL;
+    private $host = 'ldapserver';
+    private $protocol = 'ldaps';
+    private $port = 636;
+    private $username = '';
+    private $password = '';
+    private $dn = '';
 
     private static function stringifier($current) {
         $operator_map = [
@@ -51,8 +57,15 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         }
     }
 
-    public function __construct() {
-        
+    public function __construct($host, $protocol, $port = 636, $username = '', $password = '', $dn = '') {
+        $this->host = $host;
+        $this->protocol = $protocol;
+        $this->port = $port;
+        $this->username = $username;
+        $this->password = $password;
+        $this->dn = $dn;
+
+        return $this;
     }
 
     public static function getLDAPQueryFragment($field, $value, $operator) {
@@ -63,12 +76,17 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         return $fragment;
     }
 
-    public static function getItemsByQueryFragment(MiddlewareQueryFragment $query, $options = []) {
-        
+    public function getItemsByQueryFragment(MiddlewareQueryFragment $query, $options = [], $ldapbind = NULL) {
+
         // Try getting the phone number from active directory
         $con = NULL;
-        $dn = NULL;
-        $ldapbind = self::bindTOLDAPServer($con, $dn);
+        $dn = $this->dn;
+
+        // obtain a connection binding.
+        if (is_null($ldapbind)) {
+            $ldapbind = $this->bindTOLDAPServer($con);
+        }
+
         $select = count($options) > 0 ? $options : ['mobile'];
         if ($ldapbind) {
             // bind and find user by uid
@@ -93,25 +111,24 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         return FALSE;
     }
 
-    private static function bindTOLDAPServer(&$_global_connection = NULL, &$dn = NULL) {
+    private function bindTOLDAPServer(&$connection = NULL) {
         //connect to active directory and get the details of the user.
         putenv('LDAPTLS_REQCERT=never');
-        $server = "ldaps://moghdc01.mainonecable.com:636";
-        $dn = "DC=mainonecable,DC=com";
+        $server = "{$this->protocol}://{$this->host}:{$this->port}"; //"ldaps://moghdc01.mainonecable.com:636";
+        
+        $connection = ldap_connect($server);
+        $binding = null;
 
-        $_global_connection = ldap_connect($server);
-        $_global_ldap_binding = null;
+        $ldaprdn = $this->username;
+        $ldappass = $this->password;
 
-        $ldaprdn = 'koladexa';
-        $ldappass = 'Nigeria234';
-
-        ldap_set_option($_global_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
-        ldap_set_option($_global_connection, LDAP_OPT_REFERRALS, 0);
+        ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+        ldap_set_option($connection, LDAP_OPT_REFERRALS, 0);
 
         //If AD responds.
-        if ($_global_connection) {
-            $_global_ldap_binding = ldap_bind($_global_connection, $ldaprdn, $ldappass);
-            return $_global_ldap_binding;
+        if ($connection) {
+            $binding = ldap_bind($connection, $ldaprdn, $ldappass);
+            return $binding;
         }
 
         return false;

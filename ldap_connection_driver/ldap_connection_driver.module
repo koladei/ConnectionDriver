@@ -1,13 +1,21 @@
 <?php
 
+require_once 'forms/admin.inc';
 module_load_include('php', 'settings_provider', 'MiddlewareConnectionDriver');
-$module_path= drupal_get_path('module', 'ldap_connection_driver');
+$module_path = drupal_get_path('module', 'ldap_connection_driver');
 include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/LDAPConnectionDriver.php');
 
-use  com\mainone\middleware\LDAPConnectionDriver;
+use com\mainone\middleware\LDAPConnectionDriver;
 
 function ldap_connection_driver_connection_driver_ldap_alter(&$container) {
-    $container['ldap_connection_driver'] = new LDAPConnectionDriver();
+    $host = variable_get('LDAP_CONNECTION_DRIVER_HOST');
+    $protocol = variable_get('LDAP_CONNECTION_DRIVER_PROTOCOL');
+    $port = variable_get('LDAP_CONNECTION_DRIVER_PORT');
+    $username = variable_get('LDAP_CONNECTION_DRIVER_USERNAME');
+    $password = variable_get('LDAP_CONNECTION_DRIVER_PASSWORD');
+    $dn = variable_get('LDAP_CONNECTION_DRIVER_DN');
+    
+    $container['ldap_connection_driver'] = new LDAPConnectionDriver($host, $protocol, $port, $username, $password, $dn);
 }
 
 /**
