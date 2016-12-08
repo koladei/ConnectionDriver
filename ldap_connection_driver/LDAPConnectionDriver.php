@@ -2,8 +2,6 @@
 
 namespace com\mainone\middleware;
 
-//$compromise 'c:\inetpub\wwwroot\itsupport\sites\all\modules\custom\settings_provider\settings_provider\MiddlewareConnectionDriver.php';
-
 use com\mainone\middleware\MiddlewareConnectionDriver;
 use com\mainone\middleware\MiddlewareQueryFragment;
 
