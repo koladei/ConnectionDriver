@@ -6,7 +6,8 @@ $middleware_driver_path = str_replace('/', DIRECTORY_SEPARATOR, $module_path . '
 use com\mainone\middleware\MiddlewareConnectionDriver;
 
 spl_autoload_register(function ($class_name) use($middleware_driver_path) {
-
+    $last = strrpos('\\', $class_name);
+    $class_name = $last > 0 ? substr($class_name, $last + 1) : $class_name;
     $file = $middleware_driver_path . "{$class_name}.php";
     return (file_exists($file) ? require_once $file : false);
 });
