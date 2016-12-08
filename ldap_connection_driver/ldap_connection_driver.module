@@ -1,9 +1,8 @@
 <?php
 
-require_once 'forms/admin.inc';
-
 module_load_include('module', 'settings_provider');
 $module_path = drupal_get_path('module', 'ldap_connection_driver');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
 include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/LDAPConnectionDriver.php');
 
 use com\mainone\middleware\LDAPConnectionDriver;
