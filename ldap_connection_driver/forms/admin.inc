@@ -41,8 +41,6 @@ function ldap_connection_driver_form_settings_provider_admin_alter(&$form, &$for
         , '#weight' => 2
     ];
 
-
-
     $form['ldap_connection_driver_settings']['LDAP_CONNECTION_DRIVER_USERNAME'] = [
         '#type' => 'textfield'
         , '#title' => t('Username')
