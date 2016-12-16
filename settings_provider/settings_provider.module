@@ -16,7 +16,8 @@ spl_autoload_register(function ($class_name) use($middleware_driver_path) {
 function mware_connection_driver__get_driver($driver_name) {
     $data = [];
     drupal_alter(['connection_driver', 'connection_driver_' . $driver_name], $data);
-    return $data;
+    
+    return isset($data[$driver_name])?$data[$driver_name]: FALSE;
 }
 
 //$x = mware_connection_driver__get_driver('ldap');
