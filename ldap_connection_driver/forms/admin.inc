@@ -24,10 +24,10 @@ function ldap_connection_driver_form_settings_provider_admin_alter(&$form, &$for
         , '#weight' => 1
     ];
 
-    $form['ldap_connection_driver_settings']['LDAP_CONNECTION_DRIVER_HOSTNAME'] = [
+    $form['ldap_connection_driver_settings']['LDAP_CONNECTION_DRIVER_HOST'] = [
         '#type' => 'textfield'
         , '#title' => t('LDAP Host')
-        , '#default_value' => variable_get('LDAP_CONNECTION_DRIVER_HOSTNAME', 'hostname')
+        , '#default_value' => variable_get('LDAP_CONNECTION_DRIVER_HOST', 'hostname')
         , '#description' => t('Choose one')
         , '#weight' => 0
     ];

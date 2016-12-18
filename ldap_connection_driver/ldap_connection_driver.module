@@ -15,7 +15,7 @@ function ldap_connection_driver_connection_driver_ldap_alter(&$container) {
     $password = variable_get('LDAP_CONNECTION_DRIVER_PASSWORD');
     $dn = variable_get('LDAP_CONNECTION_DRIVER_DN');
     
-    $container['ldap_connection_driver'] = new LDAPConnectionDriver($host, $protocol, $port, $username, $password, $dn);
+    $container['ldap'] = new LDAPConnectionDriver($host, $protocol, $port, $username, $password, $dn);
 }
 
 /**
