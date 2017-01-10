@@ -1,6 +1,22 @@
 <?php
 
-require_once 'forms/admin.inc';
+module_load_include('module', 'settings_provider');
+$module_path = drupal_get_path('module', 'dynamics_ax_settings_provider');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/DynamicsAXConnectionDriver.php');
+
+use com\mainone\middleware\DynamicsAXConnectionDriver;
+
+function dynamics_ax_settings_provider_connection_driver_dynamics_ax_alter(&$container) {
+    $driver = new DynamicsAXConnectionDriver(function($x){
+        $return = mware_connection_driver__get_driver($x);
+        return $return;
+    });
+
+    $defs = dynamics_ax_settings_provider__get_entity_definitions();
+    $driver->setEntities($defs);
+    $container['dynamics_ax'] = $driver;
+}
 
 /**
  * Implement hook_menu().
@@ -60,15 +76,9 @@ function dynamics_ax_settings_provider__get_settings($settings = 'default') {
     return $s;
 }
 
-/**
- * Returns the full definition of an entity or the definition of the specified component.
- * Components include: fields, internal_name
- * @param string $entity_name
- * @param string $component
- * @return array
- */
-function dynamics_ax_settings_provider__get_entity_definition($entity_name, $component = NULL) {
-    $entities = [
+
+function dynamics_ax_settings_provider__get_entity_definitions() {
+    return [
         'cust_table' => [
             'internal_name' => 'CustTable',
             'fields' => [
@@ -78,9 +88,16 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'mandatory' => 1,
                 ],
                 'GCID' => [
-                    'preferred_name' => 'GCID',
+                    'preferred_name' => 'Customer',
                     'type' => 'string',
-                    'mandatory' => 1,
+                    'mandatory' => 1
+                    ,'relationship' => [
+                        'local_field' => 'Customer'
+                        , 'remote_field' => 'GCID'
+                        , 'remote_type'=> 'parent'
+                        , 'remote_entity'=> 'account'
+                        , 'remote_driver' => 'salesforce'
+                    ],
                 ],
                 'MODIFIEDDATETIME' => [
                     'preferred_name' => 'Modified',
@@ -98,6 +115,10 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'EntityName',
                     'type' => 'string',
                 ],
+                'DATAAREAID' => [
+                    'preferred_name' => 'DataArea',
+                    'type' => 'string',
+                ],
                 '_TRANSACTIONS' => [
                     'preferred_name' => 'Transactions',
                     'type' => 'detail',
@@ -109,8 +130,8 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     ],
                 ],
             ]
-        ],
-        'cust_trans' => [
+        ]
+        ,'cust_trans' => [
             'internal_name' => 'CustTrans',
             'fields' => [
                 'RECID' => [
@@ -204,14 +225,14 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'type' => 'string',
                 ],
                 '_INVOICE_INFORMATION' => [
-                    'preferred_name' => 'InvoiceInformation',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_trans',
-                    'relationship' => [
+                    'preferred_name' => 'InvoiceInformation'
+                    , 'type' => 'detail'
+                    , 'lookup_entity' => 'cust_trans'
+                    , 'relationship' => [
                         'local_field' => 'LastSettlementVoucherNumber',
                         'remote_field' => 'VoucherNumber',
                         'remote_type' => 'parent',
-                        'filter' => 'InvoiceNumber ne \'\''
+                        'filter' => 'InvoiceNumber ne NULL'
                     ],
                 ],
                 '_INVOICE' => [
@@ -222,7 +243,7 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                         'local_field' => 'InvoiceNumber',
                         'remote_field' => 'InvoiceNumber',
                         'remote_type' => 'parent',
-                        'filter' => 'InvoiceNumber ne \'\''
+                        'filter' => 'InvoiceNumber ne NULL'
                     ],
                 ],
                 '_CUSTOMER' => [
@@ -246,8 +267,8 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     ],
                 ],
             ]
-        ],
-        'cust_invoice_table' => [
+        ]
+        ,'cust_invoice_table' => [
             'internal_name' => 'CustInvoiceTable',
             'fields' => [
                 'RECID' => [
@@ -284,14 +305,6 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'preferred_name' => 'InvoiceNumber',
                     'type' => 'string',
                 ],
-                'SALEFORCEOPPORTUNITYID' => [
-                    'preferred_name' => 'OpportunityId',
-                    'type' => 'string',
-                ],
-                'SALEFORCECUSTOMERPRODUCTID' => [
-                    'preferred_name' => 'CustomerProductId',
-                    'type' => 'string',
-                ],
                 '_ENTITY' => [
                     'preferred_name' => 'EntityName',
                     'type' => 'string',
@@ -305,6 +318,16 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                         'remote_field' => 'AccountNumber',
                         'remote_type' => 'parent'
                     ],
+                ]
+                ,'_LINES' => [
+                    'preferred_name' => 'Lines',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_invoice_line',
+                    'relationship' => [
+                        'local_field' => 'Id',
+                        'remote_field' => 'InvoiceId',
+                        'remote_type' => 'child'
+                    ],
                 ],
                 '_INVOICE_INFO' => [
                     'preferred_name' => 'InvoiceInformation',
@@ -313,13 +336,91 @@ function dynamics_ax_settings_provider__get_entity_definition($entity_name, $com
                     'relationship' => [
                         'local_field' => 'InvoiceNumber',
                         'remote_field' => 'InvoiceNumber',
-                        'filter' => 'InvoiceNumber ne \'\'',
+                        'filter' => 'InvoiceNumber ne NULL',
                         'remote_type' => 'parent'
                     ],
                 ],
             ]
         ]
+        ,'cust_invoice_line' => [
+            'internal_name' => 'CustInvoiceLine',
+            'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'int',
+                    'mandatory' => 1,
+                ],
+                'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime',
+                ],
+                'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime',
+                ]
+                ,'PARENTRECID' => [
+                    'preferred_name' => 'InvoiceId'
+                    , 'type' => 'int'
+                    // , 'mandatory'=> 1
+                ]
+                , '_PARENTRECID' => [
+                    'preferred_name' => 'Invoice',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_invoice_table',
+                    'relationship' => [
+                        'local_field' => 'InvoiceId',
+                        'remote_field' => 'Id',
+                        'remote_type' => 'parent'
+                    ],
+                ]
+                , '_SFCUSTOMERPRODUCTID' => [
+                    'preferred_name' => 'CustomerProduct',
+                    'type' => 'detail',
+                    'lookup_entity' => 'customer_product',
+                    'source' => 'salesforce',
+                    'relationship' => [
+                        'local_field' => 'CustomerProductId',
+                        'remote_field' => 'Id',
+                        'remote_type' => 'child'
+                    ],
+                ]
+                , '_SFOPPORTUNITYID' => [
+                    'preferred_name' => 'Opportunity',
+                    'type' => 'detail',
+                    'lookup_entity' => 'opportunity',
+                    'source' => 'salesforce',
+                    'relationship' => [
+                        'local_field' => 'OpportunityId',
+                        'remote_field' => 'Id',
+                        'remote_type' => 'child'
+                    ],
+                ]
+                , 'SFCUSTOMERPRODUCTID' => [
+                    'preferred_name' => 'OpportunityId',
+                    'type' => 'string',
+                ]
+                , 'SFOPPORTUNITYID' => [
+                    'preferred_name' => 'CustomerProductId',
+                    'type' => 'string',
+                ],
+                '_ENTITY' => [
+                    'preferred_name' => 'EntityName',
+                    'type' => 'string',
+                ]
+            ]
+        ]
     ];
+}
+
+/**
+ * Returns the full definition of an entity or the definition of the specified component.
+ * Components include: fields, internal_name
+ * @param string $entity_name
+ * @param string $component
+ * @return array
+ */
+function dynamics_ax_settings_provider__get_entity_definition($entity_name, $component = NULL) {
+    $entities = dynamics_ax_settings_provider__get_entity_definitions();
     if ($component) {
         return isset($entities[$entity_name]) && isset($entities[$entity_name][$component]) ? $entities[$entity_name][$component] : NULL;
     } else {
@@ -431,15 +532,15 @@ function dynamics_ax_settings_provider__create_salesforce_entity_item($entity_na
             // Process the request
             $res = json_decode($feed->getContent());
             if (is_array($res)) {
-                throw new Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+                throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else {
                 return $res;
             }
         } else {
-            throw new Exception('Unable to connect to Salesforce.');
+            throw new \Exception('Unable to connect to Salesforce.');
         }
     } else {
-        throw new Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
+        throw new \Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
     }
 }
 
@@ -484,15 +585,15 @@ function dynamics_ax_settings_provider__update_salesforce_entity_item($entity_na
             // Process the request
             $res = json_decode($feed->getContent());
             if (is_array($res)) {
-                throw new Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+                throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else {
                 return $res;
             }
         } else {
-            throw new Exception('Unable to connect to Salesforce.');
+            throw new \Exception('Unable to connect to Salesforce.');
         }
     } else {
-        throw new Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
+        throw new \Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
     }
 }
 
@@ -794,11 +895,13 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
     $exists = dynamics_ax_settings_provider__get_entity_definition($entity_name);
 
     if (!$exists || $exists == NULL) {
-        throw new Exception("Error, the requested entity {$entity_name} could not found. It either doesnot exist or it may have been deleted by another user.");
+        throw new \Exception("Error, the requested entity {$entity_name} could not found. It either doesnot exist or it may have been deleted by another user.");
     }
 
     $array_key = is_array($key_field);
+    var_dump(['$keyed 1', $keyed]);
     $keyed = $array_key ? $key_field[0] : $key_field;
+    var_dump(['$keyed 2', $keyed]);
 
     //Get the request token
     if (($token_response = (!is_null($token_response) ? $token_response : dynamics_ax_settings_provider__get_request_token()))) {
@@ -837,7 +940,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                 } else if (!is_null($x)) {
                     $expanded_field_names[] = $expanded_field_name_x;
                 } else {
-                    throw new Exception("Unknown field \"{$expanded_field_name_x}\" in entity \"$entity_name\"cannot be expanded. It was found in the \$expand parameter. It doesnot exist or it may have been delected by another user.");
+                    throw new \Exception("Unknown field \"{$expanded_field_name_x}\" in entity \"$entity_name\"cannot be expanded. It was found in the \$expand parameter. It doesnot exist or it may have been delected by another user.");
                 }
             }
 
@@ -910,6 +1013,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
             '$top' => $limit
         ];
 
+
         $query_string = drupal_http_build_query($invoice_params);
         $url = "http://molsptest:82/drp/CPortalService.svc/QueryTable/[~]/{$entity_internal_name}?{$query_string}";
         $tokenOption = array(
@@ -920,6 +1024,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
         );
 
         $feed = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
+        // var_dump(['FEEDBACK',$entity_internal_name, $feed->getContent()]);
         $res = (json_decode($feed->getContent()));
 
         $res_records = [];
@@ -946,7 +1051,8 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                     foreach ($children_field_names as $children_field_name) {
                         $field_definition = dynamics_ax_settings_provider__get_entity_field_definition($entity_name, $children_field_name);
                         $related_parent_field = $field_definition['relationship']['local_field'];
-                        $shown_field_values[$children_field_name][$record->{$related_parent_field}] = [];
+                        $shown_field_values[$children_field_name]["{$record->{$related_parent_field}}"] = [];
+                        var_dump(["FF:", $record->{$related_parent_field}]);
                         $record->{$children_field_name} = NULL;
                     }
 
@@ -957,12 +1063,14 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
 
                     if ($keyed) {
                         if ($array_key) {
+                            $__key = ($record->{$keyed});
+                            // var_dump(["{$keyed} =============", $keyed, $record, array_keys($res_records), $__key]);
                             if (!isset($res_records[$record->{$keyed}])) {
-                                $res_records[$record->{$keyed}] = [];
+                                $res_records["{$record->{$keyed}}"] = [];
                             }
-                            $res_records[$record->{$keyed}][] = $record;
+                            $res_records["{$record->{$keyed}}"][] = $record;
                         } else {
-                            $res_records[$record->{$keyed}] = $record;
+                            $res_records["{$record->{$keyed}}"] = $record;
                         }
                     } else {
                         $res_records[] = $record;
@@ -985,7 +1093,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                     }
                 }
 
-                // Load the expanded fields data
+                // Load the pseudo fields data
                 if (isset($params['$show'])) {
                     foreach ($children_fields as $expanded_field => $selected_sub_field_names) {
                         if (isset($shown_field_values[$expanded_field])) {
@@ -1004,8 +1112,10 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
 
                                 if ($related_entity_type == 'child') {
                                     foreach ($res->d as &$record) {
-                                        $collection = array_values(array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
-                                                    if ($record->EntityName == $item->EntityName) {
+                                        var_dump([$record, $relations]);
+                                        $collection = array_values(array_filter($relations["{$record->{$related_parent_field}}"], function(&$item) use(&$record) {
+                                                    
+                                            if ($record->EntityName == $item->EntityName) {
                                                         return true;
                                                     }
                                                     return false;
@@ -1016,7 +1126,7 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                                     }
                                 } else if ($related_entity_type == 'parent') {
                                     foreach ($res->d as &$record) {
-                                        $collection = array_filter($relations[$record->{$related_parent_field}], function($item) use(&$record) {
+                                        $collection = array_filter($relations["{$record->{$related_parent_field}}"], function($item) use(&$record) {
                                             if ($record->EntityName == $item->EntityName) {
                                                 return true;
                                             }
@@ -1027,6 +1137,8 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                                         $key = key($collection);
                                         $record->{$expanded_field} = !is_null($key) ? $collection[$key] : NULL;
                                     }
+                                }else{
+                                    var_dump("DDDDDDDDDDDDDSSSSSSSSSSSSSS");
                                 }
                             }
                             continue;
@@ -1038,13 +1150,14 @@ function dynamics_ax_settings_provider__get_items($entity_name, array $params = 
                     $post_process($res->records, $expanded_field_values);
                 }
             }
+            
             return $res_records;
         } else {
             $rror = print_r($res, true);
-            throw new Exception("{$rror}. ErrorCode");
+            throw new \Exception("{$rror}. ErrorCode");
         }
     } else {
-        throw new Exception('Unable to connect to Salesforce. Invalid request token');
+        throw new \Exception('Unable to connect to Salesforce. Invalid request token');
     }
 }
 
@@ -1102,13 +1215,33 @@ function dynamics_ax_settings_provider__get_entity_items_by_field_values($entity
     $field_type = $field_def['type'];
 
 
+
     foreach ($id_chunks as $id_chunk) {
-        if ($field_type == 'int') {
-            $implosion = implode(',', $id_chunk);
-            $params['$filter'] = (strlen($implosion) > 0) ? $field_name . ' IN(' . $implosion . ')' : '';
-        } else {
-            $implosion = implode('\',\'', $id_chunk);
-            $params['$filter'] = (strlen($implosion) > 0) ? $field_name . ' IN(\'' . $implosion . '\')' : $field_name . ' eq \'\'';
+        switch ($field_type) {
+            case 'int':{
+                $implosion = implode(',', $id_chunk);
+                $params['$filter'] = (strlen($implosion) > 0) ? $field_name . ' IN(' . $implosion . ')' : '';
+                break;
+            }
+            case 'detail':{
+                $field_def = dynamics_ax_settings_provider__get_entity_field_definition($field_def['lookup_entity'], $field_def['relationship']['remote_field']);
+                switch($field_def['type']){
+                    case 'int':{
+                        $implosion = implode(',', $id_chunk);
+                        $params['$filter'] = (strlen($implosion) > 0) ? $field_name . ' IN(' . $implosion . ')' : '';
+                        break;
+                    }
+                    default: {
+                        $implosion = implode('\',\'', $id_chunk);
+                        $params['$filter'] = (strlen($implosion) > 0) ? $field_name . ' IN(\'' . $implosion . '\')' : $field_name . ' eq \'\'';
+                    }
+                }
+                break;
+            }
+            default: {
+                $implosion = implode('\',\'', $id_chunk);
+                $params['$filter'] = (strlen($implosion) > 0) ? $field_name . ' IN(\'' . $implosion . '\')' : $field_name . ' eq \'\'';
+            }
         }
 
         $params['$filter'] = $params['$filter'] . (!is_null($additional_filter) ? ' and ' . $additional_filter : '');

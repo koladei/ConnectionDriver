@@ -1,5 +1,14 @@
 <?php
 
+// set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext) {
+//     // error was suppressed with the @-operator
+//     if (0 === error_reporting()) {
+//         return false;
+//     }
+
+//     throw new ErrorException("{$errstr} | {$errno} | {$errfile} | {$errline}", 0, $errno, $errfile, $errline);
+// });
+
 $module_path = drupal_get_path('module', 'settings_provider');
 $middleware_driver_path = str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/');
 include_once str_replace('/', DIRECTORY_SEPARATOR, $middleware_driver_path . '/MiddlewareConnectionDriver.php');

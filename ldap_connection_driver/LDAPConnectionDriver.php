@@ -3,7 +3,8 @@
 namespace com\mainone\middleware;
 
 use com\mainone\middleware\MiddlewareConnectionDriver;
-use com\mainone\middleware\MiddlewareQueryFragment;
+use com\mainone\middleware\MiddlewareFilter;
+use com\mainone\middleware\EntityDefinitionBrowser;
 
 /**
  * Description of LDAPConnectionDriver
@@ -20,44 +21,9 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
     private $password = '';
     private $dn = '';
 
-    private static function stringifier($current) {
-        $operator_map = [
-            'eq' => '=',
-            'gt' => '>',
-            'lt' => '<',
-            'ge' => '>=',
-            'le' => '<=',
-        ];
+    public function __construct(callable $driverLoader, $host, $protocol, $port = 636, $username = '', $password = '', $dn = '') {
+        parent::__construct($driverLoader);
 
-        $s = "({$current->getField()}{$current->getOperator($operator_map)}{$current->getValue()})";
-        $ands = '';
-        $ors = '';
-        foreach ($current->getAnds() as $ind => $and) {
-            $ands .= $and->toString();
-        }
-
-        if (strlen($ands) > 0) {
-            $ands = "&{$ands}{$s}";
-        }
-
-        foreach ($current->getOrs() as $ind => $or) {
-            $ors .= $or->toString();
-        }
-
-        if (strlen($ors) > 0) {
-            $ors = "&{$ors}{$s}";
-        }
-
-        $addBraces = strlen($ors) > 0 || strlen($ands) > 0 ? true : false;
-
-        if ($addBraces) {
-            return "({$ands}{$ors})";
-        } else {
-            return $s;
-        }
-    }
-
-    public function __construct($host, $protocol, $port = 636, $username = '', $password = '', $dn = '') {
         $this->host = $host;
         $this->protocol = $protocol;
         $this->port = $port;
@@ -68,16 +34,18 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         return $this;
     }
 
-    public static function getLDAPQueryFragment($field, $value, $operator) {
-        $fragment = new MiddlewareQueryFragment($field, $value, $operator);
-        $fragment->setProcessor(function() {
-            return LDAPConnectionDriver::stringifier(...func_get_args());
-        });
-        return $fragment;
+    public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id,  \stdClass $object, array $otherOptions = []){
+
     }
+    public function createItemInternal($entityBrowser, &$connectionToken = NULL,  \stdClass $object, array $otherOptions = []){
 
-    public function getItemsByQueryFragment(MiddlewareQueryFragment $query, $options = [], $ldapbind = NULL) {
-
+    }  
+    public function deleteItemInternal($entityBrowser, &$connectionToken = NULL, $id, array $otherOptions = []){
+        
+    }   
+    
+    public function getItemsInternal($entityBrowser, &$ldapbind = NULL, array $select, $filter, $expands=[], $otherOptions=[]){        
+        
         // Try getting the phone number from active directory
         $con = NULL;
         $dn = $this->dn;
@@ -87,28 +55,43 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
             $ldapbind = $this->bindTOLDAPServer($con);
         }
 
-        $select = count($options) > 0 ? $options : ['mobile'];
         if ($ldapbind) {
-            // bind and find user by uid
-            $user_search = ldap_search($con, $dn, $query->toString(), $select);
+            $user_search = ldap_search($con, $dn, "{$filter}", $select);
             $user_entries = ldap_get_entries($con, $user_search);
 
+            // unset($user_entries['count']);
             foreach ($user_entries as &$user_entry) {
-                $s = [];
-                foreach ($select as $sel) {
-                    $s[$sel] = $user_entry[$sel];
-                    unset($s[$sel]['count']);
+                if(is_array($user_entry)){
+                    foreach ($user_entry as $f => &$sel) {
+                        if(is_array($sel)){
+                            $fieldInfo = $entityBrowser->getFieldByInternalName($f);
+                            unset($sel['count']);
+                            foreach($sel as &$sele){
+                                if($fieldInfo->isPhoto()){
+                                    $en = base64_encode($sele);
+                                    $sele =  "data:image/png;base64,{$en}";
+                                } else if($fieldInfo->isBlob()) {
+                                    $sele = base64_encode($sele);
+                                }
+                            }
+                        }
+                    }
                 }
-                $user_entry = $s;
             }
 
             unset($user_entries['count']);
             $user_entries = json_decode(json_encode($user_entries));
 
+            // var_dump($user_entries);
+
             return $user_entries;
         }
 
-        return FALSE;
+        return [];    
+    }
+    
+    public function getStringer(){
+        return MiddlewareFilter::LDAP;
     }
 
     private function bindTOLDAPServer(&$connection = NULL) {
@@ -132,6 +115,12 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         }
 
         return false;
+    }
+
+    
+    protected function getDefaultFilter(){
+        
+            return 'ObjectClass eq \'*\'';
     }
 
 }

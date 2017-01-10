@@ -14,8 +14,15 @@ function ldap_connection_driver_connection_driver_ldap_alter(&$container) {
     $username = variable_get('LDAP_CONNECTION_DRIVER_USERNAME');
     $password = variable_get('LDAP_CONNECTION_DRIVER_PASSWORD');
     $dn = variable_get('LDAP_CONNECTION_DRIVER_DN');
+
+    $driver = new LDAPConnectionDriver(function($x){
+        return mware_connection_driver__get_driver($x);
+    }, $host, $protocol, $port, $username, $password, $dn);
+
+    $defs = ldap_connection_driver__get_entity_definitions();
+    $driver->setEntities($defs);
     
-    $container['ldap'] = new LDAPConnectionDriver($host, $protocol, $port, $username, $password, $dn);
+    $container['ldap'] = $driver;
 }
 
 /**
@@ -76,6 +83,17 @@ function ldap_connection_driver__get_settings($settings = 'default') {
     return $s;
 }
 
+
+function  ldap_connection_driver__get_entity_definition($entity_name, $component = NULL){
+    $entities = ldap_connection_driver__get_entity_definitions();
+    if ($component) {
+        return isset($entities[$entity_name]) && isset($entities[$entity_name][$component]) ? $entities[$entity_name][$component] : NULL;
+    } else {
+        return isset($entities[$entity_name]) ? $entities[$entity_name] : NULL;
+    }
+}
+
+
 /**
  * Returns the full definition of an entity or the definition of the specified component.
  * Components include: fields, internal_name
@@ -83,264 +101,68 @@ function ldap_connection_driver__get_settings($settings = 'default') {
  * @param string $component
  * @return array
  */
-function ldap_connection_driver__get_entity_definition($entity_name, $component = NULL) {
-    $entities = [
-        'cust_table' => [
-            'internal_name' => 'CustTable',
+function ldap_connection_driver__get_entity_definitions() {
+   return [
+        'Objects' => [
+            'internal_name' => 'Objects',
             'fields' => [
-                'RECID' => [
+                'samaccountname' => [
                     'preferred_name' => 'Id',
                     'type' => 'string',
                     'mandatory' => 1,
-                ],
-                'GCID' => [
-                    'preferred_name' => 'GCID',
+                ]
+                , 'mail' => [
+                    'preferred_name' => 'EMail',
                     'type' => 'string',
                     'mandatory' => 1,
-                ],
-                'MODIFIEDDATETIME' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime',
-                ],
-                'CREATEDDATETIME' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime',
-                ],
-                'ACCOUNTNUM' => [
-                    'preferred_name' => 'AccountNumber',
+                ]
+                , 'mobile' => [
+                    'preferred_name' => 'Mobile',
                     'type' => 'string',
-                ],
-                '_ENTITY' => [
-                    'preferred_name' => 'EntityName',
+                    'mandatory' => 1
+                    , 'is_array' =>  1
+                ]
+                , 'displayname' => [
+                    'preferred_name' => 'DisplayName',
                     'type' => 'string',
-                ],
-                '_TRANSACTIONS' => [
-                    'preferred_name' => 'Transactions',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_trans',
-                    'relationship' => [
-                        'local_field' => 'AccountNumber',
-                        'remote_field' => 'AccountNumber',
-                        'remote_type' => 'child'
+                    'mandatory' => 1
+                ]
+                , 'objectclass' => [
+                    'preferred_name' => 'ObjectClass',
+                    'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'is_array' =>  1
+                ]
+                , 'memberof' => [
+                    'preferred_name' => 'MemberOf',
+                    'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'is_array' =>  1
+                ]
+                , 'manager' => [
+                    'preferred_name' => 'Manager',
+                    'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'Manager'
+                        ,'remote_field' => 'DN'
+                        ,'remote_type'=> 'parent'
+                        ,'remote_entity'=> 'Objects'
                     ],
+                ]
+                , 'thumbnailphoto' => [
+                    'preferred_name' => 'Photo',
+                    'type' => 'blob'
+                    , 'mandatory' => 1
+                ]
+                , 'dn' => [
+                    'preferred_name' => 'DN',
+                    'type' => 'string'
+                    , 'mandatory' => 1
                 ],
             ]
         ],
-        'cust_trans' => [
-            'internal_name' => 'CustTrans',
-            'fields' => [
-                'RECID' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'int',
-                    'mandatory' => 1,
-                ],
-                'MODIFIEDDATETIME' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime',
-                ],
-                'CREATEDDATETIME' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime',
-                ],
-                'ACCOUNTNUM' => [
-                    'preferred_name' => 'AccountNumber',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'AMOUNTCUR' => [
-                    'preferred_name' => 'Amount',
-                    'type' => 'datetime',
-                ],
-                'SETTLEAMOUNTCUR' => [
-                    'preferred_name' => 'AmountSettled',
-                    'type' => 'int',
-                ],
-                'SETTLEMENT' => [
-                    'preferred_name' => 'Settlement',
-                    'type' => 'int',
-                ],
-                'TXT' => [
-                    'preferred_name' => 'Narrative',
-                    'type' => 'string',
-                ],
-                'TRANSTYPE' => [
-                    'preferred_name' => 'TransactionType',
-                    'type' => 'int',
-                ],
-                'APPROVED' => [
-                    'preferred_name' => 'ApprovalStatus',
-                    'type' => 'int',
-                ],
-                'CORRECT' => [
-                    'preferred_name' => 'IsCorrection',
-                    'type' => 'int',
-                ],
-                'CANCELLEDPAYMENT' => [
-                    'preferred_name' => 'IsCancelled',
-                    'type' => 'int',
-                ],
-                'CURRENCYCODE' => [
-                    'preferred_name' => 'CurrencyCode',
-                    'type' => 'string',
-                ],
-                'EXCHRATE' => [
-                    'preferred_name' => 'ExchangeRate',
-                    'type' => 'int',
-                ],
-                'TRANSDATE' => [
-                    'preferred_name' => 'TransactionDate',
-                    'type' => 'datetime',
-                ],
-                'CLOSED' => [
-                    'preferred_name' => 'Closed',
-                    'type' => 'datetime',
-                ],
-                'DUEDATE' => [
-                    'preferred_name' => 'DueDate',
-                    'type' => 'datetime',
-                ],
-                'INVOICE' => [
-                    'preferred_name' => 'InvoiceNumber',
-                    'type' => 'string',
-                ],
-                'VOUCHER' => [
-                    'preferred_name' => 'VoucherNumber',
-                    'type' => 'string',
-                ],
-                'LASTSETTLEVOUCHER' => [
-                    'preferred_name' => 'LastSettlementVoucherNumber',
-                    'type' => 'string',
-                ],
-                'PAYMID' => [
-                    'preferred_name' => 'PaymentId',
-                    'type' => 'string',
-                ],
-                '_ENTITY' => [
-                    'preferred_name' => 'EntityName',
-                    'type' => 'string',
-                ],
-                '_INVOICE_INFORMATION' => [
-                    'preferred_name' => 'InvoiceInformation',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_trans',
-                    'relationship' => [
-                        'local_field' => 'LastSettlementVoucherNumber',
-                        'remote_field' => 'VoucherNumber',
-                        'remote_type' => 'parent',
-                        'filter' => 'InvoiceNumber ne \'\''
-                    ],
-                ],
-                '_INVOICE' => [
-                    'preferred_name' => 'Invoice',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_invoice_table',
-                    'relationship' => [
-                        'local_field' => 'InvoiceNumber',
-                        'remote_field' => 'InvoiceNumber',
-                        'remote_type' => 'parent',
-                        'filter' => 'InvoiceNumber ne \'\''
-                    ],
-                ],
-                '_CUSTOMER' => [
-                    'preferred_name' => 'Customer',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_table',
-                    'relationship' => [
-                        'local_field' => 'AccountNumber',
-                        'remote_field' => 'AccountNumber',
-                        'remote_type' => 'parent'
-                    ],
-                ],
-                '_TRANSACTIONS' => [
-                    'preferred_name' => 'Transactions',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_trans',
-                    'relationship' => [
-                        'local_field' => 'VoucherNumber',
-                        'remote_field' => 'LastSettlementVoucherNumber',
-                        'remote_type' => 'child'
-                    ],
-                ],
-            ]
-        ],
-        'cust_invoice_table' => [
-            'internal_name' => 'CustInvoiceTable',
-            'fields' => [
-                'RECID' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'int',
-                    'mandatory' => 1,
-                ],
-                'MODIFIEDDATETIME' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime',
-                ],
-                'CREATEDDATETIME' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime',
-                ],
-                'DUEDATE' => [
-                    'preferred_name' => 'DueDate',
-                    'type' => 'datetime',
-                ],
-                'ENDDATE' => [
-                    'preferred_name' => 'EndDate',
-                    'type' => 'datetime',
-                ],
-                'ITEMPAIDFOR' => [
-                    'preferred_name' => 'ItemPaidFor',
-                    'type' => 'string',
-                ],
-                'INVOICEACCOUNT' => [
-                    'preferred_name' => 'AccountNumber',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'INVOICEID' => [
-                    'preferred_name' => 'InvoiceNumber',
-                    'type' => 'string',
-                ],
-                'SALEFORCEOPPORTUNITYID' => [
-                    'preferred_name' => 'OpportunityId',
-                    'type' => 'string',
-                ],
-                'SALEFORCECUSTOMERPRODUCTID' => [
-                    'preferred_name' => 'CustomerProductId',
-                    'type' => 'string',
-                ],
-                '_ENTITY' => [
-                    'preferred_name' => 'EntityName',
-                    'type' => 'string',
-                ],
-                '_CUSTOMER' => [
-                    'preferred_name' => 'Customer',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_table',
-                    'relationship' => [
-                        'local_field' => 'AccountNumber',
-                        'remote_field' => 'AccountNumber',
-                        'remote_type' => 'parent'
-                    ],
-                ],
-                '_INVOICE_INFO' => [
-                    'preferred_name' => 'InvoiceInformation',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_trans',
-                    'relationship' => [
-                        'local_field' => 'InvoiceNumber',
-                        'remote_field' => 'InvoiceNumber',
-                        'filter' => 'InvoiceNumber ne \'\'',
-                        'remote_type' => 'parent'
-                    ],
-                ],
-            ]
-        ]
     ];
-    if ($component) {
-        return isset($entities[$entity_name]) && isset($entities[$entity_name][$component]) ? $entities[$entity_name][$component] : NULL;
-    } else {
-        return isset($entities[$entity_name]) ? $entities[$entity_name] : NULL;
-    }
 }
 
 /**
@@ -447,15 +269,15 @@ function ldap_connection_driver__create_salesforce_entity_item($entity_name, $ob
             // Process the request
             $res = json_decode($feed->getContent());
             if (is_array($res)) {
-                throw new Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+                throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else {
                 return $res;
             }
         } else {
-            throw new Exception('Unable to connect to Salesforce.');
+            throw new \Exception('Unable to connect to Salesforce.');
         }
     } else {
-        throw new Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
+        throw new \Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
     }
 }
 
@@ -500,15 +322,15 @@ function ldap_connection_driver__update_salesforce_entity_item($entity_name, $ob
             // Process the request
             $res = json_decode($feed->getContent());
             if (is_array($res)) {
-                throw new Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+                throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else {
                 return $res;
             }
         } else {
-            throw new Exception('Unable to connect to Salesforce.');
+            throw new \Exception('Unable to connect to Salesforce.');
         }
     } else {
-        throw new Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
+        throw new \Exception("Invalid object type {$entity_name}. It either does not exist or is not yet supported by the middleware");
     }
 }
 
@@ -810,7 +632,7 @@ function ldap_connection_driver__get_items($entity_name, array $params = [], std
     $exists = ldap_connection_driver__get_entity_definition($entity_name);
 
     if (!$exists || $exists == NULL) {
-        throw new Exception("Error, the requested entity {$entity_name} could not found. It either doesnot exist or it may have been deleted by another user.");
+        throw new \Exception("Error, the requested entity {$entity_name} could not found. It either doesnot exist or it may have been deleted by another user.");
     }
 
     $array_key = is_array($key_field);
@@ -853,7 +675,7 @@ function ldap_connection_driver__get_items($entity_name, array $params = [], std
                 } else if (!is_null($x)) {
                     $expanded_field_names[] = $expanded_field_name_x;
                 } else {
-                    throw new Exception("Unknown field \"{$expanded_field_name_x}\" in entity \"$entity_name\"cannot be expanded. It was found in the \$expand parameter. It doesnot exist or it may have been delected by another user.");
+                    throw new \Exception("Unknown field \"{$expanded_field_name_x}\" in entity \"$entity_name\"cannot be expanded. It was found in the \$expand parameter. It doesnot exist or it may have been delected by another user.");
                 }
             }
 
@@ -1057,10 +879,10 @@ function ldap_connection_driver__get_items($entity_name, array $params = [], std
             return $res_records;
         } else {
             $rror = print_r($res, true);
-            throw new Exception("{$rror}. ErrorCode");
+            throw new \Exception("{$rror}. ErrorCode");
         }
     } else {
-        throw new Exception('Unable to connect to Salesforce. Invalid request token');
+        throw new \Exception('Unable to connect to Salesforce. Invalid request token');
     }
 }
 
