@@ -83,7 +83,7 @@ class EntityDefinitionBrowser {
     }
 
     public function setField(EntityFieldDefinition $fieldDef){
-        $internalName = $fieldDef->getInternalName();
+        $internalName = $fieldDef->getInternalName(FALSE);
         $this->fieldsByInternalName[$internalName] = $fieldDef;
         $this->fieldsByDisplayName[$fieldDef->getDisplayName()] = &$this->fieldsByInternalName[$internalName];
         if(isset($field['mandatory']) && $field['mandatory'] == 1){

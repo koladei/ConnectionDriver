@@ -120,7 +120,7 @@ abstract class MiddlewareConnectionDriver {
 
         // Set the default limit        
         if(!isset($otherOptions['$top'])){
-            $limit = $otherOptions['$top'];
+            $otherOptions['$top'] = 100;
         }
 
         // Set the default filter
@@ -176,6 +176,7 @@ abstract class MiddlewareConnectionDriver {
         $select = array_unique($entityBrowser->getFieldInternalNames($select));
         
         $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, "{$filterExpression}", $expands, $otherOptions);
+        
         if(!is_null( $result)){
             $select_map = $entityBrowser->getFieldsByInternalNames($select);
             array_walk($result, function(&$record) use($entityBrowser, $select_map, &$expands) {
@@ -295,7 +296,7 @@ abstract class MiddlewareConnectionDriver {
         if(!is_null($chunkResult)){
             foreach($chunkResult as $val){
                 if(is_null($remoteField)){                            
-                    $r += $val;
+                    $r[] = $val;
                 } else {
                     $remoteFieldName = $remoteField->getDisplayName();
                     $keyed_val = [];
@@ -304,23 +305,24 @@ abstract class MiddlewareConnectionDriver {
                     
                     if(!isset($keyed_val["{$y}"])){
                         $keyed_val["{$y}"] = NULL;
-                        if($localField->isMany() && is_nll($keyed_val["{$y}"])){
+                        if($localField->isMany()){
                             $keyed_val["{$y}"] =  [];
                         }
                     } 
 
                     if($localField->isMany()){
-                        $keyed_val["{$y}"] += $val;
+                        $keyed_val["{$y}"][] = $val;
                     }
                     
                     else{
                         $keyed_val["{$y}"] = $val;
                     }
 
-                    $r += $keyed_val;
+                    $r = array_merge($r, $keyed_val);
                 }
             }
         }
+                    // var_dump($r);
 
         return $r;
     }

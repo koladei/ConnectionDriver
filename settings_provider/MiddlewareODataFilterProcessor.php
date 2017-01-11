@@ -63,12 +63,12 @@ class MiddlewareODataFilterProcessor {
 
         // Date and String comparisons
         $matchs = [];
-        preg_match_all('/([\w][\w\d]*)\s+([\w]{2})\s+(((datetime)([\'"]))|([\'"]))((4)?([\d\-:]+|[^\'"]+)((\6)?(\6)|(\7))/', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/([\w][\w\d]*)\s+([\w]{2})\s+(((datetime)([\'"]))|([\'"]))((4)?([\d\-:]+|[^\'"]+))((\6)?(\6)|(\7))/', $expression, $matchs, PREG_SET_ORDER);
 
         foreach($matchs as $mat){
             $place = count($this->fragments);
             $key = "#{$place}#";
-            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $mat[8], $mat[2], $mat[9], $mat[5], $this->stringerType, $this->expressionStringer);
+            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $mat[8], $mat[2], $mat[11], $mat[5], $this->stringerType, $this->expressionStringer);
             $expression = self::str_replace_first($mat[0], $key, $expression);
         }
 

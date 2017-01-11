@@ -10,6 +10,7 @@ namespace com\mainone\middleware;
 class EntityFieldDefinition {
 
     private $internalName;
+    private $actualInternalName;
     private $displayName;
     private $type;
     private $localField;
@@ -23,6 +24,7 @@ class EntityFieldDefinition {
     public function __construct($name, array $fieldDefinition, EntityDefinitionBrowser &$parent) {
         $this->parent = $parent;
         $this->internalName = $name;
+        $this->actualInternalName = $name;
         $this->displayName = $fieldDefinition['preferred_name'];
         $this->type = $fieldDefinition['type'];
         $this->isAnArray = isset($fieldDefinition['is_array'])?$fieldDefinition['is_array']:0;
@@ -30,6 +32,7 @@ class EntityFieldDefinition {
             if($this->localField = $fieldDefinition['relationship']['local_field'] == $fieldDefinition['preferred_name']){
                 $fieldDefinition['relationship']['local_field'] = "{$fieldDefinition['relationship']['local_field']}Id";
                 $this->internalName = "{$name}_lookup";
+                $this->actualInternalName = $name;
                 $this->type = 'detail';
                 $x = $fieldDefinition;
                 $x['preferred_name'] = $fieldDefinition['relationship']['local_field'];
@@ -63,8 +66,8 @@ class EntityFieldDefinition {
         return $this->parent;
     }
 
-    public function getInternalName(){
-        return $this->internalName;
+    public function getInternalName($actual = TRUE){
+        return $actual?$this->actualInternalName: $this->internalName;
     }
 
     public function getDisplayName(){

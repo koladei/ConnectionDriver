@@ -43,6 +43,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         $fieldInfo = !is_null($entityDefinition) ? $entityDefinition->getFieldByDisplayName($field) : NULL;
         $this->fieldInfo = $fieldInfo;
         $this->field = !is_null($fieldInfo) ? $fieldInfo->getInternalName() : $field;
+        $this->quote = $quote;
         
         if($formater == 'datetime'){
             $this->value = $this->getDateTime($value);
@@ -53,13 +54,14 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             $this->value = new \DateTime();
             $this->value->setTime(0, 0);
             $this->quote = '\'';
-            var_dump($this->value);
         } else if(strtolower($value) == '$null$'){
             $this->value = NULL;
         } else if(strtolower($value) == '$blank$'){
             $this->value = '';
             $this->quote = '\'';
-        } 
+        } else {
+            $this->value = $value;
+        }
         $this->operator = strtolower($operator);
         
         if(is_null($fieldInfo)){
@@ -121,10 +123,11 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 $epoch = new \DateTime('1601-01-01');
                 $interval = $epoch->diff($value);
                 $value = ($interval->days * 24 * 60 * 60);
-            }
-
+            } else 
             if(is_null($value)){
                 $value = '0';
+            } else {
+                // $value = preg_replace('/([\,\\#\+\<\>;"=\s])/', '\\\$1', $value);
             }
 
             switch($context->operator){

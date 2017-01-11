@@ -51,9 +51,10 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         $dn = $this->dn;
 
         // obtain a connection binding.
-        if (is_null($ldapbind)) {
+        // if (is_null($ldapbind)) {
             $ldapbind = $this->bindTOLDAPServer($con);
-        }
+        // }
+        // var_dump("{$filter}");
 
         if ($ldapbind) {
             $user_search = ldap_search($con, $dn, "{$filter}", $select);

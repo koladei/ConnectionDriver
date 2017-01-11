@@ -150,12 +150,22 @@ function ldap_connection_driver__get_entity_definitions() {
                         ,'remote_entity'=> 'Objects'
                     ],
                 ]
+                , '_subordinates' => [
+                    'preferred_name' => 'Subordinates',
+                    'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'DN'
+                        ,'remote_field' => 'ManagerId'
+                        ,'remote_type'=> 'child'
+                        ,'remote_entity'=> 'Objects'
+                    ],
+                ]
                 , 'thumbnailphoto' => [
                     'preferred_name' => 'Photo',
                     'type' => 'blob'
                     , 'mandatory' => 1
                 ]
-                , 'dn' => [
+                , 'distinguishedname' => [
                     'preferred_name' => 'DN',
                     'type' => 'string'
                     , 'mandatory' => 1
