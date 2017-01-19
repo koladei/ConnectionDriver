@@ -44,10 +44,6 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
                         $prev = $conjection;
                     }
 
-                    // if($index == 0){
-                    //     var_dump($conjection);
-                    // }
-
                     if($conjection == $prev){
                         $x .= substr($fragment, 0, 1) == '('? $fragment: "({$fragment})";
 

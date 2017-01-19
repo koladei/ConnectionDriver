@@ -84,7 +84,7 @@ abstract class MiddlewareConnectionDriver {
                 $implosion = "'{$implosion}'";
             }
         }
-
+        
         $additionalFilter = isset($otherOptions['more_filter'])?"({$otherOptions['more_filter']}) and ":'';
         $result = $this->getItems($entityBrowser, $select, "{$additionalFilter}{$entityField->getDisplayName()} IN({$implosion})", $expands);
         return $result;
@@ -175,7 +175,10 @@ abstract class MiddlewareConnectionDriver {
         // Fetch the data of matching records
         $select = array_unique($entityBrowser->getFieldInternalNames($select));
         
+//        var_dump("{$filterExpression}");
+        
         $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, "{$filterExpression}", $expands, $otherOptions);
+        
         
         if(!is_null( $result)){
             $select_map = $entityBrowser->getFieldsByInternalNames($select);
@@ -212,11 +215,11 @@ abstract class MiddlewareConnectionDriver {
                 
                 foreach($expand_chunks as $chunk){
                     $chunkResult = $remoteDriver->getItemsByFieldValues($remoteEntityBrowser, $remoteField, $chunk, $expand_val['select'], '', $otherOptions);
-                    
+                                        
                     // Combine this chunk result with previous chunk results
                     $data = $remoteEntityBrowser->mergeExpansionChunks($data, $chunkResult,  $localField, $remoteField);
                 }
-
+                
                 $expand_val['data'] = $data;
             });
             
@@ -226,7 +229,6 @@ abstract class MiddlewareConnectionDriver {
                 // Prepare to fetch expanded data
                 foreach($expands as $expand_key => $expand_val){
                     $fieldInfo = $expand_val['info'];
-                    
                     $record = $entityBrowser->joinExpansionToParent($recordIndex, $record, $fieldInfo, $expand_val['data']);
                 }
             });
@@ -246,7 +248,7 @@ abstract class MiddlewareConnectionDriver {
         $keyVal = $record->{$fieldInfo->getRelatedLocalFieldName()};
         $results = isset($vals["{$keyVal}"])?$vals["{$keyVal}"]:($fieldInfo->isMany()? []: NULL);
         $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany()? ['results' => $results]:$results;
-        unset($record->{$fieldInfo->getRelatedLocalFieldName()});
+//        unset($record->{$fieldInfo->getRelatedLocalFieldName()});
 
         return $record;
     }
@@ -292,37 +294,34 @@ abstract class MiddlewareConnectionDriver {
 
     public function mergeRecordArray($data, $chunkResult, EntityFieldDefinition $localField, EntityFieldDefinition $remoteField = NULL){
         $r =  is_array($data) ? $data : [];
-
+                        
         if(!is_null($chunkResult)){
             foreach($chunkResult as $val){
                 if(is_null($remoteField)){                            
                     $r[] = $val;
                 } else {
                     $remoteFieldName = $remoteField->getDisplayName();
-                    $keyed_val = [];
 
-                    $y = $val->{$remoteFieldName};
+                    $remoteFieldValue = $val->{$remoteFieldName};
                     
-                    if(!isset($keyed_val["{$y}"])){
-                        $keyed_val["{$y}"] = NULL;
+                    // If there is no key matching the remote field value in the array, add it.
+                    if(!isset($r["{$remoteFieldValue}"])){
+                        $r["{$remoteFieldValue}"] = NULL;
                         if($localField->isMany()){
-                            $keyed_val["{$y}"] =  [];
+                            $r["{$remoteFieldValue}"] =  [];
                         }
-                    } 
-
-                    if($localField->isMany()){
-                        $keyed_val["{$y}"][] = $val;
                     }
                     
-                    else{
-                        $keyed_val["{$y}"] = $val;
+                    // Put a value in the remote field key 
+                    if($localField->isMany()){
+                        $r["{$remoteFieldValue}"][] = $val;
                     }
-
-                    $r = array_merge($r, $keyed_val);
+                    else {
+                        $r["{$remoteFieldValue}"] = $val;
+                    }
                 }
             }
         }
-                    // var_dump($r);
 
         return $r;
     }

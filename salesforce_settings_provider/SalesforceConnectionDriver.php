@@ -119,12 +119,30 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         }
     }  
 
+    /**
+     * Implements the delete item operation.
+     * @param type $entityBrowser
+     * @param type $connectionToken
+     * @param type $id
+     * @param array $otherOptions
+     */
     public function deleteItemInternal($entityBrowser, &$connectionToken = NULL, $id, array $otherOptions = []){
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
          
     }   
     
-    public function getItemsInternal($entityBrowser, &$connectionToken = NULL,  array $select, $filter, $expands=[], $otherOptions=[]){        
+    /**
+     * Implements the get items operation.
+     * @param type $entityBrowser the specific entity whose record is to be retrieved.
+     * @param type $connectionToken an existing token object that can be used in this operation.
+     * @param array $select An array of fields to be returned by this query
+     * @param array $filter The filter expression to be passed to the remote server.
+     * @param array $expands The fields to be expanded to get.
+     * @param array $otherOptions An array of other additional options.
+     * @return array An array of the retrieved values.
+     * @throws \Exception when something goes wrong.
+     */
+    public function getItemsInternal($entityBrowser, &$connectionToken = NULL,  array $select, $filter, $expands = [], $otherOptions = []) {        
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
                
         // Get the requstToken
@@ -202,6 +220,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
             $feed = mware_blocking_http_request($uri, ['options' => $tokenOption, 'block' => true]);
             $token_response = json_decode($feed->getContent());
+            
             return $token_response;
         } catch (Exception $x) {
             return FALSE;
