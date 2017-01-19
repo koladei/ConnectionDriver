@@ -139,7 +139,7 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     'type' => 'int',
                 ],
                 'APPROVED' => [
-                    'preferred_name' => 'ApprovalStatus',
+                    'preferred_name' => 'IsApproved',
                     'type' => 'int',
                 ],
                 'CORRECT' => [
@@ -258,9 +258,9 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'EndDate',
                     'type' => 'datetime',
                 ],
-                'ITEMPAIDFOR' => [
-                    'preferred_name' => 'ItemPaidFor',
-                    'type' => 'string',
+                'POSTED' => [
+                    'preferred_name' => 'IsPosted',
+                    'type' => 'int',
                 ],
                 'INVOICEACCOUNT' => [
                     'preferred_name' => 'AccountNumber',

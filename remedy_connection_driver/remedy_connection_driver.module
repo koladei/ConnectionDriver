@@ -15,7 +15,7 @@ function remedy_connection_driver_connection_driver_dynamics_ax_alter(&$containe
 
     $defs = remedy_connection_driver__get_entity_definitions();
     $driver->setEntities($defs);
-    $container['dynamics_ax'] = $driver;
+    $container['bmc_remedy'] = $driver;
 }
 
 /**

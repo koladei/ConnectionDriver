@@ -11,7 +11,7 @@ use com\mainone\middleware\EntityDefinitionBrowser;
  *
  * @author Kolade.Ige
  */
-class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
+class RemedyConnectionDriver extends MiddlewareConnectionDriver {
 
     private $endpoint;
 
@@ -101,35 +101,33 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     public function getItemsInternal($entityBrowser, &$connection_token = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
-        $invoice_params = [
-            '$filter' => $filter
-            , '$select' => implode(',', $select)
-            , '$top' => $otherOptions['$top']
-        ];
+        $uri = variable_get('cportal_core__remedy_uri');
 
-        $query_string = drupal_http_build_query($invoice_params);
-        $url = "{$this->endpoint}/{$entityBrowser->getInternalName()}?{$query_string}";
+        $client = new SoapClient("$uri");
+        $authenticationInfo = new stdClass();
+        $authenticationInfo->userName = 'Demo';
+        $authenticationInfo->password = 'Remedy';
+        $ns = 'urn:HPD_IncidentInterface_WS';
 
-        $tokenOption = array(
-            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
-            , CURLOPT_PROTOCOLS => CURLPROTO_HTTP
-            , CURLOPT_SSL_VERIFYPEER => 0
-            , CURLOPT_SSL_VERIFYHOST => 0
-        );
+        //Create Soap Header with the authentication parameters      
+        $header = new SOAPHeader($ns, 'AuthenticationInfo', $authenticationInfo);
+        $client->__setSoapHeaders($header);
+        $getListInputMap = new stdClass();
 
-        $feed = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
-        $res = (json_decode($feed->getContent()));
+        //prepare the query
+        $last_poll = (new \DateTime())->format("m/d/Y H:i:s");
 
-        if (is_object($res) && property_exists($res, 'd')) {
-            $z = new DynamicsAXEntityCollection();
+        $getListInputMap->Qualification = '';//"('Last Modified Date'>=\"{$last_poll}\") AND (NOT 'Assigned Group' LIKE \"%IT Service Desk%\")";
+        $getListInputMap->maxLimit = '200';
+        $getListInputMap->startRecord = '1';
 
-            foreach ($res->d as $a => $b) {
-                $z[$a] = $b;
-            }
-
-            return $z;
-        } else {
-            throw new \Exception("{$feed->getContent()}");
+        //execute the query
+        try {
+            //get the result
+            $ld = $client->HelpDesk_QueryList_Service($getListInputMap);
+            var_dump($ld->getListValues);
+        } catch (SoapFault $sf) {
+            throw new \Exception("{$getListInputMap->Qualification}:" . $sf->getMessage());
         }
     }
 
