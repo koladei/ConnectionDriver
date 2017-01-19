@@ -148,7 +148,7 @@ abstract class MiddlewareConnectionDriver {
             if (($pos = strpos($expand, '/')) > 0) {
                 $key = substr($expand, 0, $pos);
                 $val = substr($expand, $pos + 1);
-                var_dump($key, $val);
+                
                 $ex0 = isset($expands[$expand]) ? $expands[$expand] : ['expand' => []];
                 $ex1 = array_merge(['select' => $expandX, 'ids' => [], 'info' => $fieldInfo, 'remoteFieldInfo' => $remoteField, 'data' => []], $ex0);
                 if (!in_array($ex1['expand'], $key)) {
@@ -233,7 +233,6 @@ abstract class MiddlewareConnectionDriver {
                 $expand_chunks = array_chunk($expand_val['ids'], 50);
                 $data = NULL;
 
-                var_dump($expand_val['expand'], $localField->getDisplayName());
                 $ex = isset($expand_val['expand'][$localField->getDisplayName()]) ? $expand_val['expand'][$localField->getDisplayName()] : [];
 
                 foreach ($expand_chunks as $chunk) {
