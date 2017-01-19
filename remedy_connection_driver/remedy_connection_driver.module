@@ -1,0 +1,95 @@
+<?php
+
+module_load_include('module', 'settings_provider');
+$module_path = drupal_get_path('module', 'remedy_connection_driver');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/RemedyConnectionDriver.php');
+
+use com\mainone\middleware\RemedyConnectionDriver;
+
+function remedy_connection_driver_connection_driver_dynamics_ax_alter(&$container) {
+    $driver = new RemedyConnectionDriver(function($x){
+        $return = mware_connection_driver__get_driver($x);
+        return $return;
+    });
+
+    $defs = remedy_connection_driver__get_entity_definitions();
+    $driver->setEntities($defs);
+    $container['dynamics_ax'] = $driver;
+}
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function remedy_connection_driver_permission() {
+    $permission = [];
+    
+    return $permission;
+}
+
+/**
+ * Confirms if a user should be allowed to access something.
+ * @param type $args
+ * @return boolean
+ */
+function remedy_connection_driver__user_access($args) {
+    return true;
+}
+
+/**
+ * Returns all the entity definitions implemented in Dynamics AX.
+ * @return type
+ */
+function remedy_connection_driver__get_entity_definitions() {
+    return [
+        'incident' => [
+            'internal_name' => 'CustTable',
+            'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ],
+                'GCID' => [
+                    'preferred_name' => 'Customer',
+                    'type' => 'string',
+                    'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'Customer'
+                        , 'remote_field' => 'GCID'
+                        , 'remote_type'=> 'parent'
+                        , 'remote_entity'=> 'account'
+                        , 'remote_driver' => 'salesforce'
+                    ],
+                ],
+                'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified',
+                    'type' => 'datetime',
+                ],
+                'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created',
+                    'type' => 'datetime',
+                ],
+                'ACCOUNTNUM' => [
+                    'preferred_name' => 'AccountNumber'
+                    , 'type' => 'string'
+                ],
+                'DATAAREAID' => [
+                    'preferred_name' => 'DataArea',
+                    'type' => 'string',
+                ],
+                '_TRANSACTIONS' => [
+                    'preferred_name' => 'Transactions',
+                    'type' => 'detail',
+                    'lookup_entity' => 'cust_trans',
+                    'relationship' => [
+                        'local_field' => 'AccountNumber',
+                        'remote_field' => 'AccountNumber',
+                        'remote_type' => 'child'
+                    ],
+                ],
+            ]
+        ]        
+    ];
+}
