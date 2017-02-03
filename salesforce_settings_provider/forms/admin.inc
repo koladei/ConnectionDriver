@@ -32,6 +32,24 @@ function salesforce_settings_provider_form_settings_provider_admin_alter(&$form,
         '#weight' => 0
     ];
 
+    $form['salesforce_settings']['SALESFORCE_PROXY_SERVER'] = [
+        '#type' => 'textfield'
+        , '#title' => t('Proxy server IP')
+        , '#default_value' => variable_get('SALESFORCE_PROXY_SERVER', '')
+        , '#size' => 100
+        , '#maxlength' => 100
+        , '#description' => t('Provide the IP address of the Proxy server.')
+    ];
+
+    $form['salesforce_settings']['SALESFORCE_PROXY_SERVER_PORT'] = [
+        '#type' => 'textfield'
+        , '#title' => t('Proxy server port')
+        , '#default_value' => variable_get('SALESFORCE_PROXY_SERVER_PORT', '3128')
+        , '#size' => 100
+        , '#maxlength' => 100
+        , '#description' => t('The port on which the proxy server is listening.')
+    ];
+
     $form['salesforce_settings']['production_salesforce_settings'] = [
         '#type' => 'fieldset',
         '#title' => t('Production Environment'),
@@ -116,6 +134,13 @@ function salesforce_settings_provider_form_settings_provider_admin_alter(&$form,
         '#weight' => 5
     ];
 
+    $form['salesforce_settings']['production_salesforce_settings']['SALESFORCE_SETTINGS_USE_PROXY'] = [
+        '#type' => 'checkbox'
+        , '#title' => t('Use proxy')
+        , '#default_value' => variable_get('SALESFORCE_SETTINGS_USE_PROXY', FALSE)
+        , '#description' => t('Whether or not to use the proxy server to reach salesforce.')
+    ];
+
     //    SANDBOX SERVER SETTINGS
     $form['salesforce_settings']['sandbox_salesforce_settings']['SALESFORCE_SANDBOX_SETTINGS_ENDPOINT_URL'] = [
         '#type' => 'textfield',
@@ -184,6 +209,13 @@ function salesforce_settings_provider_form_settings_provider_admin_alter(&$form,
         '#description' => t('The remote end-point client secret.'),
         '#required' => TRUE,
         '#weight' => 5
+    ];
+
+    $form['salesforce_settings']['sandbox_salesforce_settings']['SALESFORCE_SANDBOX_SETTINGS_USE_PROXY'] = [
+        '#type' => 'checkbox'
+        , '#title' => t('Use proxy')
+        , '#default_value' => variable_get('SALESFORCE_SANDBOX_SETTINGS_USE_PROXY', FALSE)
+        , '#description' => t('Whether or not to use the proxy server to reach salesforce.')
     ];
 
     return system_settings_form($form);

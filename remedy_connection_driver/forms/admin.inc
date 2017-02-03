@@ -4,7 +4,7 @@
  * Implements hook_form_FORM_ID_alter
  * @return type
  */
-function dynamics_ax_settings_provider_form_settings_provider_admin_alter(&$form, &$form_state) {
+function remdey_connection_driver_form_settings_provider_admin_alter(&$form, &$form_state) {
 
     $form['dynamics_ax_settings'] = [
         '#type' => 'fieldset',

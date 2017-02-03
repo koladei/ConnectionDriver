@@ -47,7 +47,7 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
     }
 
     public function getItemsInternal($entityBrowser, &$ldapbind = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
-        
+
 
         // Try getting the phone number from active directory
         $con = NULL;
@@ -71,6 +71,10 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
                             $fieldInfo = $entityBrowser->getFieldByInternalName($f);
                             unset($sel['count']);
                             foreach ($sel as &$sele) {
+
+                                if ($fieldInfo->getDisplayName() == 'Id') {
+                                    $sele = strtolower($sele);
+                                } else
                                 if ($fieldInfo->isPhoto()) {
                                     $en = base64_encode($sele);
                                     $sele = "data:image/png;base64,{$en}";
@@ -85,6 +89,8 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
 
             unset($user_entries['count']);
             $user_entries = json_decode(json_encode($user_entries));
+
+//            var_dump($user_entries);
 
             return $user_entries;
         }
@@ -115,7 +121,7 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
             $binding = ldap_bind($connection, $ldaprdn, $ldappass);
             return $binding;
         }
-        
+
 
         return false;
     }

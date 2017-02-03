@@ -17,8 +17,8 @@ function salesforce_settings_provider_permission() {
 }
 
 function salesforce_settings_provider_connection_driver_salesforce_alter(&$container) {
-    $connection_settings = salesforce_settings_provider__get_settings();    
-    $driver = new SalesforceConnectionDriver(function($x){
+    $connection_settings = salesforce_settings_provider__get_settings();
+    $driver = new SalesforceConnectionDriver(function($x) {
         return mware_connection_driver__get_driver($x);
     }, $connection_settings);
 
@@ -46,6 +46,9 @@ function salesforce_settings_provider__get_settings($settings = 'default') {
         $s->GrantType = variable_get('SALESFORCE_SANDBOX_SETTINGS_GRANT_TYPE');
         $s->ClientID = variable_get('SALESFORCE_SANDBOX_SETTINGS_CLIENT_ID');
         $s->ClientSecret = variable_get('SALESFORCE_SANDBOX_SETTINGS_CLIENT_SECRET');
+        $s->ProxyServer = variable_get('SALESFORCE_PROXY_SERVER');
+        $s->ProxyServerPort = variable_get('SALESFORCE_PROXY_SERVER_PORT');
+        $s->UseProxyServer = variable_get('SALESFORCE_SANDBOX_SETTINGS_USE_PROXY');
     } else {
         $s->URL = variable_get('SALESFORCE_SETTINGS_ENDPOINT_URL');
         $s->Username = variable_get('SALESFORCE_SETTINGS_USERNAME');
@@ -53,6 +56,9 @@ function salesforce_settings_provider__get_settings($settings = 'default') {
         $s->GrantType = variable_get('SALESFORCE_SETTINGS_GRANT_TYPE');
         $s->ClientID = variable_get('SALESFORCE_SETTINGS_CLIENT_ID');
         $s->ClientSecret = variable_get('SALESFORCE_SETTINGS_CLIENT_SECRET');
+        $s->ProxyServer = variable_get('SALESFORCE_PROXY_SERVER');
+        $s->ProxyServerPort = variable_get('SALESFORCE_PROXY_SERVER_PORT');
+        $s->UseProxyServer = variable_get('SALESFORCE_SETTINGS_USE_PROXY');
     }
     return $s;
 }
@@ -65,7 +71,7 @@ function salesforce_settings_provider__get_settings($settings = 'default') {
  * @return array
  */
 function salesforce_settings_provider__get_entity_definitions() {
-   return [
+    return [
         'cash_inflow' => [
             'internal_name' => 'Cash_Inflow__c',
             'fields' => [
@@ -138,11 +144,11 @@ function salesforce_settings_provider__get_entity_definitions() {
                 'Account_Manager__c' => [
                     'preferred_name' => 'AccountManager',
                     'type' => 'string'
-                    ,'relationship' => [
+                    , 'relationship' => [
                         'local_field' => 'AccountManager'
-                        ,'remote_field' => 'Id'
-                        ,'remote_type'=> 'parent'
-                        ,'remote_entity'=> 'salesforce_user'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
                     ],
                 ],
                 'Related_Account__c' => [
@@ -150,9 +156,9 @@ function salesforce_settings_provider__get_entity_definitions() {
                     , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'Account'
-                        ,'remote_field' => 'Id'
-                        ,'remote_type'=> 'parent'
-                        ,'remote_entity'=> 'account'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
                     ],
                 ],
                 'Related_Opportunity__c' => [
@@ -161,9 +167,9 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'lookup_entity' => 'opportunity'
                     , 'relationship' => [
                         'local_field' => 'Opportunity'
-                        ,'remote_field' => 'Id'
-                        ,'remote_type'=> 'parent'
-                        ,'remote_entity'=> 'opportunity'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'opportunity'
                     ],
                 ],
                 'Related_Customer_Product__c' => [
@@ -172,9 +178,9 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'lookup_entity' => 'customer_product'
                     , 'relationship' => [
                         'local_field' => 'CustomerProduct'
-                        ,'remote_field' => 'Id'
-                        ,'remote_type'=> 'parent'
-                        ,'remote_entity'=> 'customer_product'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product'
                     ],
                 ],
                 'Related_Payable_Commission__c' => [
@@ -182,9 +188,9 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'PayableCommission'
-                        ,'remote_field' => 'Id'
-                        ,'remote_type'=> 'parent'
-                        ,'remote_entity'=> 'payable_commission'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'payable_commission'
                     ],
                 ],
             ]
@@ -222,7 +228,14 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'Account',
                     'type' => 'string',
                     'lookup_entity' => 'account',
-                    'mandatory' => 1,
+                    'mandatory' => 1
+                    ,'relationship' => [
+                        'local_field' => 'Account'
+                        , 'preferred_local_key_name' => 'AccountId'
+                        ,'remote_field' => 'Id'
+                        ,'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                    ]
                 ],
                 'Opportunity__c' => [
                     'preferred_name' => 'Opportunity',
@@ -234,9 +247,9 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'type' => 'detail',
                     'relationship' => [
                         'local_field' => 'Id'
-                        ,'remote_field' => 'CustomerProduct'
-                        ,'remote_type'=> 'child'
-                        ,'remote_entity'=> 'cash_inflow'
+                        , 'remote_field' => 'CustomerProduct'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cash_inflow'
                     ],
                 ],
             ]
@@ -313,7 +326,13 @@ function salesforce_settings_provider__get_entity_definitions() {
                 'OwnerId' => [
                     'preferred_name' => 'Owner',
                     'type' => 'string',
-                    'lookup_entity' => 'salesforce_user'
+                    'relationship' => [
+                        'local_field' => 'Owner'
+                        , 'preferred_local_key_name' => 'OwnerId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ],
                 ],
                 'Description' => [
                     'preferred_name' => 'Description',
@@ -328,9 +347,10 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'type' => 'detail',
                     'relationship' => [
                         'local_field' => 'Id'
-                        ,'remote_field' => 'Account'
-                        ,'remote_type'=> 'child'
-                        ,'remote_entity'=> 'opportunity'
+                        , 'remote_field' => 'Account'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'opportunity'
+                        , 'filter' => 'StageName ne \'Opportunity Abandoned\' and StageName ne \'Closed/Lost\''
                     ],
                 ],
                 '_Products' => [
@@ -338,9 +358,9 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'type' => 'detail',
                     'relationship' => [
                         'local_field' => 'Id'
-                        ,'remote_field' => 'Account'
-                        ,'remote_type'=> 'child'
-                        ,'remote_entity'=> 'customer_product'
+                        , 'remote_field' => 'Account'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'customer_product'
                     ],
                 ],
                 '_CashInflows' => [
@@ -348,9 +368,9 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'type' => 'detail',
                     'relationship' => [
                         'local_field' => 'Id'
-                        ,'remote_field' => 'Account'
-                        ,'remote_type'=> 'child'
-                        ,'remote_entity'=> 'cash_inflow'
+                        , 'remote_field' => 'Account'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cash_inflow'
                     ],
                 ],
             ]
@@ -433,9 +453,14 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'type' => 'string'
                 ],
                 'OwnerId' => [
-                    'preferred_name' => 'Owner',
-                    'type' => 'string',
-                    'lookup_entity' => 'salesforce_user'
+                    'preferred_name' => 'Owner'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Owner'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
                 ],
                 'Parent_Opportunity__c' => [
                     'preferred_name' => 'ParentOpportunity',
@@ -443,19 +468,24 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'lookup_entity' => 'opportunity'
                 ],
                 'AccountId' => [
-                    'preferred_name' => 'Account',
-                    'type' => 'string',
-                    'lookup_entity' => 'account',
-                    'mandatory' => 1,
+                    'preferred_name' => 'Account'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'Account'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                    ],
                 ],
                 '_Opportunities' => [
                     'preferred_name' => 'Opportunities',
                     'type' => 'detail'
-                    ,'relationship' => [
+                    , 'relationship' => [
                         'local_field' => 'ParentOpportunity'
-                        ,'remote_field' => 'Id'
-                        ,'remote_type'=> 'parent'
-                        ,'remote_entity'=> 'opportunity'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'opportunity'
                     ],
                 ],
                 '_Products' => [
@@ -463,19 +493,19 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'Id'
-                        ,'remote_field' => 'Opportunity'
-                        ,'remote_type'=> 'child'
-                        ,'remote_entity'=> 'customer_product'
+                        , 'remote_field' => 'Opportunity'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'customer_product'
                     ],
                 ],
                 '_CashInflows' => [
                     'preferred_name' => 'CashInflows',
                     'type' => 'detail'
-                    ,'relationship' => [
+                    , 'relationship' => [
                         'local_field' => 'Id'
-                        ,'remote_field' => 'Opportunity'
-                        ,'remote_type'=> 'child'
-                        ,'remote_entity'=> 'cash_inflow'
+                        , 'remote_field' => 'Opportunity'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cash_inflow'
                     ],
                 ],
             ],
@@ -515,21 +545,21 @@ function salesforce_settings_provider__get_entity_definitions() {
                 '_Accounts' => [
                     'preferred_name' => 'Accounts',
                     'type' => 'detail'
-                    ,'relationship' => [
+                    , 'relationship' => [
                         'local_field' => 'Id'
-                        ,'remote_field' => 'Owner'
-                        ,'remote_type'=> 'child'
-                        ,'remote_entity'=> 'account'
+                        , 'remote_field' => 'Owner'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'account'
                     ],
                 ],
                 '_Opportunities' => [
                     'preferred_name' => 'Opportunities',
                     'type' => 'detail'
-                    ,'relationship' => [
+                    , 'relationship' => [
                         'local_field' => 'Id'
-                        ,'remote_field' => 'Owner'
-                        ,'remote_type'=> 'child'
-                        ,'remote_entity'=> 'opportunity'
+                        , 'remote_field' => 'Owner'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'opportunity'
                     ],
                 ],
             ],

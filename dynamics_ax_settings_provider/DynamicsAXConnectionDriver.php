@@ -49,7 +49,6 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     public function mergeRecordArray($data, $chunkResult, EntityFieldDefinition $localField, EntityFieldDefinition $remoteField = NULL) {
         $r = $data instanceof DynamicsAXComplexEntity ? $data : (new DynamicsAXComplexEntity());
 
-
         if (!is_null($chunkResult)) {
             foreach ($chunkResult as $entity => $val) {
                 $y = NULL;
@@ -66,6 +65,9 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
                 if (property_exists($vals, $entity)) {
                     $val_items = $vals->{$entity};
                     parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
+                } else if (property_exists($vals, 'DAT')) {
+                    $val_items = $vals->{'DAT'};
+                    parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
                 }
             } else {
                 parent::addExpansionToRecord($entity, $record, $fieldInfo, $vals);
@@ -74,9 +76,51 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
         return $records;
     }
+    
+    public function getItemById($entityBrowser, $id, $select, $expands = '', $otherOptions = []) {
 
-    public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $object, array $otherOptions = []) {
+        $return = parent::getItemById(... func_get_args());
+        if(!is_null($return) && count($return > 0)){
+            return $return[0];
+        }
+        return NULL;
+    }
+
+    public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $obj, array $otherOptions = []) {
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
+
+        $url = "http://molsptest:82/drp/CPortalService.svc/UpdateTable";
+//        $url = "{$this->endpoint}http://molsptest:82/drp/CPortalService.svc/UpdateTable"; //{$entityBrowser->getInternalName()}?{$query_string}";
+        $recordInfo = [];
+        $recordInfo['Table'] = $entityBrowser->getInternalName();
+        $recordInfo['Entity'] = $obj->DataArea;
+        $recordInfo['RecId'] = $id;
         
+        $object = $entityBrowser->reverseRenameFields($obj);
+        $object->RecordInfo = $recordInfo;
+        $objOut = json_encode($object);
+                
+//        var_dump($objOut);
+        $tokenOption = [
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: text/plain'
+            ]
+            , CURLOPT_PROTOCOLS => CURLPROTO_HTTP
+            , CURLOPT_SSL_VERIFYPEER => 0
+            , CURLOPT_SSL_VERIFYHOST => 0
+            , CURLOPT_POSTFIELDS => $objOut
+        ];
+
+        $content = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
+        $res = $content->getContent();
+//        var_dump($res);
+        if (!is_null($res)) {
+            $res = (json_decode($content->getContent())); //TODO: add code that will hand this error appropriately.
+
+            return true;
+        } else {
+            throw new \Exception('Something went wrong. Please try again');
+        }
     }
 
     public function createItemInternal($entityBrowser, &$connectionToken = NULL, \stdClass $object, array $otherOptions = []) {
@@ -106,6 +150,8 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , '$select' => implode(',', $select)
             , '$top' => $otherOptions['$top']
         ];
+        
+//        var_dump($filter);
 
         $query_string = drupal_http_build_query($invoice_params);
         $url = "{$this->endpoint}/{$entityBrowser->getInternalName()}?{$query_string}";

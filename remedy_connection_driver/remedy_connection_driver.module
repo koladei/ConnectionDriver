@@ -3,14 +3,18 @@
 module_load_include('module', 'settings_provider');
 $module_path = drupal_get_path('module', 'remedy_connection_driver');
 include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
-include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/RemedyConnectionDriver.php');
 
-use com\mainone\middleware\RemedyConnectionDriver;
+if (!class_exists('SoapClient')) {
+    include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/nusoap/nusoap.php');
+    include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/nusoap/class.soapclient.php');
+}
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/BMCRemedyConnectionDriver.php');
 
-function remedy_connection_driver_connection_driver_dynamics_ax_alter(&$container) {
-    $driver = new RemedyConnectionDriver(function($x){
-        $return = mware_connection_driver__get_driver($x);
-        return $return;
+use com\mainone\middleware\BMCRemedyConnectionDriver;
+
+function remedy_connection_driver_connection_driver_bmc_remedy_alter(&$container) {
+    $driver = new BMCRemedyConnectionDriver(function($x) {
+        return mware_connection_driver__get_driver($x);
     });
 
     $defs = remedy_connection_driver__get_entity_definitions();
@@ -24,7 +28,7 @@ function remedy_connection_driver_connection_driver_dynamics_ax_alter(&$containe
  */
 function remedy_connection_driver_permission() {
     $permission = [];
-    
+
     return $permission;
 }
 
@@ -43,53 +47,178 @@ function remedy_connection_driver__user_access($args) {
  */
 function remedy_connection_driver__get_entity_definitions() {
     return [
-        'incident' => [
-            'internal_name' => 'CustTable',
-            'fields' => [
-                'RECID' => [
+        'incidentweb' => [
+            'internal_name' => 'ShowIncidentsWebService'
+            , 'soap_methods' => [
+                'query' => 'New_GetList_Operation_1'
+            ]
+            , 'fields' => [
+                'Entry_ID' => [
                     'preferred_name' => 'Id',
                     'type' => 'string',
                     'mandatory' => 1,
-                ],
-                'GCID' => [
-                    'preferred_name' => 'Customer',
-                    'type' => 'string',
-                    'mandatory' => 1
+                ]
+                , 'Submitter' => [
+                    'preferred_name' => 'SubmittedBy',
+                    'type' => 'string'
                     , 'relationship' => [
-                        'local_field' => 'Customer'
-                        , 'remote_field' => 'GCID'
-                        , 'remote_type'=> 'parent'
-                        , 'remote_entity'=> 'account'
+                        'local_field' => 'SubmittedBy'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ],
+                ]
+                , 'HPD_CI' => [
+                    'preferred_name' => 'CI',
+                    'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CI'
+                        , 'preferred_local_key_name' => 'CircuitID'
+                        , 'remote_field' => 'Name'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product'
                         , 'remote_driver' => 'salesforce'
                     ],
-                ],
-                'MODIFIEDDATETIME' => [
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Submitted',
+                    'type' => 'string'
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status',
+                    'type' => 'string'
+                ]
+                , 'Customer_Login_ID' => [
+                    'preferred_name' => 'Customer',
+                    'type' => 'string'
+                ]
+                , 'First_Name' => [
+                    'preferred_name' => 'FirstName',
+                    'type' => 'string'
+                ]
+                , 'Last_Name' => [
+                    'preferred_name' => 'LastName',
+                    'type' => 'string'
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'Description',
+                    'type' => 'string'
+                ]
+                , 'IncidentStartTime' => [
+                    'preferred_name' => 'StartTime'
+//                    'preferred_query_name' => '\'Last Modified Date\'',Customer_Login_ID
+                    ,'type' => 'datetime'
+                ]
+                , 'Last_Modified_Date' => [
                     'preferred_name' => 'Modified',
-                    'type' => 'datetime',
-                ],
-                'CREATEDDATETIME' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime',
-                ],
-                'ACCOUNTNUM' => [
-                    'preferred_name' => 'AccountNumber'
+                    'preferred_query_name' => 'Last Modified Date',
+                    'type' => 'datetime'
+                ]
+                , 'Assignee_Login_ID' => [
+                    'preferred_name' => 'AssignedTo'
                     , 'type' => 'string'
-                ],
-                'DATAAREAID' => [
-                    'preferred_name' => 'DataArea',
-                    'type' => 'string',
-                ],
-                '_TRANSACTIONS' => [
-                    'preferred_name' => 'Transactions',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_trans',
-                    'relationship' => [
-                        'local_field' => 'AccountNumber',
-                        'remote_field' => 'AccountNumber',
-                        'remote_type' => 'child'
-                    ],
-                ],
+                    , 'relationship' => [
+                        'local_field' => 'AssignedTo'
+                        , 'preferred_local_key_name' => 'AssigneeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
             ]
-        ]        
+        ]
+        , 'customer-incident' => [
+            'internal_name' => 'globalcustomeridwebservice'
+            , 'soap_methods' => [
+                'query' => 'GetList'
+            ]
+            , 'fields' => [
+                'Request_ID__c' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ]
+                , 'Submitter__c' => [
+                    'preferred_name' => 'SubmittedBy',
+                    'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'SubmittedBy'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ],
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Submitted',
+                    'type' => 'string'
+                ]
+                , 'Assignee_Login_ID' => [
+                    'preferred_name' => 'AssignedTo',
+                    'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AssignedTo'
+                        , 'preferred_local_key_name' => 'AssigneeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ],
+                ]
+            ]
+        ]
+        , 'incident' => [
+            'internal_name' => 'HPD_IncidentInterface_WS'
+            , 'soap_methods' => [
+                'query' => 'HelpDesk_QueryList_Service'
+            ]
+            , 'fields' => [
+                'Entry_ID' => [
+                    'preferred_name' => 'Id',
+                    'type' => 'string',
+                    'mandatory' => 1,
+                ]
+                , 'Submitter' => [
+                    'preferred_name' => 'SubmittedBy',
+                    'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'SubmittedBy'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ],
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Submitted',
+                    'type' => 'string'
+                ]
+                , 'Last_Modified_Date' => [
+                    'preferred_name' => 'Modified',
+                    'preferred_query_name' => '\'Last Modified Date\'',
+                    'type' => 'string'
+                ]
+                , 'Assignee_Login_ID' => [
+                    'preferred_name' => 'AssignedTo'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AssignedTo'
+                        , 'preferred_local_key_name' => 'AssigneeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ],
+                ]
+            ]
+        ]
     ];
 }

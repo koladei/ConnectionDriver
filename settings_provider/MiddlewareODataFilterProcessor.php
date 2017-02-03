@@ -27,17 +27,19 @@ class MiddlewareODataFilterProcessor {
     private $expressionStringer = NULL;
     private $expressionGroupStringer = NULL;
     private $lastGroupKey = NULL;
+    private $valueContext = NULL;
 
-    public static function convert(EntityDefinitionBrowser $entityDefinition = NULL, $expression, $stringerType = MiddlewareFilterBase::DEFAULT_STRINGER, callable $expressionStringer = NULL, callable $expressionGroupStringer = NULL) {
-        $filterExpression = new MiddlewareODataFilterProcessor($entityDefinition, $expression, $stringerType);
+    public static function convert(EntityDefinitionBrowser $entityDefinition = NULL, $expression, $context = NULL, $stringerType = MiddlewareFilterBase::DEFAULT_STRINGER, callable $expressionStringer = NULL, callable $expressionGroupStringer = NULL) {
+        $filterExpression = new MiddlewareODataFilterProcessor($entityDefinition, $expression, $context, $stringerType);
         return $filterExpression;
     }
 
-    private function __construct(EntityDefinitionBrowser $entityDefinition = NULL, $expression, $stringerType = MiddlewareFilterBase::DEFAULT_STRINGER, callable $expressionStringer = NULL, callable $expressionGroupStringer = NULL) {
+    private function __construct(EntityDefinitionBrowser $entityDefinition = NULL, $expression, $context = NULL, $stringerType = MiddlewareFilterBase::DEFAULT_STRINGER, callable $expressionStringer = NULL, callable $expressionGroupStringer = NULL) {
 
         $this->stringerType = $stringerType;
         $this->expressionStringer = $expressionStringer;
         $this->expressionGroupStringer = $expressionGroupStringer;
+        $this->valueContext = $context;
 
         // In operator
         $matchs = [];
@@ -47,7 +49,7 @@ class MiddlewareODataFilterProcessor {
             $place = count($this->fragments);
             $key = "#{$place}#";
             $v = preg_split("/({$mat[5]})\s*\,\s*(\\1)/", $mat[6]);
-            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $v, $mat[2], $mat[5], '', $this->stringerType, $this->expressionStringer);
+            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $v, $mat[2], $mat[5], '', $this->valueContext, $this->stringerType, $this->expressionStringer);
             $expression = self::str_replace_first($mat[0], $key, $expression);
         }
 
@@ -58,7 +60,7 @@ class MiddlewareODataFilterProcessor {
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
             $key = "#{$place}#";
-            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[3], $mat[6], $mat[2], $mat[5], '', $this->stringerType, $this->expressionStringer);
+            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[3], $mat[6], $mat[2], $mat[5], '', $this->valueContext, $this->stringerType, $this->expressionStringer);
             $expression = self::str_replace_first($mat[0], $key, $expression);
         }
 
@@ -69,7 +71,7 @@ class MiddlewareODataFilterProcessor {
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
             $key = "#{$place}#";
-            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $mat[8], $mat[2], $mat[11], $mat[5], $this->stringerType, $this->expressionStringer);
+            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $mat[8], $mat[2], $mat[11], $mat[5], $this->valueContext, $this->stringerType, $this->expressionStringer);
             $expression = self::str_replace_first($mat[0], $key, $expression);
         }
 
@@ -80,7 +82,7 @@ class MiddlewareODataFilterProcessor {
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
             $key = "#{$place}#";
-            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $mat[3], $mat[2], '', '', $this->stringerType, $this->expressionStringer);
+            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $mat[3], $mat[2], '', '', $this->valueContext, $this->stringerType, $this->expressionStringer);
             $expression = self::str_replace_first($mat[0], $key, $expression);
         }
 

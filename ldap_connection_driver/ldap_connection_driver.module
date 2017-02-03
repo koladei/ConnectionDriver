@@ -103,8 +103,8 @@ function  ldap_connection_driver__get_entity_definition($entity_name, $component
  */
 function ldap_connection_driver__get_entity_definitions() {
    return [
-        'Objects' => [
-            'internal_name' => 'Objects',
+        'objects' => [
+            'internal_name' => 'objects',
             'fields' => [
                 'samaccountname' => [
                     'preferred_name' => 'Id',
@@ -147,7 +147,17 @@ function ldap_connection_driver__get_entity_definitions() {
                         'local_field' => 'Manager'
                         ,'remote_field' => 'DN'
                         ,'remote_type'=> 'parent'
-                        ,'remote_entity'=> 'Objects'
+                        ,'remote_entity'=> 'objects'
+                    ],
+                ]
+                , '_members' => [
+                    'preferred_name' => 'Members',
+                    'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'DN'
+                        ,'remote_field' => 'MemberOf'
+                        ,'remote_type'=> 'child'
+                        ,'remote_entity'=> 'objects'
                     ],
                 ]
                 , '_subordinates' => [
@@ -157,7 +167,7 @@ function ldap_connection_driver__get_entity_definitions() {
                         'local_field' => 'DN'
                         ,'remote_field' => 'ManagerId'
                         ,'remote_type'=> 'child'
-                        ,'remote_entity'=> 'Objects'
+                        ,'remote_entity'=> 'objects'
                     ],
                 ]
                 , 'thumbnailphoto' => [

@@ -62,7 +62,10 @@ abstract class MiddlewareConnectionDriver {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $result = $this->getItemsByIds($entityBrowser, [$id], $select, $expands, $otherOptions);
 
-        return count($result) > 0 ? $result[0] : NULL;
+        reset($result);
+        $first_key = key($result);
+
+        return count($result) > 0 ? $result[$first_key] : NULL;
     }
 
     public function getItemsByIds($entityBrowser, $ids, $select, $expands = '', $otherOptions = []) {
@@ -90,7 +93,7 @@ abstract class MiddlewareConnectionDriver {
         }
 
         $additionalFilter = isset($otherOptions['more_filter']) ? "({$otherOptions['more_filter']}) and " : '';
-        $result = $this->getItems($entityBrowser, $select, "{$additionalFilter}{$entityField->getDisplayName()} IN({$implosion})", $expands);
+        $result = $this->getItems($entityBrowser, $select, "{$additionalFilter}{$entityField->getDisplayName()} IN({$implosion})", $expands, $otherOptions);
         return $result;
     }
 
@@ -98,8 +101,31 @@ abstract class MiddlewareConnectionDriver {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $entityBrowser = $this->setStrategies($entityBrowser);
 
-        $object = $entityBrowser->reverseRenameFields($object);
-        return $this->updateItemInternal($entityBrowser, $this->connectionToken, $id, $object, $otherOptions);
+        // Stripout invalid fields
+        $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
+
+        $obj = new \stdClass();
+        foreach ($setFields as $setField) {
+            // avoid objects
+            if (!is_object($object->{$setField}) && !is_array($object->{$setField})) {
+                $obj->{$setField} = $object->{$setField};
+            }
+        }
+
+        if (!isset($otherOptions['$select'])) {
+            $otherOptions['$select'] = $setFields;
+        } else {
+            $otherOptions['$select'] = array_unique(array_merge(explode(',', $otherOptions['$select']), $setFields));
+        }
+
+        if (!isset($otherOptions['$expand'])) {
+            $otherOptions['$expand'] = '';
+        }
+
+
+        if ($this->updateItemInternal($entityBrowser, $this->connectionToken, $id, $obj, $otherOptions)) {
+            return $this->getItemById($entityBrowser, $id, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+        }
     }
 
     public function createItem($entityBrowser, \stdClass $object, array $otherOptions = []) {
@@ -127,6 +153,10 @@ abstract class MiddlewareConnectionDriver {
             $otherOptions['$top'] = 100;
         }
 
+        if (!isset($otherOptions['$skip'])) {
+            $otherOptions['$skip'] = 1;
+        }
+
         // Set the default filter
         $filter = strlen(trim($filter)) < 1 ? $this->getDefaultFilter() : $filter;
 
@@ -138,60 +168,63 @@ abstract class MiddlewareConnectionDriver {
         $select = self::getCurrentSelections($entityBrowser, $fields);
 
         // Process the $filter statement
-        $filterExpression = MiddlewareODataFilterProcessor::convert($entityBrowser, $filter, $this->getStringer());
+        $filterExpression = MiddlewareODataFilterProcessor::convert($entityBrowser, $filter, NULL, $this->getStringer());
 
         // Convert the $expand parameter into an array
         $expands = [];
         $expandeds = is_array($expandeds) ? $expandeds : preg_split('@(?:\s*,\s*|^\s*|\s*$)@', $expandeds, NULL, PREG_SPLIT_NO_EMPTY);
 
-        foreach ($expandeds as $expand) {
+        $yyy = [];
+        foreach ($expandeds as &$expand) {
             if (($pos = strpos($expand, '/')) > 0) {
                 $key = substr($expand, 0, $pos);
                 $val = substr($expand, $pos + 1);
-                
-                $ex0 = isset($expands[$expand]) ? $expands[$expand] : ['expand' => []];
-                $ex1 = array_merge(['select' => $expandX, 'ids' => [], 'info' => $fieldInfo, 'remoteFieldInfo' => $remoteField, 'data' => []], $ex0);
-                if (!in_array($ex1['expand'], $key)) {
-                    $ex1['expand'][$key] = [];
-                }
+                $expand = $key;
 
-                if (!in_array($ex1['expand'][$key], $val)) {
-                    $ex1['expand'][$key][] = $val;
-                }
-
-                $expands[$expand] = $ex1;
-            } else {
-
-                $fieldInfo = $entityBrowser->getFieldByDisplayName($expand);
-
-                //check if this field can be expaanded
-                if ($fieldInfo->isExpandable()) {
-                    // Get a reference to the remote driver
-                    $remoteDriver = $fieldInfo->getRemoteDriver();
-                    $remoteEntityBrowser = $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()];
-                    $remoteField = $remoteEntityBrowser->getFieldByDisplayName($fieldInfo->getRelatedForeignFieldName());
-
-                    // Get the selected subfields of this expanded field
-                    $expandX = self::getCurrentExpansions($entityBrowser, $expand, $fields);
-
-                    // Ensure that the lookup of the remote entity is included in the remote entity's selection
-                    if (!in_array($remoteField->getDisplayName(), $expandX)) {
-                        $expandX2 = $expandX;
-                        $expandX[] = $remoteField->getDisplayName();
+                if (isset($expands[$expand])) {
+                    if (!isset($expands[$expand]['expand'])) {
+                        $expands[$expand]['expand'] = [];
                     }
 
-                    $ex0 = isset($expands[$expand]) ? $expands[$expand] : [];
-                    $ex1 = array_merge(['select' => $expandX, 'ids' => [], 'info' => $fieldInfo, 'remoteFieldInfo' => $remoteField, 'data' => [], 'expand' => []], $ex0);
-                    $expands[$expand] = $ex1;
+                    $yyy = &$expands[$expand]['expand'];
+                }
 
-                    // Ensure the field this expansion depends on is selected.
-                    $localFieldName = $fieldInfo->getRelatedLocalFieldName();
-                    if (!in_array($localFieldName, $select)) {
-                        $select[] = $localFieldName;
-                    }
+                if (!isset($yyy[$key])) {
+                    $yyy[$key] = [$val];
                 } else {
-                    throw new \Exception("Field {$expand} can not be expanded.");
+                    $yyy[$key][] = $val;
                 }
+
+                $expands[$expand]['expand'] = $yyy;
+            }
+            $fieldInfo = $entityBrowser->getFieldByDisplayName($expand);
+
+            //check if this field can be expaanded
+            if ($fieldInfo->isExpandable()) {
+                // Get a reference to the remote driver
+                $remoteDriver = $fieldInfo->getRemoteDriver();
+                $remoteEntityBrowser = $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()];
+                $remoteField = $remoteEntityBrowser->getFieldByDisplayName($fieldInfo->getRelatedForeignFieldName());
+
+                // Get the selected subfields of this expanded field
+                $expandX = self::getCurrentExpansions($entityBrowser, $expand, $fields);
+
+                // Ensure that the lookup of the remote entity is included in the remote entity's selection
+                if (!in_array($remoteField->getDisplayName(), $expandX)) {
+                    $expandX[] = $remoteField->getDisplayName();
+                }
+
+                $ex0 = isset($expands[$expand]) ? $expands[$expand] : [];
+                $ex1 = array_merge(['select' => $expandX, 'ids' => [], 'info' => $fieldInfo, 'remoteFieldInfo' => $remoteField, 'data' => []], $ex0);
+                $expands[$expand] = $ex1;
+
+                // Ensure the field this expansion depends on is selected.
+                $localFieldName = $fieldInfo->getRelatedLocalFieldName();
+                if (!in_array($localFieldName, $select)) {
+                    $select[] = $localFieldName;
+                }
+            } else {
+                throw new \Exception("Field {$expand} can not be expanded.");
             }
         }
 
@@ -210,9 +243,24 @@ abstract class MiddlewareConnectionDriver {
                     $fieldInfo = $expand_val['info'];
                     $relatedKey = $fieldInfo->getRelatedLocalFieldName();
                     $ids = $entityBrowser->fetchFieldValues($record, $relatedKey);
-                    $expand_val['ids'] = array_merge_recursive($expand_val['ids'], $ids);
+                    if (is_array($ids)) {
+                        $expand_val['ids'] = array_merge($expand_val['ids'], $ids);
+                    } else {
+                        $expand_val['ids'][] = $ids;
+                    }
+//                    $co = count($ids);
+//                    var_dump("{$expand_key} ::=:: {$co}");
                 }
             });
+//            foreach ($expands as $expand_key => &$expand_val) {
+//                $fieldInfo = $expand_val['info'];
+//                $relatedKey = $fieldInfo->getRelatedLocalFieldName();
+//                $co = count($expand_val['ids']);
+//
+//                var_dump("{$expand_key} :: {$relatedKey} :: {$co}");
+////                $ids = $entityBrowser->fetchFieldValues($record, $relatedKey);
+////                $expand_val['ids'] = array_merge($expand_val['ids'], $ids);
+//            }
 
             // Fetch the related field values in one sweep
             array_walk($expands, function(&$expand_val, $expand_key) use($driverScope) {
@@ -220,7 +268,7 @@ abstract class MiddlewareConnectionDriver {
                 $remoteField = $expand_val['remoteFieldInfo'];
                 $remoteEntityBrowser = $remoteField->getParent();
                 $remoteDriver = $remoteEntityBrowser->getParent();
-                $otherOptions = ['$top' => 2000];
+                $otherOptions = ['$top' => 10000];
 
                 if (!is_null($localField->getRemoteEntityFilter())) {
                     $otherOptions['more_filter'] = $localField->getRemoteEntityFilter();
@@ -230,14 +278,18 @@ abstract class MiddlewareConnectionDriver {
                 $expand_val['ids'] = array_unique($expand_val['ids']);
 
                 // Divide the keys into manageable chunks
-                $expand_chunks = array_chunk($expand_val['ids'], 50);
+                $expand_chunks = array_chunk($expand_val['ids'], 100);
                 $data = NULL;
 
                 $ex = isset($expand_val['expand'][$localField->getDisplayName()]) ? $expand_val['expand'][$localField->getDisplayName()] : [];
 
+//                $co = 0;
+//                $tot = count($expand_val['ids']);
                 foreach ($expand_chunks as $chunk) {
+//                    var_dump("{$localField->getDisplayName()}: {$co}: {$tot}");
+//                    $co = $co + 1;
                     $chunkResult = $remoteDriver->getItemsByFieldValues($remoteEntityBrowser, $remoteField, $chunk, $expand_val['select'], implode(',', $ex), $otherOptions);
-
+//                    var_dump($chunkResult);
                     // Combine this chunk result with previous chunk results
                     $data = $remoteEntityBrowser->mergeExpansionChunks($data, $chunkResult, $localField, $remoteField);
                 }
@@ -255,7 +307,7 @@ abstract class MiddlewareConnectionDriver {
                 }
             });
         } else {
-            return [];
+            throw new \Exception("Failed to get data from Entity {$entityBrowser->getDisplayName()}");
         }
 
         return $result;
@@ -308,7 +360,13 @@ abstract class MiddlewareConnectionDriver {
 
         foreach ($keys as $key) {
             $internalName = $brower->getFieldByDisplayName($key)->getInternalName();
-            $r->{$internalName} = $record->{$key};
+            if (property_exists($r, $internalName)) {
+                if (!is_null($record->{$key})) {
+                    $r->{$internalName} = $record->{$key};
+                }
+            } else {
+                $r->{$internalName} = $record->{$key};
+            }
         }
 
         return $r;
@@ -322,7 +380,7 @@ abstract class MiddlewareConnectionDriver {
                 if (is_null($remoteField)) {
                     $r[] = $val;
                 } else {
-                    $remoteFieldName = $remoteField->getDisplayName();
+                    $remoteFieldName = ($remoteField->isExpandable()) ? $remoteField->getRelatedLocalField()->getDisplayName() : $remoteField->getDisplayName();
 
                     $remoteFieldValue = $val->{$remoteFieldName};
 
@@ -349,6 +407,7 @@ abstract class MiddlewareConnectionDriver {
 
     public static function getCurrentSelections(EntityDefinitionBrowser $entityBrowser, array $fields) {
 
+//        var_dump($fields);
         // set the compulsary fields of the entity
         $required_fields = $entityBrowser->getMandatoryFieldNames();
         foreach ($required_fields as $required_field) {
@@ -358,19 +417,38 @@ abstract class MiddlewareConnectionDriver {
         }
 
         // remove complex or invalid fields
-        $fields = array_values(array_filter($fields, function(&$item) {
-                    if (strpos($item, '/')) {
-                        return FALSE;
-                    }
+        $shorts = [];
+        $fields = array_values(array_filter($fields, function(&$item) use(&$shorts) {
+                    $shorthand = '/[\[]([\w\|\d]+)[\]]/i';
+                    $matchs = [];
+                    preg_match_all($shorthand, $item, $matchs, PREG_SET_ORDER);
 
-                    return $item;
+                    if (strpos($item, '/') > -1) {
+                        return FALSE;
+                    } else
+                    if (count($matchs) > 0) {
+                        foreach ($matchs as $mat) {
+                            $ss = preg_split('@(?:\s*\|\s*|^\s*|\s*$)@', $mat[1], NULL, PREG_SPLIT_NO_EMPTY);
+                            foreach ($ss as $s) {
+                                if (!in_array($shorts, $s)) {
+                                    $shorts[] = $s;
+                                }
+                            }
+                        }
+                        return FALSE;
+                    } else {
+                        return $item;
+                    }
                 }));
 
-        return $fields;
+//        var_dump($fields);
+
+        return array_merge($fields, $shorts);
     }
 
     public static function getCurrentExpansions(EntityDefinitionBrowser $entityBrowser, $field, $fields) {
-        $regex = "/({$field})\/([^\/]+)[^\w]*/";
+//        $regex = "/({$field})\/([^\/]+)[^\w]*/";
+        $regex = "/({$field})\/([^\s\,]+)/";
         $fieldsR = [];
 
         foreach ($fields as $item) {

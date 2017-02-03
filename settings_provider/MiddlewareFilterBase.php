@@ -17,6 +17,7 @@ abstract class MiddlewareFilterBase {
     const SQL = 3;
     const LDAP = 4;
     const CUSTOM = 5;
+    const BMC = 6;
 
     public abstract function setStringifier(callable $processor = NULL);
     protected abstract function LDAPStringer(MiddlewareFilterBase &$scope);
@@ -24,6 +25,7 @@ abstract class MiddlewareFilterBase {
     protected abstract function SQLStringer(MiddlewareFilterBase &$scope);
     protected abstract function DEFAULTStringer(MiddlewareFilterBase &$scope);
     protected abstract function XPPStringer(MiddlewareFilterBase &$scope);
+    protected abstract function BMCStringer(MiddlewareFilterBase &$scope);
 
     public function __construct($behaviour = self::DEFAULT_STRINGER, callable $stringer = NULL) {
 
@@ -42,6 +44,10 @@ abstract class MiddlewareFilterBase {
             }
             case self::XPP:{
                 $this->stringer = 'XPPStringer';
+                break;
+            }
+            case self::BMC:{
+                $this->stringer = 'BMCStringer';
                 break;
             }
             case self::DEFAULT_STRINGER:{

@@ -10,6 +10,7 @@ namespace com\mainone\middleware;
 class EntityFieldDefinition {
 
     private $internalName;
+    private $preferredQueryName;
     private $actualInternalName;
     private $displayName;
     private $type;
@@ -25,12 +26,14 @@ class EntityFieldDefinition {
         $this->parent = $parent;
         $this->internalName = $name;
         $this->actualInternalName = $name;
+        $this->preferredQueryName = isset($fieldDefinition['preferred_query_name'])?$fieldDefinition['preferred_query_name']:$name;
         $this->displayName = $fieldDefinition['preferred_name'];
         $this->type = $fieldDefinition['type'];
         $this->isAnArray = isset($fieldDefinition['is_array'])?$fieldDefinition['is_array']:0;
         if($this->type != 'detail' && isset($fieldDefinition['relationship'])) {
             if($this->localField = $fieldDefinition['relationship']['local_field'] == $fieldDefinition['preferred_name']){
-                $fieldDefinition['relationship']['local_field'] = "{$fieldDefinition['relationship']['local_field']}Id";
+                $idName = isset($fieldDefinition['relationship']['preferred_local_key_name'])?$fieldDefinition['relationship']['preferred_local_key_name']:"{$fieldDefinition['relationship']['local_field']}Key";
+                $fieldDefinition['relationship']['local_field'] = $idName;//"{$fieldDefinition['relationship']['local_field']}Id";
                 $this->internalName = "{$name}_lookup";
                 $this->actualInternalName = $name;
                 $this->type = 'detail';
@@ -68,6 +71,10 @@ class EntityFieldDefinition {
 
     public function getInternalName($actual = TRUE){
         return $actual?$this->actualInternalName: $this->internalName;
+    }
+
+    public function getQueryName(){
+        return $this->preferredQueryName;
     }
 
     public function getDisplayName(){

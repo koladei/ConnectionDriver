@@ -31,9 +31,9 @@ class MiddlewareFilter extends MiddlewareFilterBase {
     const SUBSTRING_OF = 'substringof';
     const IN = 'in';
 
-    public function __construct(EntityDefinitionBrowser $entityDefinition = NULL, $field, $value, $operator = EQUAL_TO, $quote = '', $formater = '', $behaviour = self::DEFAULT_STRINGER, callable $stringer = NULL) {
+    public function __construct(EntityDefinitionBrowser $entityDefinition = NULL, $field, $value, $operator = EQUAL_TO, $quote = '', $formater = '', $context = NULL, $behaviour = self::DEFAULT_STRINGER, callable $stringer = NULL) {
         parent::__construct($behaviour, $stringer);
-        
+
         if ($operator == self::IN) {
             if (!is_array($value)) {
                 throw new \Exception("IN filter expects an array value, {gettype($value)} given.");
@@ -43,7 +43,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         // Get the internal name of the field
         $fieldInfo = !is_null($entityDefinition) ? $entityDefinition->getFieldByDisplayName($field) : NULL;
         $this->fieldInfo = $fieldInfo;
-        $this->field = !is_null($fieldInfo) ? $fieldInfo->getInternalName() : $field;
+        $this->field = !is_null($fieldInfo) ? $fieldInfo->getQueryName() : $field;
         $this->quote = $quote;
 
         if ($formater == 'datetime') {
@@ -87,10 +87,9 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         if (is_array($this->value)) {
             $im = implode("{$this->quote},{$this->quote}", $this->value);
             return "{$this->quote}{$im}{$this->quote}";
-        } else if($this->value  instanceof \DateTime){
+        } else if ($this->value instanceof \DateTime) {
             return $this->value->format('Y-m-d\\TH:i:s');
-        }
-        else{
+        } else {
             return "{$this->quote}{$this->value}{$this->quote}";
         }
     }
@@ -232,8 +231,6 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             $value = $value->format('\'Y-m-d\\TH:i:s\\Z\'');
         } else if (is_null($value)) {
             $value = 'NULL';
-        } else {
-            $value = $this->quoteValue();
         }
 
         switch ($this->operator) {
@@ -250,15 +247,15 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                     break;
                 }
             case self::NOT_EQUAL_TO: {
-                    $ret = "{$this->field} != {$value}";
+                    $ret = "{$this->field} != {$this->quoteValue()}";
                     break;
                 }
             case self::EQUAL_TO: {
-                    $ret = "{$this->field} = {$value}";
+                    $ret = "{$this->field} = {$this->quoteValue()}";
                     break;
                 }
             case self::GREATER_THAN: {
-                    $ret = "{$this->field} > {$value}";
+                    $ret = "{$this->field} > {$this->quoteValue()}";
                     break;
                 }
             case self::GREATER_THAN_EQUAL_TO: {
@@ -275,6 +272,70 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 }
             case self::IN: {
                     $ret = "{$this->field} IN({$this->quoteValue()})";
+                    break;
+                }
+            default: {
+                    throw new \Exception('Unknown query operand encountered.');
+                }
+        }
+
+        return $ret;
+    }
+
+    protected function BMCStringer(MiddlewareFilterBase &$scope) {
+        $ret = '';
+
+        $field = $this->field;
+        $value = $this->value;
+        if ($value instanceof \DateTime) {
+            $value = $value->format('"m/d/Y H:i:s"');
+        } else if (is_null($value)) {
+            $value = 'NULL';
+        } else if(is_string($value)){
+            $value = "\"{$value}\"";
+        }else{
+            $value = $this->quoteValue();
+        }
+
+        switch ($this->operator) {
+            case self::STARTS_WITH: {
+                    $ret = "'{$field}' LIKE '{$value}%'";
+                    break;
+                }
+            case self::ENDS_WITH: {
+                    $ret = "'{$field}' LIKE '%{$value}'";
+                    break;
+                }
+            case self::SUBSTRING_OF: {
+                    $ret = "'{$field}' LIKE '%{$value}%'";
+                    break;
+                }
+            case self::NOT_EQUAL_TO: {
+                    $ret = "'{$field}' != {$value}";
+                    break;
+                }
+            case self::EQUAL_TO: {
+                    $ret = "'{$field}' == {$value}";
+                    break;
+                }
+            case self::GREATER_THAN: {
+                    $ret = "'{$field}' > {$value}";
+                    break;
+                }
+            case self::GREATER_THAN_EQUAL_TO: {
+                    $ret = "'{$field}' >= {$value}";
+                    break;
+                }
+            case self::LESS_THAN: {
+                    $ret = "'{$field}' < {$value}";
+                    break;
+                }
+            case self::LESS_THAN_EQUAL_TO: {
+                    $ret = "'{$field}' <= {$value}";
+                    break;
+                }
+            case self::IN: {
+                    $ret = "'{$field}' IN({$this->quoteValue()})";
                     break;
                 }
             default: {
