@@ -53,14 +53,14 @@ function remedy_connection_driver__get_entity_definitions() {
                 'query' => 'New_GetList_Operation_1'
             ]
             , 'fields' => [
-                'Entry_ID' => [
+                'Incident_Number' => [
                     'preferred_name' => 'Id',
                     'type' => 'string',
                     'mandatory' => 1,
                 ]
                 , 'Submitter' => [
-                    'preferred_name' => 'SubmittedBy',
-                    'type' => 'string'
+                    'preferred_name' => 'SubmittedBy'
+                    , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'SubmittedBy'
                         , 'preferred_local_key_name' => 'SubmitterId'
@@ -68,7 +68,7 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'objects'
                         , 'remote_driver' => 'ldap'
-                    ],
+                    ]
                 ]
                 , 'HPD_CI' => [
                     'preferred_name' => 'CI',
@@ -85,6 +85,11 @@ function remedy_connection_driver__get_entity_definitions() {
                 , 'Submit_Date' => [
                     'preferred_name' => 'Submitted',
                     'type' => 'string'
+                ]
+                , 'Operational_Categorization_Tier_1' => [
+                    'preferred_name' => 'OperationalCategorizationTier1'
+                    , 'preferred_query_name' => 'Categorization Tier 1'
+                    , 'type' => 'string'
                 ]
                 , 'Status' => [
                     'preferred_name' => 'Status',
@@ -108,8 +113,8 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'IncidentStartTime' => [
                     'preferred_name' => 'StartTime'
-//                    'preferred_query_name' => '\'Last Modified Date\'',Customer_Login_ID
-                    ,'type' => 'datetime'
+//                    , 'preferred_query_name' => 'Incident Start Time'
+                    , 'type' => 'datetime'
                 ]
                 , 'Last_Modified_Date' => [
                     'preferred_name' => 'Modified',

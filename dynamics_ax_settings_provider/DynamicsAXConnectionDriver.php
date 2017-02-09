@@ -62,7 +62,11 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     function addExpansionToRecord($entity, &$records, EntityFieldDefinition $fieldInfo, $vals) {
         foreach ($records as &$record) {
             if ($vals instanceof DynamicsAXComplexEntity) {
-                if (property_exists($vals, $entity)) {
+                if ($entity == 'DAT') {
+                    foreach ($vals as $child_entity => $child_items) {
+                        parent::addExpansionToRecord($child_entity, $record, $fieldInfo, $child_items);
+                    }
+                } else if (property_exists($vals, $entity)) {
                     $val_items = $vals->{$entity};
                     parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
                 } else if (property_exists($vals, 'DAT')) {
@@ -76,11 +80,11 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
         return $records;
     }
-    
+
     public function getItemById($entityBrowser, $id, $select, $expands = '', $otherOptions = []) {
 
         $return = parent::getItemById(... func_get_args());
-        if(!is_null($return) && count($return > 0)){
+        if (!is_null($return) && count($return > 0)) {
             return $return[0];
         }
         return NULL;
@@ -95,11 +99,11 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         $recordInfo['Table'] = $entityBrowser->getInternalName();
         $recordInfo['Entity'] = $obj->DataArea;
         $recordInfo['RecId'] = $id;
-        
+
         $object = $entityBrowser->reverseRenameFields($obj);
         $object->RecordInfo = $recordInfo;
         $objOut = json_encode($object);
-                
+
 //        var_dump($objOut);
         $tokenOption = [
             CURLOPT_HTTPHEADER => [
@@ -150,8 +154,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , '$select' => implode(',', $select)
             , '$top' => $otherOptions['$top']
         ];
-        
-//        var_dump($filter);
+
 
         $query_string = drupal_http_build_query($invoice_params);
         $url = "{$this->endpoint}/{$entityBrowser->getInternalName()}?{$query_string}";
@@ -165,6 +168,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
         $feed = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
         $res = (json_decode($feed->getContent()));
+//        var_dump("{$entityBrowser->getInternalName()} :: {$filter} :: ", $res);
 
         if (is_object($res) && property_exists($res, 'd')) {
             $z = new DynamicsAXEntityCollection();
