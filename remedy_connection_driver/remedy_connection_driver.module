@@ -96,8 +96,8 @@ function remedy_connection_driver__get_entity_definitions() {
                     'type' => 'string'
                 ]
                 , 'Customer_Login_ID' => [
-                    'preferred_name' => 'Customer',
-                    'type' => 'string'
+                    'preferred_name' => 'Customer'
+                    , 'type' => 'string'
                 ]
                 , 'First_Name' => [
                     'preferred_name' => 'FirstName',

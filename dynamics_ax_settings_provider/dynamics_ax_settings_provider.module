@@ -44,12 +44,12 @@ function dynamics_ax_settings_provider__user_access($args) {
 function dynamics_ax_settings_provider__get_entity_definitions() {
     return [
         'cust_table' => [
-            'internal_name' => 'CustTable',
-            'fields' => [
+            'internal_name' => 'CustTable'
+            , 'fields' => [
                 'RECID' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'int',
-                    'mandatory' => 1,
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
                 ]
                 , 'GCID' => [
                     'preferred_name' => 'Customer'
@@ -65,12 +65,12 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     ]
                 ]
                 , 'MODIFIEDDATETIME' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime',
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
                 ]
                 , 'CREATEDDATETIME' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime',
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
                 ]
                 , 'PARTY' => [
                     'preferred_name' => 'RootAccount'
@@ -88,24 +88,24 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     , 'type' => 'string'
                 ]
                 , 'DATAAREAID' => [
-                    'preferred_name' => 'DataArea',
-                    'type' => 'string',
-                ],
-                '_TRANSACTIONS' => [
-                    'preferred_name' => 'Transactions',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_trans',
-                    'relationship' => [
-                        'local_field' => 'AccountNumber',
-                        'remote_field' => 'AccountNumber',
-                        'remote_type' => 'child'
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string',
+                ]
+                , '_TRANSACTIONS' => [
+                    'preferred_name' => 'Transactions'
+                    , 'type' => 'detail'
+                    , 'lookup_entity' => 'cust_trans'
+                    , 'relationship' => [
+                        'local_field' => 'AccountNumber'
+                        , 'remote_field' => 'AccountNumber'
+                        , 'remote_type' => 'child'
                     ],
                 ],
             ]
         ]
         , 'rootaccount' => [
-            'internal_name' => 'DirPartyTable',
-            'fields' => [
+            'internal_name' => 'DirPartyTable'
+            , 'fields' => [
                 'RECID' => [
                     'preferred_name' => 'Id'
                     , 'type' => 'int'
@@ -125,16 +125,16 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     ]
                 ]
                 , 'MODIFIEDDATETIME' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime',
-                ],
-                'CREATEDDATETIME' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime',
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
                 ]
                 , 'DATAAREAID' => [
-                    'preferred_name' => 'DataArea',
-                    'type' => 'string',
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string',
                 ]
                 , 'NAME' => [
                     'preferred_name' => 'Name'
@@ -144,18 +144,18 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
             ]
         ]
         , 'cust_trans' => [
-            'internal_name' => 'CustTrans',
-            'fields' => [
+            'internal_name' => 'CustTrans'
+            , 'fields' => [
                 'RECID' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'int',
-                    'mandatory' => 1,
-                ],
-                'MODIFIEDDATETIME' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime',
-                ],
-                'CREATEDDATETIME' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
@@ -170,109 +170,109 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     ]
                     , 'mandatory' => 1
                 ]
-                , 'SFOPPORTUNITYID' => [
-                    'preferred_name' => 'SalesforceOpportunity'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'SalesforceOpportunity'
-                        , 'preferred_local_key_name' => 'SalesforceOpportunityId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'opportunity'
-                        , 'remote_driver' => 'salesforce'
-                    ]
-                ]
-                , 'SFPRODUCTID' => [
-                    'preferred_name' => 'SalesforceCustomerProduct'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'SalesforceCustomerProduct'
-                        , 'preferred_local_key_name' => 'SalesforceCustomerProductId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'customer_product'
-                        , 'remote_driver' => 'salesforce'
-                    ]
-                ]
+//                , 'SFOPPORTUNITYID' => [
+//                    'preferred_name' => 'SalesforceOpportunity'
+//                    , 'type' => 'string'
+//                    , 'relationship' => [
+//                        'local_field' => 'SalesforceOpportunity'
+//                        , 'preferred_local_key_name' => 'SalesforceOpportunityId'
+//                        , 'remote_field' => 'Id'
+//                        , 'remote_type' => 'parent'
+//                        , 'remote_entity' => 'opportunity'
+//                        , 'remote_driver' => 'salesforce'
+//                    ]
+//                ]
+//                , 'SFPRODUCTID' => [
+//                    'preferred_name' => 'SalesforceCustomerProduct'
+//                    , 'type' => 'string'
+//                    , 'relationship' => [
+//                        'local_field' => 'SalesforceCustomerProduct'
+//                        , 'preferred_local_key_name' => 'SalesforceCustomerProductId'
+//                        , 'remote_field' => 'Id'
+//                        , 'remote_type' => 'parent'
+//                        , 'remote_entity' => 'customer_product'
+//                        , 'remote_driver' => 'salesforce'
+//                    ]
+//                ]
                 , 'AMOUNTCUR' => [
-                    'preferred_name' => 'Amount',
-                    'type' => 'datetime',
-                ],
-                'SETTLEAMOUNTCUR' => [
-                    'preferred_name' => 'AmountSettled',
-                    'type' => 'int',
-                ],
-                'SETTLEMENT' => [
-                    'preferred_name' => 'Settlement',
-                    'type' => 'int',
-                ],
-                'TXT' => [
-                    'preferred_name' => 'Narrative',
-                    'type' => 'string',
-                ],
-                'TRANSTYPE' => [
-                    'preferred_name' => 'TransactionType',
-                    'type' => 'int',
+                    'preferred_name' => 'Amount'
+                    , 'type' => 'int',
+                ]
+                , 'SETTLEAMOUNTCUR' => [
+                    'preferred_name' => 'AmountSettled'
+                    , 'type' => 'int',
+                ]
+                , 'SETTLEMENT' => [
+                    'preferred_name' => 'Settlement'
+                    , 'type' => 'int',
+                ]
+                , 'TXT' => [
+                    'preferred_name' => 'Narrative'
+                    , 'type' => 'string',
+                ]
+                , 'TRANSTYPE' => [
+                    'preferred_name' => 'TransactionType'
+                    , 'type' => 'int'
                 ]
                 , 'APPROVED' => [
-                    'preferred_name' => 'IsApproved',
-                    'type' => 'int',
+                    'preferred_name' => 'IsApproved'
+                    , 'type' => 'int'
                 ]
                 , 'APPROVER' => [
-                    'preferred_name' => 'ApprovedBy',
-                    'type' => 'int',
+                    'preferred_name' => 'ApprovedBy'
+                    , 'type' => 'int'
                 ]
                 , 'CORRECT' => [
-                    'preferred_name' => 'IsCorrection',
-                    'type' => 'int',
-                ],
-                'CANCELLEDPAYMENT' => [
-                    'preferred_name' => 'IsCancelled',
-                    'type' => 'int',
-                ],
-                'CURRENCYCODE' => [
-                    'preferred_name' => 'CurrencyCode',
-                    'type' => 'string',
-                ],
-                'EXCHRATE' => [
-                    'preferred_name' => 'ExchangeRate',
-                    'type' => 'int',
-                ],
-                'TRANSDATE' => [
-                    'preferred_name' => 'TransactionDate',
-                    'type' => 'datetime',
-                ],
-                'CLOSED' => [
-                    'preferred_name' => 'Closed',
-                    'type' => 'datetime',
-                ],
-                'DUEDATE' => [
-                    'preferred_name' => 'DueDate',
-                    'type' => 'datetime',
+                    'preferred_name' => 'IsCorrection'
+                    , 'type' => 'int'
+                ]
+                , 'CANCELLEDPAYMENT' => [
+                    'preferred_name' => 'IsCancelled'
+                    , 'type' => 'int'
+                ]
+                , 'CURRENCYCODE' => [
+                    'preferred_name' => 'CurrencyCode'
+                    , 'type' => 'string',
+                ]
+                , 'EXCHRATE' => [
+                    'preferred_name' => 'ExchangeRate'
+                    , 'type' => 'int'
+                ]
+                , 'TRANSDATE' => [
+                    'preferred_name' => 'TransactionDate'
+                    , 'type' => 'datetime'
+                ]
+                , 'CLOSED' => [
+                    'preferred_name' => 'Closed'
+                    , 'type' => 'datetime'
+                ]
+                , 'DUEDATE' => [
+                    'preferred_name' => 'DueDate'
+                    , 'type' => 'datetime',
                 ]
                 , 'SENTTOSCOMS' => [
                     'preferred_name' => 'SentToSCOMS'
                     , 'type' => 'int'
                 ]
                 , 'INVOICE' => [
-                    'preferred_name' => 'Invoice',
-                    'type' => 'string',
-                    'relationship' => [
+                    'preferred_name' => 'Invoice'
+                    , 'type' => 'string'
+                    , 'relationship' => [
                         'local_field' => 'Invoice'
                         , 'preferred_local_key_name' => 'InvoiceNumber'
-                        , 'remote_field' => 'InvoiceInformation'
+                        , 'remote_field' => 'InvoiceNumber'
                         , 'remote_type' => 'parent'
                         , 'filter' => 'InvoiceNumber ne $NULL$'
                         , 'remote_entity' => 'cust_invoice_table'
                     ]
-                ],
-                'VOUCHER' => [
-                    'preferred_name' => 'VoucherNumber',
-                    'type' => 'string'
-                ],
-                'LASTSETTLEVOUCHER' => [
-                    'preferred_name' => 'LastSettlementVoucher',
-                    'type' => 'string'
+                ]
+                , 'VOUCHER' => [
+                    'preferred_name' => 'VoucherNumber'
+                    , 'type' => 'string'
+                ]
+                , 'LASTSETTLEVOUCHER' => [
+                    'preferred_name' => 'LastSettlementVoucher'
+                    , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'LastSettlementVoucher'
                         , 'preferred_local_key_name' => 'LastSettlementVoucherNumber'
@@ -281,10 +281,10 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         , 'remote_entity' => 'cust_trans'
                         , 'filter' => 'InvoiceNumber ne $NULL$ and TransactionType eq 8'
                     ]
-                ],
-                'PAYMID' => [
-                    'preferred_name' => 'PaymentId',
-                    'type' => 'string',
+                ]
+                , 'PAYMID' => [
+                    'preferred_name' => 'PaymentId'
+                    , 'type' => 'string',
                 ]
                 , 'DATAAREAID' => [
                     'preferred_name' => 'DataArea'
@@ -311,86 +311,64 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         , 'remote_entity' => 'cust_invoice_line_transaction'
                     ]
                 ]
-//                , '_INVOICE_INFORMATION2' => [
-//                    'preferred_name' => 'InvoiceInformationX'
-//                    , 'type' => 'detail'
-//                    , 'lookup_entity' => 'cust_trans'
-//                    , 'relationship' => [
-//                        'local_field' => 'LastSettlementVoucherNumber',
-//                        'remote_field' => 'VoucherNumber',
-//                        'remote_type' => 'parent',
-//                        'filter' => 'InvoiceNumber ne $NULL$'
-//                    ],
-//                ]
-//                , '_TRANSACTIONS' => [
-//                    'preferred_name' => 'Transactions',
-//                    'type' => 'detail',
-//                    'lookup_entity' => 'cust_trans',
-//                    'relationship' => [
-//                        'local_field' => 'VoucherNumber',
-//                        'remote_field' => 'LastSettlementVoucherNumber',
-//                        'remote_type' => 'child'
-//                    ]
-//                ],
             ]
         ]
         , 'cust_invoice_table' => [
-            'internal_name' => 'CustInvoiceTable',
-            'fields' => [
+            'internal_name' => 'CustInvoiceTable'
+            , 'fields' => [
                 'RECID' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'int',
-                    'mandatory' => 1,
-                ],
-                'MODIFIEDDATETIME' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime',
-                ],
-                'CREATEDDATETIME' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime',
-                ],
-                'DUEDATE' => [
-                    'preferred_name' => 'DueDate',
-                    'type' => 'datetime',
-                ],
-                'ENDDATE' => [
-                    'preferred_name' => 'EndDate',
-                    'type' => 'datetime',
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+                , 'DUEDATE' => [
+                    'preferred_name' => 'DueDate'
+                    , 'type' => 'datetime',
+                ]
+                , 'ENDDATE' => [
+                    'preferred_name' => 'EndDate'
+                    , 'type' => 'datetime',
                 ]
                 , 'POSTED' => [
-                    'preferred_name' => 'IsPosted',
-                    'type' => 'int',
-                ]
-                , 'AMOUNT' => [
-                    'preferred_name' => 'Amount',
-                    'type' => 'int',
+                    'preferred_name' => 'IsPosted'
+                    , 'type' => 'int'
                 ]
                 , 'CURRENCYCODE' => [
-                    'preferred_name' => 'CurrencyCode',
-                    'type' => 'int',
+                    'preferred_name' => 'CurrencyCode'
+                    , 'type' => 'string'
+                ]
+                , 'DESCRIPTION' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
                 ]
                 , 'INVOICEACCOUNT' => [
-                    'preferred_name' => 'AccountNumber',
-                    'type' => 'string'
+                    'preferred_name' => 'AccountNumber'
+                    , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'AccountNumber'
                         , 'remote_field' => 'AccountNumber'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cust_table'
                     ]
-                    , 'mandatory' => 1
-                ],
-                'INVOICEID' => [
-                    'preferred_name' => 'InvoiceInformation',
-                    'type' => 'string',
-                    'relationship' => [
+                ]
+                , 'INVOICEID' => [
+                    'preferred_name' => 'InvoiceInformation'
+                    , 'type' => 'string'
+                    , 'relationship' => [
                         'local_field' => 'InvoiceInformation'
                         , 'preferred_local_key_name' => 'InvoiceNumber'
-                        , 'remote_field' => 'Invoice',
-                        'filter' => 'InvoiceNumber ne $NULL$',
-                        'remote_type' => 'parent',
-                        'remote_entity' => 'cust_trans'
+                        , 'remote_field' => 'Invoice'
+                        , 'filter' => 'InvoiceNumber ne $NULL$'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'cust_trans'
                     ],
                 ]
                 , 'DATAAREAID' => [
@@ -398,19 +376,19 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     , 'type' => 'string',
                 ]
                 , '_CUSTOMER' => [
-                    'preferred_name' => 'Customer',
-                    'type' => 'detail',
-                    'lookup_entity' => 'cust_table',
-                    'relationship' => [
-                        'local_field' => 'AccountNumber',
-                        'remote_field' => 'AccountNumber',
-                        'remote_type' => 'parent'
+                    'preferred_name' => 'Customer'
+                    , 'type' => 'detail'
+                    , 'lookup_entity' => 'cust_table'
+                    , 'relationship' => [
+                        'local_field' => 'AccountNumber'
+                        , 'remote_field' => 'AccountNumber'
+                        , 'remote_type' => 'parent'
                     ],
                 ]
                 , '_LINES' => [
-                    'preferred_name' => 'Lines',
-                    'type' => 'detail',
-                    'relationship' => [
+                    'preferred_name' => 'Lines'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'InvoiceId'
                         , 'remote_type' => 'child'
@@ -420,110 +398,120 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
             ]
         ]
         , 'cust_invoice_line' => [
-            'internal_name' => 'CustInvoiceLine',
-            'fields' => [
+            'internal_name' => 'CustInvoiceLine'
+            , 'fields' => [
                 'RECID' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'int',
-                    'mandatory' => 1,
-                ],
-                'MODIFIEDDATETIME' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime',
-                ],
-                'CREATEDDATETIME' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime',
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
                 ]
                 , 'PARENTRECID' => [
-                    'preferred_name' => 'Invoice',
-                    'type' => 'int',
-                    'lookup_entity' => 'cust_invoice_table',
-                    'relationship' => [
+                    'preferred_name' => 'Invoice'
+                    , 'type' => 'int'
+                    , 'lookup_entity' => 'cust_invoice_table'
+                    , 'relationship' => [
                         'local_field' => 'Invoice'
                         , 'preferred_local_key_name' => 'InvoiceId'
-                        , 'remote_field' => 'Id',
-                        'remote_type' => 'parent'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
                     ],
                 ]
                 , 'SFCUSTOMERPRODUCTID' => [
-                    'preferred_name' => 'Product',
-                    'type' => 'string',
-                    'relationship' => [
-                        'local_field' => 'Product'
-                        , 'preferred_local_key_name' => 'ProductId',
-                        'remote_field' => 'Id',
-                        'remote_type' => 'parent'
+                    'preferred_name' => 'CustomerProduct'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CustomerProduct'
+                        , 'preferred_local_key_name' => 'CustomerProductId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
                         , 'remote_entity' => 'customer_product'
                         , 'remote_driver' => 'salesforce'
                     ],
                 ]
                 , 'SFOPPORTUNITYID' => [
-                    'preferred_name' => 'Opportunity',
-                    'type' => 'string',
-                    'relationship' => [
+                    'preferred_name' => 'Opportunity'
+                    , 'type' => 'string'
+                    , 'relationship' => [
                         'local_field' => 'Opportunity'
-                        , 'preferred_local_key_name' => 'OpportunityId',
-                        'remote_field' => 'Id',
-                        'remote_type' => 'parent'
+                        , 'preferred_local_key_name' => 'OpportunityId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
                         , 'remote_entity' => 'opportunity'
                         , 'remote_driver' => 'salesforce'
                     ],
                 ]
                 , 'DATAAREAID' => [
-                    'preferred_name' => 'DataArea',
-                    'type' => 'string',
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string',
                 ]
                 , 'AMOUNTCUR' => [
-                    'preferred_name' => 'Amount',
-                    'type' => 'int',
+                    'preferred_name' => 'Amount'
+                    , 'type' => 'int',
                 ]
                 , 'AMOUNTDETAILS' => [
-                    'preferred_name' => 'AmountDetails',
-                    'type' => 'string',
+                    'preferred_name' => 'AmountDetails'
+                    , 'type' => 'string',
                 ]
                 , 'DESCRIPTION' => [
-                    'preferred_name' => 'Description',
-                    'type' => 'string',
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string',
                 ]
                 , 'CURRENCYCODE' => [
-                    'preferred_name' => 'CurrencyCode',
-                    'type' => 'string',
+                    'preferred_name' => 'CurrencyCode'
+                    , 'type' => 'string',
                 ]
                 , 'QUANTITY' => [
-                    'preferred_name' => 'Quantity',
-                    'type' => 'int',
+                    'preferred_name' => 'Quantity'
+                    , 'type' => 'int',
                 ]
                 , 'UOM' => [
-                    'preferred_name' => 'UnitOfMeasure',
-                    'type' => 'string',
+                    'preferred_name' => 'UnitOfMeasure'
+                    , 'type' => 'string',
                 ]
                 , 'INVOICETXT' => [
-                    'preferred_name' => 'InvoiceText',
-                    'type' => 'int',
+                    'preferred_name' => 'InvoiceText'
+                    , 'type' => 'int',
+                ]
+                , '_TRANSACTIONS' => [
+                    'preferred_name' => 'Transactions'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'InvoiceLineId'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cust_invoice_line_transaction'
+                    ]
                 ]
             ]
         ]
         , 'cust_invoice_line_transaction' => [
-            'internal_name' => 'CustInvoiceLineTransactions',
-            'fields' => [
+            'internal_name' => 'CustInvoiceLineTransactions'
+            , 'fields' => [
                 'RECID' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'int',
-                    'mandatory' => 1,
-                ],
-                'MODIFIEDDATETIME' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime',
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
                 ]
                 , 'CREATEDDATETIME' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime',
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
                 ]
                 , 'INVOICELINE' => [
-                    'preferred_name' => 'InvoiceLine',
-                    'type' => 'int',
-                    'relationship' => [
+                    'preferred_name' => 'InvoiceLine'
+                    , 'type' => 'int'
+                    , 'relationship' => [
                         'local_field' => 'InvoiceLine'
                         , 'preferred_local_key_name' => 'InvoiceLineId'
                         , 'remote_field' => 'Id'
@@ -543,16 +531,16 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     ]
                 ]
                 , 'DATAAREAID' => [
-                    'preferred_name' => 'DataArea',
-                    'type' => 'string',
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string',
                 ]
                 , 'CURRENCYCODE' => [
-                    'preferred_name' => 'CurrencyCode',
-                    'type' => 'string',
+                    'preferred_name' => 'CurrencyCode'
+                    , 'type' => 'string',
                 ]
                 , 'AMOUNT' => [
-                    'preferred_name' => 'Amount',
-                    'type' => 'int',
+                    'preferred_name' => 'Amount'
+                    , 'type' => 'int',
                 ]
             ]
         ]

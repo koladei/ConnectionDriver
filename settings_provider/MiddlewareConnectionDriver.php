@@ -101,7 +101,7 @@ abstract class MiddlewareConnectionDriver {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $entityBrowser = $this->setStrategies($entityBrowser);
 
-        // Stripout invalid fields
+        // Strip-out invalid fields
         $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
 
         $obj = new \stdClass();
@@ -122,18 +122,50 @@ abstract class MiddlewareConnectionDriver {
             $otherOptions['$expand'] = '';
         }
 
-
         if ($this->updateItemInternal($entityBrowser, $this->connectionToken, $id, $obj, $otherOptions)) {
             return $this->getItemById($entityBrowser, $id, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
         }
     }
 
     public function createItem($entityBrowser, \stdClass $object, array $otherOptions = []) {
+//        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
+//        $entityBrowser = $this->setStrategies($entityBrowser);
+//
+//        $object = $entityBrowser->reverseRenameFields($object);
+//        return $this->createItemInternal($entityBrowser, $this->connectionToken, $object, $otherOptions);
+
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $entityBrowser = $this->setStrategies($entityBrowser);
 
-        $object = $entityBrowser->reverseRenameFields($object);
-        return $this->createItemInternal($entityBrowser, $this->connectionToken, $object, $otherOptions);
+        // Strip-out invalid fields
+        $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
+
+        $obj = new \stdClass();
+        foreach ($setFields as $setField) {
+            // avoid objects
+            if (!is_object($object->{$setField}) && !is_array($object->{$setField})) {
+                $obj->{$setField} = $object->{$setField};
+            }
+        }
+
+        if (!isset($otherOptions['$select'])) {
+            $otherOptions['$select'] = $setFields;
+        } else {
+            $otherOptions['$select'] = array_unique(array_merge(explode(',', $otherOptions['$select']), $setFields));
+        }
+
+        if (!isset($otherOptions['$expand'])) {
+            $otherOptions['$expand'] = '';
+        }
+
+        $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj);
+//        var_dump($res);
+        if (property_exists($res, 'd') && $res->success == TRUE) {
+            $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+            return $return;
+        } else {
+            throw new \Exception('Unable to create items on Dynamics');
+        }
     }
 
     public function deleteItem($entityBrowser, $id, array $otherOptions = []) {
@@ -261,7 +293,6 @@ abstract class MiddlewareConnectionDriver {
 ////                $ids = $entityBrowser->fetchFieldValues($record, $relatedKey);
 ////                $expand_val['ids'] = array_merge($expand_val['ids'], $ids);
 //            }
-
             // Fetch the related field values in one sweep
             array_walk($expands, function(&$expand_val, $expand_key) use($driverScope) {
                 $localField = $expand_val['info'];

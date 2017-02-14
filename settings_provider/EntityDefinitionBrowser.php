@@ -300,9 +300,7 @@ class EntityDefinitionBrowser {
             $join = $this->expansionJoinStrategy;
             return $join(...func_get_args());
         } else {
-            // $data = is_null($data) ? [] : $data;
-            // $data += $chunkResult;
-            return $data;
+            return $record;
         }
     }
 

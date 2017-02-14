@@ -73,85 +73,85 @@ function salesforce_settings_provider__get_settings($settings = 'default') {
 function salesforce_settings_provider__get_entity_definitions() {
     return [
         'cash_inflow' => [
-            'internal_name' => 'Cash_Inflow__c',
-            'fields' => [
+            'internal_name' => 'Cash_Inflow__c'
+            , 'fields' => [
                 'Name' => [
-                    'preferred_name' => 'Name',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'LastModifiedDate' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime'
-                ],
-                'CreatedDate' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime'
-                ],
-                'Due_Date__c' => [
-                    'preferred_name' => 'DueDate',
-                    'type' => 'datetime'
-                ],
-                'Year__c' => [
-                    'preferred_name' => 'Year',
-                    'type' => 'integer'
-                ],
-                'Value_Date__c' => [
-                    'preferred_name' => 'ValueDate',
-                    'type' => 'datetime'
-                ],
-                'Type__c' => [
-                    'preferred_name' => 'Type',
-                    'type' => 'string'
-                ],
-                'Amount__c' => [
-                    'preferred_name' => 'Amount',
-                    'type' => 'string'
-                ],
-                'Commission__c' => [
-                    'preferred_name' => 'Commission',
-                    'type' => 'string'
-                ],
-                'Conversion_Rate__c' => [
-                    'preferred_name' => 'ConversionRate',
-                    'type' => 'string'
-                ],
-                'Commission_Computed__c' => [
-                    'preferred_name' => 'CommissionComputed',
-                    'type' => 'string'
-                ],
-                'Narrative__c' => [
-                    'preferred_name' => 'Narrative',
-                    'type' => 'string'
-                ],
-                'Original_Currency__c' => [
-                    'preferred_name' => 'Currency',
-                    'type' => 'string'
-                ],
-                'Conversion_Rate__c' => [
-                    'preferred_name' => 'ConversionRate',
-                    'type' => 'string'
-                ],
-                'Quarter__c' => [
-                    'preferred_name' => 'Quarter',
-                    'type' => 'string'
-                ],
-                'Id' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'Account_Manager__c' => [
-                    'preferred_name' => 'AccountManager',
-                    'type' => 'string'
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Due_Date__c' => [
+                    'preferred_name' => 'DueDate'
+                    , 'type' => 'datetime'
+                ]
+                , 'Year__c' => [
+                    'preferred_name' => 'Year'
+                    , 'type' => 'integer'
+                ]
+                , 'Value_Date__c' => [
+                    'preferred_name' => 'ValueDate'
+                    , 'type' => 'datetime'
+                ]
+                , 'Type__c' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                ]
+                , 'Amount__c' => [
+                    'preferred_name' => 'Amount'
+                    , 'type' => 'string'
+                ]
+                , 'Commission__c' => [
+                    'preferred_name' => 'Commission'
+                    , 'type' => 'string'
+                ]
+                , 'Conversion_Rate__c' => [
+                    'preferred_name' => 'ConversionRate'
+                    , 'type' => 'string'
+                ]
+                , 'Commission_Computed__c' => [
+                    'preferred_name' => 'CommissionComputed'
+                    , 'type' => 'string'
+                ]
+                , 'Narrative__c' => [
+                    'preferred_name' => 'Narrative'
+                    , 'type' => 'string'
+                ]
+                , 'Original_Currency__c' => [
+                    'preferred_name' => 'Currency'
+                    , 'type' => 'string'
+                ]
+                , 'Conversion_Rate__c' => [
+                    'preferred_name' => 'ConversionRate'
+                    , 'type' => 'string'
+                ]
+                , 'Quarter__c' => [
+                    'preferred_name' => 'Quarter'
+                    , 'type' => 'string'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Account_Manager__c' => [
+                    'preferred_name' => 'AccountManager'
+                    , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'AccountManager'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'salesforce_user'
                     ],
-                ],
-                'Related_Account__c' => [
+                ]
+                , 'Related_Account__c' => [
                     'preferred_name' => 'Account'
                     , 'type' => 'string'
                     , 'relationship' => [
@@ -160,32 +160,32 @@ function salesforce_settings_provider__get_entity_definitions() {
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'account'
                     ],
-                ],
-                'Related_Opportunity__c' => [
-                    'preferred_name' => 'Opportunity',
-                    'type' => 'string',
-                    'lookup_entity' => 'opportunity'
+                ]
+                , 'Related_Opportunity__c' => [
+                    'preferred_name' => 'Opportunity'
+                    , 'type' => 'string'
+                    , 'lookup_entity' => 'opportunity'
                     , 'relationship' => [
                         'local_field' => 'Opportunity'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'opportunity'
                     ],
-                ],
-                'Related_Customer_Product__c' => [
-                    'preferred_name' => 'CustomerProduct',
-                    'type' => 'string',
-                    'lookup_entity' => 'customer_product'
+                ]
+                , 'Related_Customer_Product__c' => [
+                    'preferred_name' => 'CustomerProduct'
+                    , 'type' => 'string'
+                    , 'lookup_entity' => 'customer_product'
                     , 'relationship' => [
                         'local_field' => 'CustomerProduct'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'customer_product'
                     ],
-                ],
-                'Related_Payable_Commission__c' => [
-                    'preferred_name' => 'PayableCommission',
-                    'type' => 'string'
+                ]
+                , 'Related_Payable_Commission__c' => [
+                    'preferred_name' => 'PayableCommission'
+                    , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'PayableCommission'
                         , 'remote_field' => 'Id'
@@ -194,58 +194,58 @@ function salesforce_settings_provider__get_entity_definitions() {
                     ],
                 ],
             ]
-        ],
-        'customer_product' => [
-            'internal_name' => 'Customer_Products__c',
-            'fields' => [
+        ]
+        , 'customer_product' => [
+            'internal_name' => 'Customer_Products__c'
+            , 'fields' => [
                 'Name' => [
-                    'preferred_name' => 'Name',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'LastModifiedDate' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime'
-                ],
-                'CreatedDate' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime'
-                ],
-                'Auxiliary_Circuit_ID__c' => [
-                    'preferred_name' => 'AuxiliaryCircuitID',
-                    'type' => 'string'
-                ],
-                'Id' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'Status__c' => [
-                    'preferred_name' => 'Status',
-                    'type' => 'string'
-                ],
-                'Account__c' => [
-                    'preferred_name' => 'Account',
-                    'type' => 'string',
-                    'lookup_entity' => 'account',
-                    'mandatory' => 1
-                    ,'relationship' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Auxiliary_Circuit_ID__c' => [
+                    'preferred_name' => 'AuxiliaryCircuitID'
+                    , 'type' => 'string'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Status__c' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Account__c' => [
+                    'preferred_name' => 'Account'
+                    , 'type' => 'string'
+                    , 'lookup_entity' => 'account'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
                         'local_field' => 'Account'
                         , 'preferred_local_key_name' => 'AccountId'
-                        ,'remote_field' => 'Id'
-                        ,'remote_type' => 'parent'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
                         , 'remote_entity' => 'account'
                     ]
-                ],
-                'Opportunity__c' => [
-                    'preferred_name' => 'Opportunity',
-                    'type' => 'string',
-                    'lookup_entity' => 'opportunity'
-                ],
-                '_CashInflows' => [
-                    'preferred_name' => 'CashInflows',
-                    'type' => 'detail',
-                    'relationship' => [
+                ]
+                , 'Opportunity__c' => [
+                    'preferred_name' => 'Opportunity'
+                    , 'type' => 'string'
+                    , 'lookup_entity' => 'opportunity'
+                ]
+                , '_CashInflows' => [
+                    'preferred_name' => 'CashInflows'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'CustomerProduct'
                         , 'remote_type' => 'child'
@@ -253,120 +253,120 @@ function salesforce_settings_provider__get_entity_definitions() {
                     ],
                 ],
             ]
-        ],
-        'payable_commission' => [
-            'internal_name' => 'Payable_Commission__c',
-            'fields' => [
+        ]
+        , 'payable_commission' => [
+            'internal_name' => 'Payable_Commission__c'
+            , 'fields' => [
                 'Name' => [
-                    'preferred_name' => 'Name',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'LastModifiedDate' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime'
-                ],
-                'CreatedDate' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime'
-                ],
-                'Auxiliary_Circuit_ID__c' => [
-                    'preferred_name' => 'AuxiliaryCircuitID',
-                    'type' => 'string'
-                ],
-                'Id' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'string',
-                    'mandatory' => 1,
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Auxiliary_Circuit_ID__c' => [
+                    'preferred_name' => 'AuxiliaryCircuitID'
+                    , 'type' => 'string'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
                 ]
             ]
-        ],
-        'account' => [
-            'internal_name' => 'Account',
-            'fields' => [
+        ]
+        , 'account' => [
+            'internal_name' => 'Account'
+            , 'fields' => [
                 'Industry' => [
-                    'preferred_name' => 'Industry',
-                    'type' => 'string',
-                ],
-                'Name' => [
-                    'preferred_name' => 'Name',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'LastModifiedDate' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime'
-                ],
-                'CreatedDate' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime'
-                ],
-                'Auxiliary_Circuit_ID__c' => [
-                    'preferred_name' => 'AuxiliaryCircuitID',
-                    'type' => 'string'
-                ],
-                'Id' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'Customer_Rating__c' => [
-                    'preferred_name' => 'Rating',
-                    'type' => 'string'
-                ],
-                'GCID__c' => [
-                    'preferred_name' => 'GCID',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'Status__c' => [
-                    'preferred_name' => 'Status',
-                    'type' => 'string',
-                ],
-                'OwnerId' => [
-                    'preferred_name' => 'Owner',
-                    'type' => 'string',
-                    'relationship' => [
+                    'preferred_name' => 'Industry'
+                    , 'type' => 'string',
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Auxiliary_Circuit_ID__c' => [
+                    'preferred_name' => 'AuxiliaryCircuitID'
+                    , 'type' => 'string'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Customer_Rating__c' => [
+                    'preferred_name' => 'Rating'
+                    , 'type' => 'string'
+                ]
+                , 'GCID__c' => [
+                    'preferred_name' => 'GCID'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Status__c' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string',
+                ]
+                , 'OwnerId' => [
+                    'preferred_name' => 'Owner'
+                    , 'type' => 'string'
+                    , 'relationship' => [
                         'local_field' => 'Owner'
                         , 'preferred_local_key_name' => 'OwnerId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'salesforce_user'
                     ],
-                ],
-                'Description' => [
-                    'preferred_name' => 'Description',
-                    'type' => 'string',
-                ],
-                'Currency__c' => [
-                    'preferred_name' => 'Currency',
-                    'type' => 'string',
-                ],
-                '_Opportunities' => [
-                    'preferred_name' => 'Opportunities',
-                    'type' => 'detail',
-                    'relationship' => [
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string',
+                ]
+                , 'Currency__c' => [
+                    'preferred_name' => 'Currency'
+                    , 'type' => 'string',
+                ]
+                , '_Opportunities' => [
+                    'preferred_name' => 'Opportunities'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'Account'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'opportunity'
                         , 'filter' => 'StageName ne \'Opportunity Abandoned\' and StageName ne \'Closed/Lost\''
                     ],
-                ],
-                '_Products' => [
-                    'preferred_name' => 'Products',
-                    'type' => 'detail',
-                    'relationship' => [
+                ]
+                , '_Products' => [
+                    'preferred_name' => 'Products'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'Account'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'customer_product'
                     ],
-                ],
-                '_CashInflows' => [
-                    'preferred_name' => 'CashInflows',
-                    'type' => 'detail',
-                    'relationship' => [
+                ]
+                , '_CashInflows' => [
+                    'preferred_name' => 'CashInflows'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'Account'
                         , 'remote_type' => 'child'
@@ -374,85 +374,85 @@ function salesforce_settings_provider__get_entity_definitions() {
                     ],
                 ],
             ]
-        ],
-        'opportunity' => [
-            'internal_name' => 'Opportunity',
-            'fields' => [
+        ]
+        , 'opportunity' => [
+            'internal_name' => 'Opportunity'
+            , 'fields' => [
                 'Name' => [
-                    'preferred_name' => 'Name',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'LastModifiedDate' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime'
-                ],
-                'CreatedDate' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime'
-                ],
-                'Auxiliary_Circuit_ID__c' => [
-                    'preferred_name' => 'AuxiliaryCircuitID',
-                    'type' => 'string'
-                ],
-                'Id' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'string',
-                    'mandatory' => 1,
-                ],
-                'Book_Status__c' => [
-                    'preferred_name' => 'BookStatus',
-                    'type' => 'string'
-                ],
-                'Feasibility_Status__c' => [
-                    'preferred_name' => 'FeasibilityStatus',
-                    'type' => 'string'
-                ],
-                'Feasibility_Request_Status__c' => [
-                    'preferred_name' => 'FeasibilityRequestStatus',
-                    'type' => 'string'
-                ],
-                'Negotiation_Status__c' => [
-                    'preferred_name' => 'NegotiationStatus',
-                    'type' => 'string'
-                ],
-                'Commitment_Status__c' => [
-                    'preferred_name' => 'CommitmentStatus',
-                    'type' => 'string'
-                ],
-                'Network_Option__c' => [
-                    'preferred_name' => 'NetworkOption',
-                    'type' => 'string'
-                ],
-                'Sale_Type__c' => [
-                    'preferred_name' => 'SaleType',
-                    'type' => 'string'
-                ],
-                'Amount__c' => [
-                    'preferred_name' => 'Amount',
-                    'type' => 'string'
-                ],
-                'Currency_of_Payment__c' => [
-                    'preferred_name' => 'CurrencyOfPayment',
-                    'type' => 'string'
-                ],
-                'StageName' => [
-                    'preferred_name' => 'StageName',
-                    'type' => 'string'
-                ],
-                'Probability' => [
-                    'preferred_name' => 'Probability',
-                    'type' => 'string'
-                ],
-                'Exchange_Rate__c' => [
-                    'preferred_name' => 'ExchangeRate',
-                    'type' => 'string'
-                ],
-                'Feasibility_Outcome__c' => [
-                    'preferred_name' => 'FeasibilityOutcome',
-                    'type' => 'string'
-                ],
-                'OwnerId' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Auxiliary_Circuit_ID__c' => [
+                    'preferred_name' => 'AuxiliaryCircuitID'
+                    , 'type' => 'string'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Book_Status__c' => [
+                    'preferred_name' => 'BookStatus'
+                    , 'type' => 'string'
+                ]
+                , 'Feasibility_Status__c' => [
+                    'preferred_name' => 'FeasibilityStatus'
+                    , 'type' => 'string'
+                ]
+                , 'Feasibility_Request_Status__c' => [
+                    'preferred_name' => 'FeasibilityRequestStatus'
+                    , 'type' => 'string'
+                ]
+                , 'Negotiation_Status__c' => [
+                    'preferred_name' => 'NegotiationStatus'
+                    , 'type' => 'string'
+                ]
+                , 'Commitment_Status__c' => [
+                    'preferred_name' => 'CommitmentStatus'
+                    , 'type' => 'string'
+                ]
+                , 'Network_Option__c' => [
+                    'preferred_name' => 'NetworkOption'
+                    , 'type' => 'string'
+                ]
+                , 'Sale_Type__c' => [
+                    'preferred_name' => 'SaleType'
+                    , 'type' => 'string'
+                ]
+                , 'Amount__c' => [
+                    'preferred_name' => 'Amount'
+                    , 'type' => 'string'
+                ]
+                , 'Currency_of_Payment__c' => [
+                    'preferred_name' => 'CurrencyOfPayment'
+                    , 'type' => 'string'
+                ]
+                , 'StageName' => [
+                    'preferred_name' => 'StageName'
+                    , 'type' => 'string'
+                ]
+                , 'Probability' => [
+                    'preferred_name' => 'Probability'
+                    , 'type' => 'string'
+                ]
+                , 'Exchange_Rate__c' => [
+                    'preferred_name' => 'ExchangeRate'
+                    , 'type' => 'string'
+                ]
+                , 'Feasibility_Outcome__c' => [
+                    'preferred_name' => 'FeasibilityOutcome'
+                    , 'type' => 'string'
+                ]
+                , 'OwnerId' => [
                     'preferred_name' => 'Owner'
                     , 'type' => 'string'
                     , 'relationship' => [
@@ -461,13 +461,13 @@ function salesforce_settings_provider__get_entity_definitions() {
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'salesforce_user'
                     ]
-                ],
-                'Parent_Opportunity__c' => [
-                    'preferred_name' => 'ParentOpportunity',
-                    'type' => 'string',
-                    'lookup_entity' => 'opportunity'
-                ],
-                'AccountId' => [
+                ]
+                , 'Parent_Opportunity__c' => [
+                    'preferred_name' => 'ParentOpportunity'
+                    , 'type' => 'string'
+                    , 'lookup_entity' => 'opportunity'
+                ]
+                , 'AccountId' => [
                     'preferred_name' => 'Account'
                     , 'type' => 'string'
                     , 'mandatory' => 1
@@ -477,30 +477,30 @@ function salesforce_settings_provider__get_entity_definitions() {
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'account'
                     ],
-                ],
-                '_Opportunities' => [
-                    'preferred_name' => 'Opportunities',
-                    'type' => 'detail'
+                ]
+                , '_Opportunities' => [
+                    'preferred_name' => 'Opportunities'
+                    , 'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'ParentOpportunity'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'opportunity'
                     ],
-                ],
-                '_Products' => [
-                    'preferred_name' => 'Products',
-                    'type' => 'detail'
+                ]
+                , '_Products' => [
+                    'preferred_name' => 'Products'
+                    , 'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'Opportunity'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'customer_product'
                     ],
-                ],
-                '_CashInflows' => [
-                    'preferred_name' => 'CashInflows',
-                    'type' => 'detail'
+                ]
+                , '_CashInflows' => [
+                    'preferred_name' => 'CashInflows'
+                    , 'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'Opportunity'
@@ -509,52 +509,52 @@ function salesforce_settings_provider__get_entity_definitions() {
                     ],
                 ],
             ],
-        ],
-        'salesforce_user' => [
-            'internal_name' => 'User',
-            'fields' => [
+        ]
+        , 'salesforce_user' => [
+            'internal_name' => 'User'
+            , 'fields' => [
                 'Name' => [
-                    'preferred_name' => 'Name',
-                    'type' => 'string'
-                ],
-                'LastModifiedDate' => [
-                    'preferred_name' => 'Modified',
-                    'type' => 'datetime'
-                ],
-                'CreatedDate' => [
-                    'preferred_name' => 'Created',
-                    'type' => 'datetime'
-                ],
-                'Name' => [
-                    'preferred_name' => 'Name',
-                    'type' => 'string'
-                ],
-                'Email' => [
-                    'preferred_name' => 'Email',
-                    'type' => 'string'
-                ],
-                'Username' => [
-                    'preferred_name' => 'Username',
-                    'type' => 'string'
-                ],
-                'Id' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'string',
-                    'mandatory' => 1
-                ],
-                '_Accounts' => [
-                    'preferred_name' => 'Accounts',
-                    'type' => 'detail'
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'Email' => [
+                    'preferred_name' => 'Email'
+                    , 'type' => 'string'
+                ]
+                , 'Username' => [
+                    'preferred_name' => 'Username'
+                    , 'type' => 'string'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , '_Accounts' => [
+                    'preferred_name' => 'Accounts'
+                    , 'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'Owner'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'account'
                     ],
-                ],
-                '_Opportunities' => [
-                    'preferred_name' => 'Opportunities',
-                    'type' => 'detail'
+                ]
+                , '_Opportunities' => [
+                    'preferred_name' => 'Opportunities'
+                    , 'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'Owner'

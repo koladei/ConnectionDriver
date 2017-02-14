@@ -60,23 +60,42 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     }
 
     function addExpansionToRecord($entity, &$records, EntityFieldDefinition $fieldInfo, $vals) {
-        foreach ($records as &$record) {
-            if ($vals instanceof DynamicsAXComplexEntity) {
-                if ($entity == 'DAT') {
-                    foreach ($vals as $child_entity => $child_items) {
-                        parent::addExpansionToRecord($child_entity, $record, $fieldInfo, $child_items);
+//        var_dump(count($vals));
+//        if (count($vals) > 0) {
+            foreach ($records as &$record) {
+                if ($vals instanceof DynamicsAXComplexEntity) {
+                    if ($entity == 'DAT') {
+//                        if (count($vals->{'DAT'}) > 0) {
+                            foreach ($vals as $child_entity => $child_items) {
+                                parent::addExpansionToRecord($child_entity, $record, $fieldInfo, $child_items);
+                            }
+//                        } else {
+//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
+//                        }
+                    } else if (property_exists($vals, $entity)) {
+                        $val_items = $vals->{$entity};
+//                        if (count($val_items) > 0) {
+                            parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
+//                        } else {
+//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
+//                        }
+                    } else if (property_exists($vals, 'DAT')) {
+                        $val_items = $vals->{'DAT'};
+//                        if (count($val_items) > 0) {
+                            parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
+//                        } else {
+//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
+//                        }
+                    } else{
+                        $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
                     }
-                } else if (property_exists($vals, $entity)) {
-                    $val_items = $vals->{$entity};
-                    parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
-                } else if (property_exists($vals, 'DAT')) {
-                    $val_items = $vals->{'DAT'};
-                    parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
+                } else {
+                    parent::addExpansionToRecord($entity, $record, $fieldInfo, $vals);
                 }
-            } else {
-                parent::addExpansionToRecord($entity, $record, $fieldInfo, $vals);
             }
-        }
+//        } else {
+//            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
+//        }
 
         return $records;
     }
@@ -104,7 +123,6 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         $object->RecordInfo = $recordInfo;
         $objOut = json_encode($object);
 
-//        var_dump($objOut);
         $tokenOption = [
             CURLOPT_HTTPHEADER => [
                 'Content-Type: text/plain'
@@ -117,7 +135,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
         $content = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
         $res = $content->getContent();
-//        var_dump($res);
+
         if (!is_null($res)) {
             $res = (json_decode($content->getContent())); //TODO: add code that will hand this error appropriately.
 
@@ -127,8 +145,38 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         }
     }
 
-    public function createItemInternal($entityBrowser, &$connectionToken = NULL, \stdClass $object, array $otherOptions = []) {
-        
+    public function createItemInternal($entityBrowser, &$connectionToken = NULL, \stdClass $obj, array $otherOptions = []) {
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
+
+        $url = "http://molsptest:82/drp/CPortalService.svc/CreateRecord";
+//        $url = "{$this->endpoint}http://molsptest:82/drp/CPortalService.svc/UpdateTable"; //{$entityBrowser->getInternalName()}?{$query_string}";
+        $recordInfo = [];
+        $recordInfo['Table'] = $entityBrowser->getInternalName();
+        $recordInfo['Entity'] = $obj->DataArea;
+
+        $object = $entityBrowser->reverseRenameFields($obj);
+        $object->RecordInfo = $recordInfo;
+        $objOut = json_encode($object);
+
+        $tokenOption = [
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: text/plain'
+            ]
+            , CURLOPT_PROTOCOLS => CURLPROTO_HTTP
+            , CURLOPT_SSL_VERIFYPEER => 0
+            , CURLOPT_SSL_VERIFYHOST => 0
+            , CURLOPT_POSTFIELDS => $objOut
+        ];
+
+        $content = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
+        $res = $content->getContent();
+
+        if (!is_null($res)) {
+            $res = json_decode($content->getContent());
+            return $res;
+        } else {
+            throw new \Exception('Something went wrong. Please try again');
+        }
     }
 
     public function deleteItemInternal($entityBrowser, &$connectionToken = NULL, $id, array $otherOptions = []) {
@@ -159,6 +207,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         $query_string = drupal_http_build_query($invoice_params);
         $url = "{$this->endpoint}/{$entityBrowser->getInternalName()}?{$query_string}";
 
+//        var_dump("{$entityBrowser->getInternalName()}::{$filter}");
         $tokenOption = array(
             CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
             , CURLOPT_PROTOCOLS => CURLPROTO_HTTP

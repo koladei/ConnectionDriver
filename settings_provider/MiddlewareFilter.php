@@ -48,16 +48,16 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
         if ($formater == 'datetime') {
             $this->value = $this->getDateTime($value);
-        } else if (strtolower($value) == '$now$') {
+        } else if (is_string($value) && strtolower($value) == '$now$') {
             $this->value = new \DateTime();
             $this->quote = '\'';
-        } else if (strtolower($value) == '$today$') {
+        } else if (is_string($value) && strtolower($value) == '$today$') {
             $this->value = new \DateTime();
             $this->value->setTime(0, 0);
             $this->quote = '\'';
-        } else if (strtolower($value) == '$null$') {
+        } else if (is_string($value) && strtolower($value) == '$null$') {
             $this->value = NULL;
-        } else if (strtolower($value) == '$blank$') {
+        } else if (is_string($value) && strtolower($value) == '$blank$') {
             $this->value = '';
             $this->quote = '\'';
         } else {
