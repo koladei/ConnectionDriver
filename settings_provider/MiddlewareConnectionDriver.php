@@ -461,7 +461,7 @@ abstract class MiddlewareConnectionDriver {
                         foreach ($matchs as $mat) {
                             $ss = preg_split('@(?:\s*\|\s*|^\s*|\s*$)@', $mat[1], NULL, PREG_SPLIT_NO_EMPTY);
                             foreach ($ss as $s) {
-                                if (!in_array($shorts, $s)) {
+                                if (!in_array($s, $shorts)) {
                                     $shorts[] = $s;
                                 }
                             }
