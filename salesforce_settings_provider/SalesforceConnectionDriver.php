@@ -112,7 +112,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
             $object = $entityBrowser->reverseRenameFields($object);
             $obj = json_encode($object);
-
+            
             // Prepare the POST request
             $options = array(
                 CURLOPT_HTTPHEADER => array(
@@ -135,6 +135,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             // Execute the POST request.
             $new_url = $connectionToken->instance_url . '/services/data/v35.0/sobjects/' . $entityBrowser->getInternalName();
             $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+            
 
             // Process the request
             $res = json_decode($feed->getContent());
@@ -143,9 +144,10 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             } else if (is_null($res)) {
                 throw new \Exception('Something went wrong. Communication with Salesforce failed.');
             } else {
-                // Get the resulting data afresh
-                $selectFields = array_keys(get_object_vars($object));
-                return $this->getItemById($entityBrowser, $res->id, $selectFields);
+                $d = new \stdClass();
+                $d->d = $res->id;
+                $d->success = TRUE;
+                return $d;
             }
         } else {
             throw new \Exception('Unable to connect to Salesforce');

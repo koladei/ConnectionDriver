@@ -146,6 +146,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                     , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'AccountManager'
+                        , 'preferred_local_key_name' => 'AccountManagerId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'salesforce_user'
@@ -156,6 +157,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                     , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'Account'
+                        , 'preferred_local_key_name' => 'AcoountId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'account'
@@ -167,6 +169,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                     , 'lookup_entity' => 'opportunity'
                     , 'relationship' => [
                         'local_field' => 'Opportunity'
+                        , 'preferred_local_key_name' => 'OpportunityId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'opportunity'
@@ -178,6 +181,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                     , 'lookup_entity' => 'customer_product'
                     , 'relationship' => [
                         'local_field' => 'CustomerProduct'
+                        , 'preferred_local_key_name' => 'CustomerProductId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'customer_product'
@@ -188,6 +192,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                     , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'PayableCommission'
+                        , 'preferred_local_key_name' => 'PayableCommissionId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'payable_commission'
