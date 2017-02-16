@@ -168,7 +168,6 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , CURLOPT_POSTFIELDS => $objOut
         ];
         
-        var_dump($objOut);
 
         $content = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
         $res = $content->getContent();

@@ -52,6 +52,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
         // Get a connection token
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            $object = $entityBrowser->reverseRenameFields($object);            
             $obj = json_encode($object);
 
             // Prepare the POST request
@@ -109,6 +110,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
         // Get a connection token
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            $object = $entityBrowser->reverseRenameFields($object);
             $obj = json_encode($object);
 
             // Prepare the POST request
@@ -123,6 +125,8 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
                 CURLOPT_POSTFIELDS => $obj
             );
+
+            var_dump($obj);
 
             if ($connectionToken->ConnectionParameters->UseProxyServer) {
                 $options[CURLOPT_PROXY] = $connectionToken->ConnectionParameters->ProxyServer;
@@ -206,9 +210,8 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 . " FROM {$entityBrowser->getInternalName()}"
                 . (strlen($filter) > 0 ? "  WHERE {$filter} " : '')
                 . $limit]);
-                
-//                var_dump("{$entityBrowser->getInternalName()} :=:  WHERE {$limit} ");
 
+//                var_dump("{$entityBrowser->getInternalName()} :=:  WHERE {$limit} ");
             // Execute the POST request.
             $new_url = $connectionToken->instance_url . '/services/data/v35.0/query?' . $query_url;
             $feed = mware_blocking_http_request($new_url, ['options' => $options]);
@@ -264,7 +267,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 , CURLOPT_VERBOSE => TRUE
                 , CURLOPT_POSTFIELDS => $query_string
             ];
-            
+
             if ($sf_settings->UseProxyServer) {
                 $tokenOption[CURLOPT_PROXY] = $sf_settings->ProxyServer;
                 $tokenOption[CURLOPT_PROXYPORT] = $sf_settings->ProxyServerPort;
