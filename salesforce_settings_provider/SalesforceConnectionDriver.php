@@ -126,8 +126,6 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 CURLOPT_POSTFIELDS => $obj
             );
 
-            var_dump($obj);
-
             if ($connectionToken->ConnectionParameters->UseProxyServer) {
                 $options[CURLOPT_PROXY] = $connectionToken->ConnectionParameters->ProxyServer;
                 $options[CURLOPT_PROXYPORT] = $connectionToken->ConnectionParameters->ProxyServerPort;
