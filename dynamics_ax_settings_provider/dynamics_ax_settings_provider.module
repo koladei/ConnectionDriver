@@ -164,36 +164,13 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'Account'
+                        , 'preferred_local_key_name' => 'AccountNumber'
                         , 'remote_field' => 'AccountNumber'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cust_table'
                     ]
                     , 'mandatory' => 1
                 ]
-//                , 'SFOPPORTUNITYID' => [
-//                    'preferred_name' => 'SalesforceOpportunity'
-//                    , 'type' => 'string'
-//                    , 'relationship' => [
-//                        'local_field' => 'SalesforceOpportunity'
-//                        , 'preferred_local_key_name' => 'SalesforceOpportunityId'
-//                        , 'remote_field' => 'Id'
-//                        , 'remote_type' => 'parent'
-//                        , 'remote_entity' => 'opportunity'
-//                        , 'remote_driver' => 'salesforce'
-//                    ]
-//                ]
-//                , 'SFPRODUCTID' => [
-//                    'preferred_name' => 'SalesforceCustomerProduct'
-//                    , 'type' => 'string'
-//                    , 'relationship' => [
-//                        'local_field' => 'SalesforceCustomerProduct'
-//                        , 'preferred_local_key_name' => 'SalesforceCustomerProductId'
-//                        , 'remote_field' => 'Id'
-//                        , 'remote_type' => 'parent'
-//                        , 'remote_entity' => 'customer_product'
-//                        , 'remote_driver' => 'salesforce'
-//                    ]
-//                ]
                 , 'AMOUNTCUR' => [
                     'preferred_name' => 'Amount'
                     , 'type' => 'int',
@@ -529,6 +506,10 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cust_trans'
                     ]
+                ]
+                , 'SENTTOSCOMS' => [
+                    'preferred_name' => 'SentToSCOMS'
+                    , 'type' => 'int'
                 ]
                 , 'DATAAREAID' => [
                     'preferred_name' => 'DataArea'

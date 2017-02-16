@@ -51,7 +51,7 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
         $methods = $entityBrowser->getSoapMethods();
         if (!is_null($methods) && property_exists($methods, 'query')) {
 
-            $uri = 'http://molbmcprod:8080/arsys/WSDL/public/molbmcprod/MainOne:ShowIncidentsWebService';
+            $uri = "http://molbmcprod:8080/arsys/WSDL/public/molbmcprod/{$entityBrowser->getInternalName()}";
 
             $client = new \SoapClient("$uri");
             $authenticationInfo = new \stdClass();
@@ -63,8 +63,8 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
             $header = new \SOAPHeader($ns, 'AuthenticationInfo', $authenticationInfo);
             $client->__setSoapHeaders($header);
             $getListInputMap = new \stdClass();
-            
-//            var_dump("{$filter}");
+
+            var_dump("{$filter}");
 
             $getListInputMap->Qualification = "{$filter}";
             $getListInputMap->maxLimit = $otherOptions['$top'];
@@ -74,8 +74,8 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
             try {
                 //get the result
                 $ld = $client->{$methods->query}($getListInputMap);
-//                var_dump($client);
-                return $ld->getListValues;
+//                var_dump($ld);
+                return intval($otherOptions['$top']) > 1 ? $ld->getListValues : [$ld->getListValues];
             } catch (\SoapFault $sf) {
                 throw new \Exception("{$sf->getMessage()}");
             }

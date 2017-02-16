@@ -159,7 +159,6 @@ abstract class MiddlewareConnectionDriver {
         }
 
         $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj);
-//        var_dump($res);
         if (property_exists($res, 'd') && $res->success == TRUE) {
             $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             return $return;

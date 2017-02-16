@@ -48,15 +48,16 @@ function remedy_connection_driver__user_access($args) {
 function remedy_connection_driver__get_entity_definitions() {
     return [
         'incidentweb' => [
-            'internal_name' => 'ShowIncidentsWebService'
+            'internal_name' => 'MainOne:ShowIncidentsWebService'
             , 'soap_methods' => [
                 'query' => 'New_GetList_Operation_1'
             ]
             , 'fields' => [
                 'Incident_Number' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'string',
-                    'mandatory' => 1,
+                    'preferred_name' => 'Id'
+//                    , 'preferred_query_name' => 'Incident ID*+'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
                 ]
                 , 'Submitter' => [
                     'preferred_name' => 'SubmittedBy'
@@ -71,8 +72,8 @@ function remedy_connection_driver__get_entity_definitions() {
                     ]
                 ]
                 , 'HPD_CI' => [
-                    'preferred_name' => 'CI',
-                    'type' => 'string'
+                    'preferred_name' => 'CI'
+                    , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'CI'
                         , 'preferred_local_key_name' => 'CircuitID'
@@ -83,8 +84,8 @@ function remedy_connection_driver__get_entity_definitions() {
                     ],
                 ]
                 , 'Submit_Date' => [
-                    'preferred_name' => 'Submitted',
-                    'type' => 'string'
+                    'preferred_name' => 'Created'
+                    , 'type' => 'string'
                 ]
                 , 'Operational_Categorization_Tier_1' => [
                     'preferred_name' => 'OperationalCategorizationTier1'
@@ -92,34 +93,133 @@ function remedy_connection_driver__get_entity_definitions() {
                     , 'type' => 'string'
                 ]
                 , 'Status' => [
-                    'preferred_name' => 'Status',
-                    'type' => 'string'
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
                 ]
                 , 'Customer_Login_ID' => [
                     'preferred_name' => 'Customer'
                     , 'type' => 'string'
                 ]
                 , 'First_Name' => [
-                    'preferred_name' => 'FirstName',
-                    'type' => 'string'
+                    'preferred_name' => 'FirstName'
+                    , 'type' => 'string'
                 ]
                 , 'Last_Name' => [
-                    'preferred_name' => 'LastName',
-                    'type' => 'string'
+                    'preferred_name' => 'LastName'
+                    , 'type' => 'string'
                 ]
                 , 'Description' => [
-                    'preferred_name' => 'Description',
-                    'type' => 'string'
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
                 ]
                 , 'IncidentStartTime' => [
                     'preferred_name' => 'StartTime'
-//                    , 'preferred_query_name' => 'Incident Start Time'
+//                     ,'preferred_query_name' => 'Incident Start Time'
                     , 'type' => 'datetime'
                 ]
                 , 'Last_Modified_Date' => [
-                    'preferred_name' => 'Modified',
-                    'preferred_query_name' => 'Last Modified Date',
-                    'type' => 'datetime'
+                    'preferred_name' => 'Modified'
+                    , 'preferred_query_name' => 'Last Modified Date'
+                    , 'type' => 'datetime'
+                ]
+                , 'Assignee_Login_ID' => [
+                    'preferred_name' => 'AssignedTo'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AssignedTo'
+                        , 'preferred_local_key_name' => 'AssigneeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , '_WorkLog' => [
+                    'preferred_name' => 'WorkLog'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'Incident'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'incidentworklog'
+                    ]
+                ]
+            ]
+        ]
+        , 'incidentworklog' => [
+            'internal_name' => 'MainOne_ShowIncidentWorkLogWebService'
+            , 'soap_methods' => [
+                'query' => 'New_GetList_Operation_0'
+            ]
+            , 'fields' => [
+                'Work_Log_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Incident_Number' => [
+                    'preferred_name' => 'Incident'
+                    , 'type' => 'string'
+                    , 'preferred_query_name' => 'Incident Number'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'Incident'
+                        , 'preferred_local_key_name' => 'IncidentId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'incidentweb'
+                    ]
+                ]
+                , 'Submitter' => [
+                    'preferred_name' => 'SubmittedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'SubmittedBy'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ]
+                ]
+                , 'HPD_CI' => [
+                    'preferred_name' => 'CI'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CI'
+                        , 'preferred_local_key_name' => 'CircuitID'
+                        , 'remote_field' => 'Name'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product'
+                        , 'remote_driver' => 'salesforce'
+                    ],
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'string'
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
+                ]
+                , 'Work_Log_Type' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                ]
+                , 'IncidentStartTime' => [
+                    'preferred_name' => 'StartTime'
+//                     ,'preferred_query_name' => 'Incident Start Time'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'preferred_query_name' => 'Last Modified Date'
+                    , 'type' => 'datetime'
                 ]
                 , 'Assignee_Login_ID' => [
                     'preferred_name' => 'AssignedTo'
@@ -143,13 +243,13 @@ function remedy_connection_driver__get_entity_definitions() {
             ]
             , 'fields' => [
                 'Request_ID__c' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'string',
-                    'mandatory' => 1,
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
                 ]
                 , 'Submitter__c' => [
-                    'preferred_name' => 'SubmittedBy',
-                    'type' => 'string'
+                    'preferred_name' => 'SubmittedBy'
+                    , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'SubmittedBy'
                         , 'preferred_local_key_name' => 'SubmitterId'
@@ -160,12 +260,12 @@ function remedy_connection_driver__get_entity_definitions() {
                     ],
                 ]
                 , 'Submit_Date' => [
-                    'preferred_name' => 'Submitted',
-                    'type' => 'string'
+                    'preferred_name' => 'Submitted'
+                    , 'type' => 'string'
                 ]
                 , 'Assignee_Login_ID' => [
-                    'preferred_name' => 'AssignedTo',
-                    'type' => 'string'
+                    'preferred_name' => 'AssignedTo'
+                    , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'AssignedTo'
                         , 'preferred_local_key_name' => 'AssigneeId'
@@ -185,13 +285,13 @@ function remedy_connection_driver__get_entity_definitions() {
             ]
             , 'fields' => [
                 'Entry_ID' => [
-                    'preferred_name' => 'Id',
-                    'type' => 'string',
-                    'mandatory' => 1,
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
                 ]
                 , 'Submitter' => [
-                    'preferred_name' => 'SubmittedBy',
-                    'type' => 'string'
+                    'preferred_name' => 'SubmittedBy'
+                    , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'SubmittedBy'
                         , 'preferred_local_key_name' => 'SubmitterId'
@@ -202,13 +302,13 @@ function remedy_connection_driver__get_entity_definitions() {
                     ],
                 ]
                 , 'Submit_Date' => [
-                    'preferred_name' => 'Submitted',
-                    'type' => 'string'
+                    'preferred_name' => 'Submitted'
+                    , 'type' => 'string'
                 ]
                 , 'Last_Modified_Date' => [
-                    'preferred_name' => 'Modified',
-                    'preferred_query_name' => '\'Last Modified Date\'',
-                    'type' => 'string'
+                    'preferred_name' => 'Modified'
+                    , 'preferred_query_name' => '\'Last Modified Date\''
+                    , 'type' => 'string'
                 ]
                 , 'Assignee_Login_ID' => [
                     'preferred_name' => 'AssignedTo'

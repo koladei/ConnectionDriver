@@ -335,7 +335,12 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                     break;
                 }
             case self::IN: {
-                    $ret = "'{$field}' IN({$this->quoteValue()})";
+                    $ret = "";
+//                    $ret = "{$this->field} {$this->operator}({$this->quoteValue()})";
+                    foreach($this->value as $v){
+                        $ret = "{$ret}'{$field}' == \"{$v}\" ||";
+                    }
+                    $ret = strlen($ret)>0?substr($ret, 0, strlen($ret) - 3):"";
                     break;
                 }
             default: {
@@ -381,8 +386,6 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 }
             case self::IN: {
                     $ret = "{$this->field} {$this->operator}({$this->quoteValue()})";
-                    // $im = implode("{$this->quote} || {$this->field}={$this->quote}", $value);
-                    // $ret = "{$this->field}={$this->quote}{$im}{$this->quote}";
                     break;
                 }
             default: {
