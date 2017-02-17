@@ -62,37 +62,37 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     function addExpansionToRecord($entity, &$records, EntityFieldDefinition $fieldInfo, $vals) {
 //        var_dump(count($vals));
 //        if (count($vals) > 0) {
-            foreach ($records as &$record) {
-                if ($vals instanceof DynamicsAXComplexEntity) {
-                    if ($entity == 'DAT') {
+        foreach ($records as &$record) {
+            if ($vals instanceof DynamicsAXComplexEntity) {
+                if ($entity == 'DAT') {
 //                        if (count($vals->{'DAT'}) > 0) {
-                            foreach ($vals as $child_entity => $child_items) {
-                                parent::addExpansionToRecord($child_entity, $record, $fieldInfo, $child_items);
-                            }
-//                        } else {
-//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//                        }
-                    } else if (property_exists($vals, $entity)) {
-                        $val_items = $vals->{$entity};
-//                        if (count($val_items) > 0) {
-                            parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
-//                        } else {
-//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//                        }
-                    } else if (property_exists($vals, 'DAT')) {
-                        $val_items = $vals->{'DAT'};
-//                        if (count($val_items) > 0) {
-                            parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
-//                        } else {
-//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//                        }
-                    } else{
-                        $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
+                    foreach ($vals as $child_entity => $child_items) {
+                        parent::addExpansionToRecord($child_entity, $record, $fieldInfo, $child_items);
                     }
+//                        } else {
+//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
+//                        }
+                } else if (property_exists($vals, $entity)) {
+                    $val_items = $vals->{$entity};
+//                        if (count($val_items) > 0) {
+                    parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
+//                        } else {
+//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
+//                        }
+                } else if (property_exists($vals, 'DAT')) {
+                    $val_items = $vals->{'DAT'};
+//                        if (count($val_items) > 0) {
+                    parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
+//                        } else {
+//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
+//                        }
                 } else {
-                    parent::addExpansionToRecord($entity, $record, $fieldInfo, $vals);
+                    $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
                 }
+            } else {
+                parent::addExpansionToRecord($entity, $record, $fieldInfo, $vals);
             }
+        }
 //        } else {
 //            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
 //        }
@@ -139,9 +139,11 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         if (!is_null($res)) {
             $res = (json_decode($content->getContent())); //TODO: add code that will hand this error appropriately.
 
+            var_dump($res);
+
             return true;
         } else {
-            throw new \Exception('Something went wrong. Please try again');
+            throw new \Exception("Something went wrong while updating record {$id} of entity {$entityBrowser->getDisplayName()} of " . __CLASS__ . ". Please try again");
         }
     }
 
@@ -167,7 +169,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , CURLOPT_SSL_VERIFYHOST => 0
             , CURLOPT_POSTFIELDS => $objOut
         ];
-        
+
 
         $content = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
         $res = $content->getContent();
@@ -176,7 +178,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             $res = json_decode($content->getContent());
             return $res;
         } else {
-            throw new \Exception('Something went wrong. Please try again');
+            throw new \Exception("Something went wrong while trying to create an item in entity {$entityBrowser->getDisplayName()} of " . __CLASS__ . ". Please try again");
         }
     }
 
@@ -229,7 +231,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
             return $z;
         } else {
-            throw new \Exception("{$feed->getContent()}");
+            throw new \Exception("Failed to get items of entity {$entityBrowser->getDisplayName()} of " . __CLASS__ . " due to error: {$feed->getContent()}");
         }
     }
 

@@ -163,7 +163,7 @@ abstract class MiddlewareConnectionDriver {
             $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             return $return;
         } else {
-            throw new \Exception("Unable to create a new record in {$entityBrowser->getDisplayName()} of {__CLASS__}");
+            throw new \Exception("Unable to create a new record in {$entityBrowser->getDisplayName()} of ".__CLASS__);
         }
     }
 
