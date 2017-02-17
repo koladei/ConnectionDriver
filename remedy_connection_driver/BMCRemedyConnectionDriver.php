@@ -64,8 +64,6 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
             $client->__setSoapHeaders($header);
             $getListInputMap = new \stdClass();
 
-            var_dump("{$filter}");
-
             $getListInputMap->Qualification = "{$filter}";
             $getListInputMap->maxLimit = $otherOptions['$top'];
             $getListInputMap->startRecord = $otherOptions['$skip'];

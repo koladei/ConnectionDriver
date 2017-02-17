@@ -131,6 +131,8 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , CURLOPT_SSL_VERIFYPEER => 0
             , CURLOPT_SSL_VERIFYHOST => 0
             , CURLOPT_POSTFIELDS => $objOut
+            , CURLOPT_TIMEOUT => 15
+            , CURLOPT_CONNECTTIMEOUT => 15
         ];
 
         $content = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
@@ -166,6 +168,8 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , CURLOPT_SSL_VERIFYPEER => 0
             , CURLOPT_SSL_VERIFYHOST => 0
             , CURLOPT_POSTFIELDS => $objOut
+            , CURLOPT_TIMEOUT => 15
+            , CURLOPT_CONNECTTIMEOUT => 15
         ];
 
 
@@ -214,6 +218,8 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , CURLOPT_PROTOCOLS => CURLPROTO_HTTP
             , CURLOPT_SSL_VERIFYPEER => 0
             , CURLOPT_SSL_VERIFYHOST => 0
+            , CURLOPT_TIMEOUT => 15
+            , CURLOPT_CONNECTTIMEOUT => 15
         );
 
         $feed = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
