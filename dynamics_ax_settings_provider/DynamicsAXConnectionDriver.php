@@ -139,8 +139,6 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         if (!is_null($res)) {
             $res = (json_decode($content->getContent())); //TODO: add code that will hand this error appropriately.
 
-            var_dump($res);
-
             return true;
         } else {
             throw new \Exception("Something went wrong while updating record {$id} of entity {$entityBrowser->getDisplayName()} of " . __CLASS__ . ". Please try again");
