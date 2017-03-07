@@ -231,6 +231,10 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'SentToSCOMS'
                     , 'type' => 'int'
                 ]
+                , 'COPYOFTXT' => [
+                    'preferred_name' => 'SentToSCOMSComments'
+                    , 'type' => 'string'
+                ]
                 , 'INVOICE' => [
                     'preferred_name' => 'Invoice'
                     , 'type' => 'string'
@@ -267,7 +271,7 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'DataArea'
                     , 'type' => 'string',
                 ]
-                , '_INVOICE_INFORMATION' => [
+            , '_INVOICE_INFORMATION' => [
                     'preferred_name' => 'InvoiceInformation'
                     , 'type' => 'detail'
                     , 'lookup_entity' => 'cust_trans'
@@ -278,7 +282,7 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         , 'filter' => 'TransactionType eq 8'
                     ]
                 ]
-                , '_LINE_TRANSACTIONS' => [
+        , '_LINE_TRANSACTIONS' => [
                     'preferred_name' => 'LineTransactions'
                     , 'type' => 'detail'
                     , 'relationship' => [
@@ -343,7 +347,7 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         'local_field' => 'InvoiceInformation'
                         , 'preferred_local_key_name' => 'InvoiceNumber'
                         , 'remote_field' => 'Invoice'
-                        , 'filter' => 'InvoiceNumber ne $NULL$'
+                        , 'filter' => 'InvoiceNumber ne $NULL$ and TransactionType eq 8'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cust_trans'
                     ],

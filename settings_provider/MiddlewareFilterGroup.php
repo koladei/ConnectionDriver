@@ -96,7 +96,7 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
         foreach($this->parts as $index => $part){
             $conjection = ($part[0] == self::FRAGMENT_OR) ? 'OR': (($part[0] == self::FRAGMENT_AND) ? 'AND' : '');
             $fragment = $part[1];
-            $ret .= ($index == 0) ? "{$fragment}" : " {$conjection} {$fragment}";
+            $ret .= ($index == 0) ? "({$fragment})" : " {$conjection} ({$fragment})";
         }
 
         return $ret;

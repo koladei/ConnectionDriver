@@ -94,6 +94,20 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         }
     }
 
+    private function quoteValueIn(){
+        // Implement checking if field is meant to be a string or otherwise
+        if (is_array($this->value)) {
+            $im = implode("{$this->quote},{$this->quote}", $this->value);
+            $im = str_replace('\'\',', '', $im);
+            $im = str_replace('\'\'', '', $im);
+            return $im != '\'\''? "{$this->quote}{$im}{$this->quote}":'';
+        } else if ($this->value instanceof \DateTime) {
+            return $this->value->format('Y-m-d\\TH:i:s');
+        } else {
+            return "{$this->quote}{$this->value}{$this->quote}";
+        }
+    }
+
     private function getDateTime($value) {
         $type_1 = '/^(([\d]{4})\-([\d]{2})\-([\d]{2})(T([\d]{2})\:([\d]{2})(\:([\d]{2}))?)?)$/';
         $type_2 = '/^(([\d]{4})\-([\d]{2})\-([\d]{2})(T([\d]{2})\:([\d]{2})))$/';
@@ -228,7 +242,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
         $value = $this->value;
         if ($value instanceof \DateTime) {
-            $value = $value->format('\'Y-m-d\\TH:i:s\\Z\'');
+            $value = $value->format('Y-m-d\\TH:i:s\\Z');
         } else if (is_null($value)) {
             $value = 'NULL';
         }
@@ -271,7 +285,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                     break;
                 }
             case self::IN: {
-                    $ret = "{$this->field} IN({$this->quoteValue()})";
+                    $ret = "{$this->field} IN({$this->quoteValueIn()})";
                     break;
                 }
             default: {

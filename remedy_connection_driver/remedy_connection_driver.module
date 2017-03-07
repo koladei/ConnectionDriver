@@ -85,7 +85,7 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Submit_Date' => [
                     'preferred_name' => 'Created'
-                    , 'type' => 'string'
+                    , 'type' => 'datetime'
                 ]
                 , 'Operational_Categorization_Tier_1' => [
                     'preferred_name' => 'OperationalCategorizationTier1'
@@ -110,6 +110,10 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Description' => [
                     'preferred_name' => 'Description'
+                    , 'type' => 'string'
+                ]
+                , 'IncidentImpact' => [
+                    'preferred_name' => 'IncidentImpact'
                     , 'type' => 'string'
                 ]
                 , 'IncidentStartTime' => [
@@ -182,18 +186,6 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'objects'
                         , 'remote_driver' => 'ldap'
                     ]
-                ]
-                , 'HPD_CI' => [
-                    'preferred_name' => 'CI'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'CI'
-                        , 'preferred_local_key_name' => 'CircuitID'
-                        , 'remote_field' => 'Name'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'customer_product'
-                        , 'remote_driver' => 'salesforce'
-                    ],
                 ]
                 , 'Submit_Date' => [
                     'preferred_name' => 'Created'

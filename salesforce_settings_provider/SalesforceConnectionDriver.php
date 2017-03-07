@@ -206,24 +206,25 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             }
 
             // Generate the SOQL query to send in the POST request
-            $query_url = drupal_http_build_query(['q' => 'SELECT ' . implode(',', $select)
+            $query_url =  'SELECT ' . implode(',', $select)
                 . " FROM {$entityBrowser->getInternalName()}"
                 . (strlen($filter) > 0 ? "  WHERE {$filter} " : '')
-                . $limit]);
+                . $limit;
 
-//                var_dump("{$entityBrowser->getInternalName()} :=:  WHERE {$limit} ");
+            //    var_dump("{$entityBrowser->getInternalName()} :=:  WHERE {$filter} ");
             // Execute the POST request.
-            $new_url = $connectionToken->instance_url . '/services/data/v35.0/query?' . $query_url;
+            $new_url = $connectionToken->instance_url . '/services/data/v35.0/query?' . drupal_http_build_query(['q' => $query_url]);
             $feed = mware_blocking_http_request($new_url, ['options' => $options]);
 
             // Process the request
-            $res = json_decode($feed->getContent());
+            $content =$feed->getContent();
 
+            $res = json_decode($content);
 
             if (is_object($res) && property_exists($res, 'records')) {
                 return $res->records;
             } else {
-                throw new \Exception("An empty response was received from Salesforce. Please retry later. {$query_url}\n{$feed->getContent()}");
+                throw new \Exception("An empty response was received from Salesforce. Please retry later. {$query_url}\n{$content}");
             }
         } else {
             throw new \Exception('Unable to connect to Salesforce');
@@ -278,10 +279,14 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             $feed = mware_blocking_http_request($uri, ['options' => $tokenOption, 'block' => true]);
             $token_response = json_decode($feed->getContent());
 
+            // var_dump($token_response);
 
-            $token_response->ConnectionParameters = $sf_settings;
-
-            return $token_response;
+            if(!is_null($token_response) && property_exists($token_response, 'access_token')){
+                $token_response->ConnectionParameters = $sf_settings;
+                return $token_response;
+            } else {
+                return FALSE;
+            }
         } catch (Exception $x) {
 //            var_dump('$x->getMessage()', $x->getMessage());
             return FALSE;

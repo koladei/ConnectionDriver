@@ -130,11 +130,25 @@ function salesforce_settings_provider__get_entity_definitions() {
                 ]
                 , 'Conversion_Rate__c' => [
                     'preferred_name' => 'ConversionRate'
-                    , 'type' => 'string'
+                    , 'type' => 'int'
+                ]
+                , 'ExchangeRate__c' => [
+                    'preferred_name' => 'ExchangeRate'
+                    , 'type' => 'int'
                 ]
                 , 'Quarter__c' => [
                     'preferred_name' => 'Quarter'
+                    , 'type' => 'int'
+                ]
+                , 'TransLineId__c' => [
+                    'preferred_name' => 'TransactionLineId'
                     , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Invoice__c' => [
+                    'preferred_name' => 'InvoiceNumber'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
                 ]
                 , 'Id' => [
                     'preferred_name' => 'Id'
@@ -267,6 +281,11 @@ function salesforce_settings_provider__get_entity_definitions() {
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
                 , 'LastModifiedDate' => [
                     'preferred_name' => 'Modified'
                     , 'type' => 'datetime'
@@ -275,14 +294,56 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
-                , 'Auxiliary_Circuit_ID__c' => [
-                    'preferred_name' => 'AuxiliaryCircuitID'
+                , 'End_Of_Quarter__c' => [
+                    'preferred_name' => 'EndOfQuarter'
+                    , 'type' => 'datetime'
+                ]
+                , 'Amount_Paid__c' => [
+                    'preferred_name' => 'AmountPaid'
+                    , 'type' => 'int'
+                ]
+                , 'Cash_Amount__c' => [
+                    'preferred_name' => 'CashAmount'
+                    , 'type' => 'int'
+                ]
+                , 'Sale_Amount__c' => [
+                    'preferred_name' => 'SaleAmount'
+                    , 'type' => 'int'
+                ]
+                , 'Year__c' => [
+                    'preferred_name' => 'Year'
+                    , 'type' => 'int'
+                ]
+                , 'Quarter__c' => [
+                    'preferred_name' => 'Quarter'
+                    , 'type' => 'int'
+                ]
+                , 'Trigger_Calculation__c' => [
+                    'preferred_name' => 'TriggerCalculation'
+                    , 'type' => 'int'
+                ]
+                , 'Days_To_Quarter_End__c' => [
+                    'preferred_name' => 'DaysToQuarterEnd'
+                    , 'type' => 'int'
+                ]
+                , 'Currency__c' => [
+                    'preferred_name' => 'Currency'
                     , 'type' => 'string'
                 ]
-                , 'Id' => [
-                    'preferred_name' => 'Id'
+                , 'Payment_Status__c' => [
+                    'preferred_name' => 'PaymentStatus'
                     , 'type' => 'string'
-                    , 'mandatory' => 1,
+                ]
+                , 'Account_Manager__c' => [
+                    'preferred_name' => 'AccountManager'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AccountManager'
+                        , 'preferred_local_key_name' => 'AccountManagerId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
                 ]
             ]
         ]
@@ -337,7 +398,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'salesforce_user'
-                    ],
+                    ]
                 ]
                 , 'Description' => [
                     'preferred_name' => 'Description'

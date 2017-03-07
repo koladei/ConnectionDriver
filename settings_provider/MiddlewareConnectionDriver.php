@@ -75,7 +75,7 @@ abstract class MiddlewareConnectionDriver {
         return $result;
     }
 
-    public function getItemsByFieldValues($entityBrowser, EntityFieldDefinition $entityField, array $values, $select, $expands = '', $otherOptions = []) {
+    public function getItemsByFieldValues($entityBrowser, EntityFieldDefinition $entityField, array $values, $select, $expands = '', &$otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
 
         // implode the values based on the type of the field
@@ -91,6 +91,9 @@ abstract class MiddlewareConnectionDriver {
                     $implosion = "'{$implosion}'";
                 }
         }
+
+        $this->connectionToken = isset($otherOptions['$connectionToken'])?$otherOptions['$connectionToken']: $this->connectionToken;
+        $otherOptions['$connectionToken'] = &$this->connectionToken;
 
         $additionalFilter = isset($otherOptions['more_filter']) ? "({$otherOptions['more_filter']}) and " : '';
         $result = $this->getItems($entityBrowser, $select, "{$additionalFilter}{$entityField->getDisplayName()} IN({$implosion})", $expands, $otherOptions);

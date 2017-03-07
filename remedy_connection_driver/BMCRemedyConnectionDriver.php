@@ -72,9 +72,13 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
             try {
                 //get the result
                 $ld = $client->{$methods->query}($getListInputMap);
-//                var_dump($ld);
-                return intval($otherOptions['$top']) > 1 ? $ld->getListValues : [$ld->getListValues];
+                
+                return intval($otherOptions['$top']) > 1 ? $ld->getListValues : [$ld->getListValues];                
             } catch (\SoapFault $sf) {
+                if(strpos(strtolower($sf->faultstring), 'error (302):') == 0){
+                    return [];
+                }
+
                 throw new \Exception("{$sf->getMessage()}");
             }
         }

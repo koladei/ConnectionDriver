@@ -90,8 +90,6 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
             unset($user_entries['count']);
             $user_entries = json_decode(json_encode($user_entries));
 
-//            var_dump($user_entries);
-
             return $user_entries;
         }
 
