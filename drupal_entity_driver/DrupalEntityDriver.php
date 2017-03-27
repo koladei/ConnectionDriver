@@ -11,11 +11,11 @@ use com\mainone\middleware\EntityDefinitionBrowser;
  *
  * @author Kolade.Ige
  */
-class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
+class DrupalEntityDriver extends MiddlewareConnectionDriver {
 
     private $endpoint;
 
-    public function __construct(callable $driverLoader, $endpoint = 'http://molsptest:82/drp/CPortalService.svc/QueryTable/[~]') {
+    public function __construct(callable $driverLoader) {
         parent::__construct($driverLoader);
 
         $this->endpoint = $endpoint;
@@ -60,32 +60,20 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     }
 
     function addExpansionToRecord($entity, &$records, EntityFieldDefinition $fieldInfo, $vals) {
-//        var_dump(count($vals));
-//        if (count($vals) > 0) {
+
         foreach ($records as &$record) {
             if ($vals instanceof DynamicsAXComplexEntity) {
                 if ($entity == 'DAT') {
-//                        if (count($vals->{'DAT'}) > 0) {
                     foreach ($vals as $child_entity => $child_items) {
                         parent::addExpansionToRecord($child_entity, $record, $fieldInfo, $child_items);
                     }
-//                        } else {
-//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//                        }
                 } else if (property_exists($vals, $entity)) {
                     $val_items = $vals->{$entity};
-//                        if (count($val_items) > 0) {
                     parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
-//                        } else {
-//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//                        }
+
                 } else if (property_exists($vals, 'DAT')) {
                     $val_items = $vals->{'DAT'};
-//                        if (count($val_items) > 0) {
                     parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
-//                        } else {
-//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//                        }
                 } else {
                     $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
                 }
@@ -93,12 +81,20 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
                 parent::addExpansionToRecord($entity, $record, $fieldInfo, $vals);
             }
         }
-//        } else {
-//            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//        }
+
 
         return $records;
     }
+
+    public function getItemById($entityBrowser, $id, $select, $expands = '', $otherOptions = []) {
+
+        $return = parent::getItemById(... func_get_args());
+        if (!is_null($return) && count($return > 0)) {
+            return $return[0];
+        }
+        return NULL;
+    }
+
     
     public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
         
@@ -123,15 +119,6 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         } else {
             throw new \Exception('Unable to connect to Salesforce');
         }
-    }
-
-    public function getItemById($entityBrowser, $id, $select, $expands = '', $otherOptions = []) {
-
-        $return = parent::getItemById(... func_get_args());
-        if (!is_null($return) && count($return > 0)) {
-            return $return[0];
-        }
-        return NULL;
     }
 
     public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $obj, array $otherOptions = []) {

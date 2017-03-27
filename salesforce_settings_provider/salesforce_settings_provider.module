@@ -345,6 +345,16 @@ function salesforce_settings_provider__get_entity_definitions() {
                         , 'remote_entity' => 'salesforce_user'
                     ]
                 ]
+                , '_Inflows' => [
+                    'preferred_name' => 'CashInflows'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'PayableCommission'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cash_inflow'
+                    ]
+                ]
             ]
         ]
         , 'account' => [

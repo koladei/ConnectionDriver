@@ -4,8 +4,15 @@ module_load_include('module', 'settings_provider');
 $module_path = drupal_get_path('module', 'remedy_connection_driver');
 include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
 
-if (!class_exists('SoapClient')) {
+if (!class_exists('nusoap_base')) {
     include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/nusoap/nusoap.php');
+}
+
+if (!class_exists('nusoap_client')) {
+    include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/nusoap/class.soapclient.php');
+}
+
+if (!class_exists('nusoap_client')) {
     include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/nusoap/class.soapclient.php');
 }
 include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/BMCRemedyConnectionDriver.php');

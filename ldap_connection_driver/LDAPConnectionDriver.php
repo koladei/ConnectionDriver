@@ -34,6 +34,32 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         return $this;
     }
 
+    
+    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
+        
+        throw new \Exception('Not yet implemented');
+        
+        foreach($entityBrowsers as &$entityBrowser){
+                $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
+        }
+
+        // Get a connection token
+        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            $objs = [];
+            foreach($entityBrowsers as $key => &$entityBrowser){
+                if(isset($objects[$key])){
+                    $object = $entityBrowser->reverseRenameFields($objects[$key]);
+                    $objs[] = $object;//json_encode($object);
+                }
+            }
+            $obj = json_encode($objs);
+            
+            
+        } else {
+            throw new \Exception('Unable to connect to Salesforce');
+        }
+    }
+
     public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $object, array $otherOptions = []) {
         
     }
@@ -61,8 +87,8 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         $limit = isset($otherOptions['$top']) ? $otherOptions['$top'] : 100;
 
         if ($ldapbind) {
-            $user_search = ldap_search($con, $dn, "{$filter}", $select, 0, $limit);
-            $user_entries = ldap_get_entries($con, $user_search);
+            $user_search = \ldap_search($con, $dn, "{$filter}", $select, 0, $limit);
+            $user_entries = \ldap_get_entries($con, $user_search);
 
             foreach ($user_entries as &$user_entry) {
                 if (is_array($user_entry)) {
@@ -88,7 +114,7 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
             }
 
             unset($user_entries['count']);
-            $user_entries = json_decode(json_encode($user_entries));
+            $user_entries = \json_decode(json_encode($user_entries));
 
             return $user_entries;
         }
@@ -105,18 +131,18 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         putenv('LDAPTLS_REQCERT=never');
         $server = "{$this->protocol}://{$this->host}:{$this->port}"; //"ldaps://moghdc01.mainonecable.com:636";
 
-        $connection = ldap_connect($server);
+        $connection = \ldap_connect($server);
         $binding = null;
 
         $ldaprdn = $this->username;
         $ldappass = $this->password;
 
-        ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
-        ldap_set_option($connection, LDAP_OPT_REFERRALS, 0);
+        \ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+        \ldap_set_option($connection, LDAP_OPT_REFERRALS, 0);
 
         //If AD responds.
         if ($connection) {
-            $binding = ldap_bind($connection, $ldaprdn, $ldappass);
+            $binding = \ldap_bind($connection, $ldaprdn, $ldappass);
             return $binding;
         }
 

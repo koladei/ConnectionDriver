@@ -22,6 +22,7 @@ abstract class MiddlewareConnectionDriver {
     protected $driverLoader = NULL; //function to be called when there is need to load a driver that has never been loaded.
     protected $drivers = []; //a list of drivers that have been loaded during this session.
     protected $connectionToken = NULL;
+    protected $maxRetries = 50;
 
     public abstract function getItemsInternal($entityBrowser, &$connection_token = NULL, array $select, $filter, $expands = [], $otherOptions = []);
 
@@ -31,6 +32,8 @@ abstract class MiddlewareConnectionDriver {
 
     public abstract function deleteItemInternal($entityBrowser, &$connectionToken = NULL, $id, array $otherOptions = []);
 
+    public abstract function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []);
+    
     public abstract function getStringer();
 
     public function __construct(callable $driverLoader) {
@@ -48,6 +51,12 @@ abstract class MiddlewareConnectionDriver {
         return $this;
     }
 
+    public function getEntityBrowser($entity){        
+        $entityBrowser = $this->entitiesByDisplayName[$entity];
+        $this->setStrategies($entityBrowser);
+        return $entityBrowser;
+    }
+
     public function loadDriver($driverName) {
         if (!isset($drivers[$driverName])) {
             $loader = $this->driverLoader;
@@ -56,6 +65,23 @@ abstract class MiddlewareConnectionDriver {
             return $drivers[$driverName];
         }
         return $drivers[$driverName];
+    }
+
+    public function executeFunction($functionName, array $objects = [], array $otherOptions = []) {
+
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:-1;
+        $otherOptions['retryCount'] = $retryCount + 1;
+
+        try{
+            $result = $this->executeFunctionInternal($functionName, $objects, $this->connectionToken, $otherOptions);
+            return $result;
+        } catch(\Exception $exc){
+            if($retryCount < $this->maxRetries){
+                return $this->executeFunction($functionName, $objects, $otherOptions);
+            } else {
+                throw $exc;
+            }
+        }
     }
 
     public function getItemById($entityBrowser, $id, $select, $expands = '', $otherOptions = []) {
@@ -104,6 +130,9 @@ abstract class MiddlewareConnectionDriver {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $entityBrowser = $this->setStrategies($entityBrowser);
 
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
+        $otherOptions['retryCount'] = $retryCount + 1;
+
         // Strip-out invalid fields
         $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
 
@@ -125,20 +154,25 @@ abstract class MiddlewareConnectionDriver {
             $otherOptions['$expand'] = '';
         }
 
-        if ($this->updateItemInternal($entityBrowser, $this->connectionToken, $id, $obj, $otherOptions)) {
-            return $this->getItemById($entityBrowser, $id, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+        try{
+            if ($this->updateItemInternal($entityBrowser, $this->connectionToken, $id, $obj, $otherOptions)) {
+                return $this->getItemById($entityBrowser, $id, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+            }
+        } catch(\Exception $exc){
+            if($retryCount < $this->maxRetries){
+                return $this->updateItem($entityBrowser, $id, $object, $otherOptions);
+            } else {
+                throw $exc;
+            }
         }
     }
 
     public function createItem($entityBrowser, \stdClass $object, array $otherOptions = []) {
-//        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
-//        $entityBrowser = $this->setStrategies($entityBrowser);
-//
-//        $object = $entityBrowser->reverseRenameFields($object);
-//        return $this->createItemInternal($entityBrowser, $this->connectionToken, $object, $otherOptions);
 
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $entityBrowser = $this->setStrategies($entityBrowser);
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
+        $otherOptions['retryCount'] = $retryCount + 1;
 
         // Strip-out invalid fields
         $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
@@ -154,7 +188,9 @@ abstract class MiddlewareConnectionDriver {
         if (!isset($otherOptions['$select'])) {
             $otherOptions['$select'] = $setFields;
         } else {
-            $otherOptions['$select'] = array_unique(array_merge(explode(',', $otherOptions['$select']), $setFields));
+            $abccd = is_string($otherOptions['$select']) ? explode(',', $otherOptions['$select']) : (is_array($otherOptions['$select']) ? $otherOptions['$select'] : []);
+            $abccc = array_merge($abccd, $setFields);
+            $otherOptions['$select'] = array_unique($abccc);
         }
 
         if (!isset($otherOptions['$expand'])) {
@@ -166,21 +202,40 @@ abstract class MiddlewareConnectionDriver {
             $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             return $return;
         } else {
-            throw new \Exception("Unable to create a new record in {$entityBrowser->getDisplayName()} of ".__CLASS__);
+            if($retryCount < $this->maxRetries){
+                return $this->createItem($entityBrowser, $object, $otherOptions);
+            } else{
+                throw new \Exception("Unable to create a new record in {$entityBrowser->getDisplayName()} of ".__CLASS__);
+            }
         }
     }
 
     public function deleteItem($entityBrowser, $id, array $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $entityBrowser = $this->setStrategies($entityBrowser);
+        
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']: 0;
+        $otherOptions['retryCount'] = $retryCount + 1;
 
-        $result = $this->createItemInternal($entityBrowser, $this->connectionToken, $id, $otherOptions);
+        try{
+            $result = $this->deleteItemInternal($entityBrowser, $this->connectionToken, $id, $otherOptions);
+            return $result;
+        } catch(\Exception $exc){
+            if($retryCount < $this->maxRetries){
+                return $this->deleteItem($entityBrowser, $id, $otherOptions);
+            } else {
+                throw $exc;
+            }
+        }
     }
 
     public function getItems($entityBrowser, $fields, $filter, $expandeds = '', $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $scope = $this;
         $entityBrowser = $this->setStrategies($entityBrowser);
+        
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
+        $otherOptions['retryCount'] = $retryCount + 1;
 
         // Set the default limit        
         if (!isset($otherOptions['$top'])) {
@@ -282,19 +337,9 @@ abstract class MiddlewareConnectionDriver {
                     } else {
                         $expand_val['ids'][] = $ids;
                     }
-//                    $co = count($ids);
-//                    var_dump("{$expand_key} ::=:: {$co}");
                 }
             });
-//            foreach ($expands as $expand_key => &$expand_val) {
-//                $fieldInfo = $expand_val['info'];
-//                $relatedKey = $fieldInfo->getRelatedLocalFieldName();
-//                $co = count($expand_val['ids']);
-//
-//                var_dump("{$expand_key} :: {$relatedKey} :: {$co}");
-////                $ids = $entityBrowser->fetchFieldValues($record, $relatedKey);
-////                $expand_val['ids'] = array_merge($expand_val['ids'], $ids);
-//            }
+
             // Fetch the related field values in one sweep
             array_walk($expands, function(&$expand_val, $expand_key) use($driverScope) {
                 $localField = $expand_val['info'];
@@ -316,13 +361,9 @@ abstract class MiddlewareConnectionDriver {
 
                 $ex = isset($expand_val['expand'][$localField->getDisplayName()]) ? $expand_val['expand'][$localField->getDisplayName()] : [];
 
-//                $co = 0;
-//                $tot = count($expand_val['ids']);
                 foreach ($expand_chunks as $chunk) {
-//                    var_dump("{$localField->getDisplayName()}: {$co}: {$tot}");
-//                    $co = $co + 1;
                     $chunkResult = $remoteDriver->getItemsByFieldValues($remoteEntityBrowser, $remoteField, $chunk, $expand_val['select'], implode(',', $ex), $otherOptions);
-//                    var_dump($chunkResult);
+
                     // Combine this chunk result with previous chunk results
                     $data = $remoteEntityBrowser->mergeExpansionChunks($data, $chunkResult, $localField, $remoteField);
                 }
@@ -340,7 +381,11 @@ abstract class MiddlewareConnectionDriver {
                 }
             });
         } else {
-            throw new \Exception("Failed to get data from Entity {$entityBrowser->getDisplayName()}");
+            if($retryCount < $this->maxRetries){
+                return $this->getItems($entityBrowser, $fields, $filter, $expandeds, $otherOptions) ;
+            } else {
+                throw new \Exception("Failed to get data from Entity {$entityBrowser->getDisplayName()}");
+            }
         }
 
         return $result;
@@ -355,7 +400,6 @@ abstract class MiddlewareConnectionDriver {
         $keyVal = $record->{$fieldInfo->getRelatedLocalFieldName()};
         $results = isset($vals["{$keyVal}"]) ? $vals["{$keyVal}"] : ($fieldInfo->isMany() ? [] : NULL);
         $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => $results] : $results;
-//        unset($record->{$fieldInfo->getRelatedLocalFieldName()});
 
         return $record;
     }
@@ -440,7 +484,6 @@ abstract class MiddlewareConnectionDriver {
 
     public static function getCurrentSelections(EntityDefinitionBrowser $entityBrowser, array $fields) {
 
-//        var_dump($fields);
         // set the compulsary fields of the entity
         $required_fields = $entityBrowser->getMandatoryFieldNames();
         foreach ($required_fields as $required_field) {
@@ -474,13 +517,11 @@ abstract class MiddlewareConnectionDriver {
                     }
                 }));
 
-//        var_dump($fields);
-
         return array_merge($fields, $shorts);
     }
 
     public static function getCurrentExpansions(EntityDefinitionBrowser $entityBrowser, $field, $fields) {
-//        $regex = "/({$field})\/([^\/]+)[^\w]*/";
+        
         $regex = "/({$field})\/([^\s\,]+)/";
         $fieldsR = [];
 

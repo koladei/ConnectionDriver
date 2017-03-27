@@ -1,28 +1,28 @@
 <?php
 
 module_load_include('module', 'settings_provider');
-$module_path = drupal_get_path('module', 'dynamics_ax_settings_provider');
+$module_path = drupal_get_path('module', 'drupal_entity_driver');
 include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
-include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/DynamicsAXConnectionDriver.php');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/DrupalEntityDriver.php');
 
-use com\mainone\middleware\DynamicsAXConnectionDriver;
+use com\mainone\middleware\DrupalEntityDriver;
 
-function dynamics_ax_settings_provider_connection_driver_dynamics_ax_alter(&$container) {
-    $driver = new DynamicsAXConnectionDriver(function($x) {
+function drupal_entity_driver_connection_driver_data_dictionary_alter(&$container) {
+    $driver = new DrupalEntityDriver(function($x) {
         $return = mware_connection_driver__get_driver($x);
         return $return;
     });
 
-    $defs = dynamics_ax_settings_provider__get_entity_definitions();
+    $defs = drupal_entity_driver__get_entity_definitions();
     $driver->setEntities($defs);
-    $container['dynamics_ax'] = $driver;
+    $container['data_dictionary'] = $driver;
 }
 
 /**
  * Implements hook_permission
  * @return array
  */
-function dynamics_ax_settings_provider_permission() {
+function drupal_entity_driver_permission() {
     $permission = [];
 
     return $permission;
@@ -33,7 +33,7 @@ function dynamics_ax_settings_provider_permission() {
  * @param type $args
  * @return boolean
  */
-function dynamics_ax_settings_provider__user_access($args) {
+function drupal_entity_driver__user_access($args) {
     return true;
 }
 
@@ -41,7 +41,7 @@ function dynamics_ax_settings_provider__user_access($args) {
  * Returns all the entity definitions implemented in Dynamics AX.
  * @return type
  */
-function dynamics_ax_settings_provider__get_entity_definitions() {
+function drupal_entity_driver__get_entity_definitions() {
     return [
         'cust_table' => [
             'internal_name' => 'CustTable'
@@ -203,18 +203,6 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'IsCorrection'
                     , 'type' => 'int'
                 ]
-                , 'OFFSETRECID' => [
-                    'preferred_name' => 'OffsetTransaction'
-                    , 'type' => 'int'
-                    , 'relationship' => [
-                        'local_field' => 'OffsetTransaction'
-                        , 'preferred_local_key_name' => 'OffsetTransactionId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'filter' => 'TransactionType eq 8'
-                        , 'remote_entity' => 'cust_trans'
-                    ]
-                ]
                 , 'CANCELLEDPAYMENT' => [
                     'preferred_name' => 'IsCancelled'
                     , 'type' => 'int'
@@ -283,28 +271,28 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'DataArea'
                     , 'type' => 'string',
                 ]
-                , '_INVOICE_INFORMATION' => [
-                        'preferred_name' => 'InvoiceInformation'
-                        , 'type' => 'detail'
-                        , 'lookup_entity' => 'cust_trans'
-                        , 'relationship' => [
-                            'local_field' => 'InvoiceNumber'
-                            , 'remote_field' => 'InvoiceNumber'
-                            , 'remote_type' => 'parent'
-                            , 'filter' => 'TransactionType eq 8'
-                        ]
-                    ]
-                , '_LINE_TRANSACTIONS' => [
-                        'preferred_name' => 'LineTransactions'
-                        , 'type' => 'detail'
-                        , 'relationship' => [
-                            'local_field' => 'Id'
-                            , 'remote_field' => 'TransactionId'
-                            , 'remote_type' => 'child'
-                            , 'remote_entity' => 'cust_invoice_line_transaction'
-                        ]
+            , '_INVOICE_INFORMATION' => [
+                    'preferred_name' => 'InvoiceInformation'
+                    , 'type' => 'detail'
+                    , 'lookup_entity' => 'cust_trans'
+                    , 'relationship' => [
+                        'local_field' => 'InvoiceNumber'
+                        , 'remote_field' => 'InvoiceNumber'
+                        , 'remote_type' => 'parent'
+                        , 'filter' => 'TransactionType eq 8'
                     ]
                 ]
+        , '_LINE_TRANSACTIONS' => [
+                    'preferred_name' => 'LineTransactions'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'TransactionId'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cust_invoice_line_transaction'
+                    ]
+                ]
+            ]
         ]
         , 'cust_invoice_table' => [
             'internal_name' => 'CustInvoiceTable'
@@ -518,17 +506,6 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     , 'relationship' => [
                         'local_field' => 'Transaction'
                         , 'preferred_local_key_name' => 'TransactionId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'cust_trans'
-                    ]
-                ]
-                , 'PAYMENT' => [
-                    'preferred_name' => 'PaymentTransaction'
-                    , 'type' => 'int'
-                    , 'relationship' => [
-                        'local_field' => 'PaymentTransaction'
-                        , 'preferred_local_key_name' => 'PaymentTransactionId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cust_trans'

@@ -33,9 +33,54 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         return parent::mergeRecordArray($data, $chunkResult, $localField, $remoteField);
     }
 
-//    function addExpansionToRecord($entity, &$record, EntityFieldDefinition $fieldInfo, $vals) {
-//        return parent::addExpansionToRecord($entity, $record, $fieldInfo, $vals);
-//    }
+    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
+        
+        // Get a connection token
+        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            $objs = ['inputs' => $objects];
+            // $obj = json_encode($objs);
+            var_dump($obj);
+            
+            // Prepare the POST request
+            $options = array(
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: Bearer ' . $connectionToken->access_token,
+                    'Content-Type: application/json'
+                ),
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
+                CURLOPT_POSTFIELDS => $obj
+            );
+
+            if ($connectionToken->ConnectionParameters->UseProxyServer) {
+                $options[CURLOPT_PROXY] = $connectionToken->ConnectionParameters->ProxyServer;
+                $options[CURLOPT_PROXYPORT] = $connectionToken->ConnectionParameters->ProxyServerPort;
+                //$tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
+            }
+
+            // Execute the POST request.
+            $new_url = "{$connectionToken->instance_url}/services/data/v35.0/actions/custom/flow/{$functionName}";
+            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+            
+
+            // Process the request
+            $res = json_decode($feed->getContent());
+            if (is_array($res)) {
+                throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+            } else if (is_null($res)) {
+                throw new \Exception('Something went wrong. Communication with Salesforce failed.');
+            } else {
+                $d = new \stdClass();
+                $d->d = $res->id;
+                $d->success = TRUE;
+                return $d;
+            }
+        } else {
+            throw new \Exception('Unable to connect to Salesforce');
+        }
+    }
 
     /**
      * Implements MiddlewareConnectionDriver.updateItemInternal.
@@ -72,7 +117,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             if ($connectionToken->ConnectionParameters->UseProxyServer) {
                 $options[CURLOPT_PROXY] = $connectionToken->ConnectionParameters->ProxyServer;
                 $options[CURLOPT_PROXYPORT] = $connectionToken->ConnectionParameters->ProxyServerPort;
-//                $tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
+            //                $tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
             }
 
             // Execute the POST request.
@@ -129,7 +174,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             if ($connectionToken->ConnectionParameters->UseProxyServer) {
                 $options[CURLOPT_PROXY] = $connectionToken->ConnectionParameters->ProxyServer;
                 $options[CURLOPT_PROXYPORT] = $connectionToken->ConnectionParameters->ProxyServerPort;
-//                $tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
+                //$tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
             }
 
             // Execute the POST request.
@@ -202,7 +247,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             if ($connectionToken->ConnectionParameters->UseProxyServer) {
                 $options[CURLOPT_PROXY] = $connectionToken->ConnectionParameters->ProxyServer;
                 $options[CURLOPT_PROXYPORT] = $connectionToken->ConnectionParameters->ProxyServerPort;
-//                $tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
+                // $tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
             }
 
             // Generate the SOQL query to send in the POST request
@@ -272,7 +317,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             if ($sf_settings->UseProxyServer) {
                 $tokenOption[CURLOPT_PROXY] = $sf_settings->ProxyServer;
                 $tokenOption[CURLOPT_PROXYPORT] = $sf_settings->ProxyServerPort;
-//                $tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
+                //$tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
             }
 
 
@@ -288,7 +333,6 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 return FALSE;
             }
         } catch (Exception $x) {
-//            var_dump('$x->getMessage()', $x->getMessage());
             return FALSE;
         }
     }
