@@ -97,7 +97,10 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
         // Get a connection token
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
-            $object = $entityBrowser->reverseRenameFields($object);            
+            $object = $entityBrowser->reverseRenameFields($object);    
+            if(property_exists($object, 'Id')) {
+                unset($object->Id);
+            }       
             $obj = json_encode($object);
 
             // Prepare the POST request

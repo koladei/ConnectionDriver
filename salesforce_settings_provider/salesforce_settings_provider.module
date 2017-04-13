@@ -128,8 +128,12 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'Currency'
                     , 'type' => 'string'
                 ]
-                , 'Conversion_Rate__c' => [
-                    'preferred_name' => 'ConversionRate'
+                , 'Commission_Rate__c' => [
+                    'preferred_name' => 'CommissionRate'
+                    , 'type' => 'int'
+                ]
+                , 'Age_Of_Payment__c' => [
+                    'preferred_name' => 'AgeOfPayment'
                     , 'type' => 'int'
                 ]
                 , 'ExchangeRate__c' => [
@@ -310,6 +314,14 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'SaleAmount'
                     , 'type' => 'int'
                 ]
+                , 'Carry_Over_Amount__c' => [
+                    'preferred_name' => 'CarryOverAmount'
+                    , 'type' => 'int'
+                ]
+                , 'Total__c' => [
+                    'preferred_name' => 'Total'
+                    , 'type' => 'int'
+                ]
                 , 'Year__c' => [
                     'preferred_name' => 'Year'
                     , 'type' => 'int'
@@ -343,6 +355,17 @@ function salesforce_settings_provider__get_entity_definitions() {
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+                , 'Carried_To__c' => [
+                    'preferred_name' => 'CarriedTo'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CarriedTo'
+                        , 'preferred_local_key_name' => 'CarriedToId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'payable_commission'
                     ]
                 ]
                 , '_Inflows' => [
@@ -398,6 +421,17 @@ function salesforce_settings_provider__get_entity_definitions() {
                 , 'Status__c' => [
                     'preferred_name' => 'Status'
                     , 'type' => 'string',
+                ]
+                , 'Primary_Sector__c' => [
+                    'preferred_name' => 'PrimarySector'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'PrimarySector'
+                        , 'preferred_local_key_name' => 'PrimarySectorId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'sales_sector'
+                    ]
                 ]
                 , 'OwnerId' => [
                     'preferred_name' => 'Owner'
@@ -601,10 +635,6 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
-                , 'Name' => [
-                    'preferred_name' => 'Name'
-                    , 'type' => 'string'
-                ]
                 , 'Email' => [
                     'preferred_name' => 'Email'
                     , 'type' => 'string'
@@ -639,6 +669,97 @@ function salesforce_settings_provider__get_entity_definitions() {
                     ],
                 ],
             ],
-        ],
+        ]
+        , 'sales_target' => [
+            'internal_name' => 'SalesTarget'
+            , 'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Year' => [
+                    'preferred_name' => 'Year__c'
+                    , 'type' => 'int'
+                ]
+                , 'Q1_Target__c' => [
+                    'preferred_name' => 'Q1Target'
+                    , 'type' => 'int'
+                ]
+                , 'Q2_Target__c' => [
+                    'preferred_name' => 'Q2Target'
+                    , 'type' => 'int'
+                ]
+                , 'Q3_Target__c' => [
+                    'preferred_name' => 'Q3Target'
+                    , 'type' => 'int'
+                ]
+                , 'Q4_Target__c' => [
+                    'preferred_name' => 'Q4Target'
+                    , 'type' => 'int'
+                ]
+                , 'Q1_Cash_Target__c' => [
+                    'preferred_name' => 'Q1CashTarget'
+                    , 'type' => 'int'
+                ]
+                , 'Q2_Cash_Target__c' => [
+                    'preferred_name' => 'Q2CashTarget'
+                    , 'type' => 'int'
+                ]
+                , 'Q3_Cash_Target__c' => [
+                    'preferred_name' => 'Q3CashTarget'
+                    , 'type' => 'int'
+                ]
+                , 'Q4_Cash_Target__c' => [
+                    'preferred_name' => 'Q4CashTarget'
+                    , 'type' => 'int'
+                ]
+            ],
+        ]
+        , 'sales_sector' => [
+            'internal_name' => 'Sales_Sector__c'
+            , 'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Parent__c' => [
+                    'preferred_name' => 'ParentSector'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ParentSector'
+                        , 'preferred_local_key_name' => 'ParentSectorId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'sales_sector'
+                    ]
+                ]
+                , '_Accounts' => [
+                    'preferred_name' => 'Accounts'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'Sector'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'account'
+                    ],
+                ]
+            ]
+        ]
     ];
 }

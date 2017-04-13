@@ -147,7 +147,12 @@ abstract class MiddlewareConnectionDriver {
         if (!isset($otherOptions['$select'])) {
             $otherOptions['$select'] = $setFields;
         } else {
-            $otherOptions['$select'] = array_unique(array_merge(explode(',', $otherOptions['$select']), $setFields));
+            // $abccc = explode(',', $otherOptions['$select']);
+            // $abccd = array_merge($abccc);
+            // $otherOptions['$select'] = array_unique($abccd, $setFields);
+            $abccd = is_string($otherOptions['$select']) ? explode(',', $otherOptions['$select']) : (is_array($otherOptions['$select']) ? $otherOptions['$select'] : []);
+            $abccc = array_merge($abccd, $setFields);
+            $otherOptions['$select'] = array_unique($abccc);
         }
 
         if (!isset($otherOptions['$expand'])) {

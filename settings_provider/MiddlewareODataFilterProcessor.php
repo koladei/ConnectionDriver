@@ -43,7 +43,8 @@ class MiddlewareODataFilterProcessor {
 
         // In operator
         $matchs = [];
-        preg_match_all('/([\w][\w\d\/]*[^\/])\s+(in)\s*(\()\s*(([\'"]?)([^\)\n\r]*))(\5)(\s*\))/i', $expression, $matchs, PREG_SET_ORDER);
+        // preg_match_all('/([\w][\w\d\/]*[^\/])\s+(in)\s*(\()\s*(([\'"]?)([^\)\n\r]*))(\5)(\s*\))/i', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/([\w][\w\d\/]*[^\/])\s+(in)\s*(\()\s*(([\'"]?)([^\n\r]*))(\5)(\s*\))/i', $expression, $matchs, PREG_SET_ORDER);
 
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
