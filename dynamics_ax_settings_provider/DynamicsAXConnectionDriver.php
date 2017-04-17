@@ -15,7 +15,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
     private $endpoint;
 
-    public function __construct(callable $driverLoader, $endpoint = 'http://molsptest:82/drp/CPortalService.svc/QueryTable/[~]') {
+    public function __construct(callable $driverLoader, $endpoint = '') {
         parent::__construct($driverLoader);
 
         $this->endpoint = $endpoint;
@@ -137,7 +137,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $obj, array $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
-        $url = "http://molsptest:82/drp/CPortalService.svc/UpdateTable";
+        $url = "{$this->endpoint}/UpdateTable";//QueryTable/[~]
 //        $url = "{$this->endpoint}http://molsptest:82/drp/CPortalService.svc/UpdateTable"; //{$entityBrowser->getInternalName()}?{$query_string}";
         $recordInfo = [];
         $recordInfo['Table'] = $entityBrowser->getInternalName();
@@ -175,7 +175,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     public function createItemInternal($entityBrowser, &$connectionToken = NULL, \stdClass $obj, array $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
-        $url = "http://molsptest:82/drp/CPortalService.svc/CreateRecord";
+        $url = "{$this->endpoint}/CreateRecord";
 //        $url = "{$this->endpoint}http://molsptest:82/drp/CPortalService.svc/UpdateTable"; //{$entityBrowser->getInternalName()}?{$query_string}";
         $recordInfo = [];
         $recordInfo['Table'] = $entityBrowser->getInternalName();
@@ -235,7 +235,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
 
         $query_string = drupal_http_build_query($invoice_params);
-        $url = "{$this->endpoint}/{$entityBrowser->getInternalName()}?{$query_string}";
+        $url = "{$this->endpoint}/QueryTable/[~]/{$entityBrowser->getInternalName()}?{$query_string}";
 
 //        var_dump("{$entityBrowser->getInternalName()}::{$filter}");
         $tokenOption = array(
@@ -246,6 +246,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , CURLOPT_TIMEOUT => 15
             , CURLOPT_CONNECTTIMEOUT => 15
         );
+        // var_dump($url);
 
         $feed = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
         $res = (json_decode($feed->getContent()));

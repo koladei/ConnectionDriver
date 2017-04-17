@@ -14,11 +14,11 @@ function dynamics_ax_settings_provider_form_settings_provider_admin_alter(&$form
         , '#group' => 'general_settings'
     ];
 
-    $form['dynamics_ax_settings']['DYNAMICS_AX_SETTINGS_USE_PRODUCTION'] = [
-        '#type' => 'checkbox',
-        '#title' => t('Use production settings'),
-        '#default_value' => variable_get('DYNAMICS_AX_SETTINGS_USE_PRODUCTION', FALSE),
-        '#description' => t('The source of <b>Customer</b> information'),
+    $form['dynamics_ax_settings']['DYNAMICS_AX_SETTINGS_ENDPOINT_URL'] = [
+        '#type' => 'textfield',
+        '#title' => t('Endpoint URL'),
+        '#default_value' => variable_get('DYNAMICS_AX_SETTINGS_ENDPOINT_URL', ''),
+        '#description' => t('The URL of the dynamics service'),
         '#weight' => 0
     ];
 
