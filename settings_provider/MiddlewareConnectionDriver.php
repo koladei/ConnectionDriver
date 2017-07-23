@@ -22,7 +22,8 @@ abstract class MiddlewareConnectionDriver {
     protected $driverLoader = NULL; //function to be called when there is need to load a driver that has never been loaded.
     protected $drivers = []; //a list of drivers that have been loaded during this session.
     protected $connectionToken = NULL;
-    protected $maxRetries = 50;
+    protected $maxRetries = 50;    
+    protected $sourceLoader = NULL;
 
     public abstract function getItemsInternal($entityBrowser, &$connection_token = NULL, array $select, $filter, $expands = [], $otherOptions = []);
 
@@ -36,8 +37,9 @@ abstract class MiddlewareConnectionDriver {
     
     public abstract function getStringer();
 
-    public function __construct(callable $driverLoader) {
+    public function __construct(callable $driverLoader, callable $sourceLoader = NULL) {
         $this->driverLoader = $driverLoader;
+        $this->sourceLoader = $sourceLoader;
     }
 
     public function setEntities($entities) {
@@ -51,6 +53,12 @@ abstract class MiddlewareConnectionDriver {
         return $this;
     }
 
+    /**
+     * Returns the <class>EntityDefinitionBrowser</class> identified by $entity.
+     *
+     * @param String $entity
+     * @return EntityDefinitionBrowser
+     */
     public function getEntityBrowser($entity){        
         $entityBrowser = $this->entitiesByDisplayName[$entity];
         $this->setStrategies($entityBrowser);
@@ -67,6 +75,48 @@ abstract class MiddlewareConnectionDriver {
         return $drivers[$driverName];
     }
 
+    /**
+     * Parse Date / DateTime values returned by this connection driver
+     * Sub-classes should override this method.
+     *
+     * @param DateTime $value
+     * @return void
+     */
+    protected function parseDateValue($value) {
+        $type_1 = '/^(([\d]{4})\-([\d]{2})\-([\d]{2})(T([\d]{2})\:([\d]{2})(\:([\d]{2}))?)?)$/';
+        $type_2 = '/^(([\d]{4})\-([\d]{2})\-([\d]{2})(T([\d]{2})\:([\d]{2})))$/';
+        $type_3 = '/^([\d]{4})\\-([\d]{2})\-([\d]{2})$/';
+
+        if (preg_match($type_3, $value) == 1) {
+            return \DateTime::createFromFormat('!Y-m-d', $value);
+        } else if (preg_match($type_2, $value) == 1) {
+            return \DateTime::createFromFormat('!Y-m-d\\TH:i', $value);
+        } else if (preg_match($type_1, $value) == 1) {
+            return \DateTime::createFromFormat('!Y-m-d\\TH:i:s', $value);
+        }
+
+        throw new \Exception("The time format is not known. {$value}");
+    }
+
+    /**
+     * Returns a number that represents the maximum allowed OR statements to use when converting from IN to OR.
+     * 
+     * This is necessary for systems that do not have an OOB implementation of the IN operator.
+     *
+     * @return void
+     */
+    public function getMaxInToOrConversionChunkSize(){
+        return 100;
+    }
+
+    /**
+     * Invokes a function call on the underlying system, passing the specified objects as parameters.
+     *
+     * @param String $functionName
+     * @param array $objects
+     * @param array $otherOptions
+     * @return \stdClass representing the result of the function call.
+     */
     public function executeFunction($functionName, array $objects = [], array $otherOptions = []) {
 
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:-1;
@@ -84,6 +134,16 @@ abstract class MiddlewareConnectionDriver {
         }
     }
 
+    /**
+     * Returns the resource identified by <code>$id</code>
+     *
+     * @param EntityDefinitionBrowser $entityBrowser A reference to the entity datasource.
+     * @param String $id The unique identifier of the resource to be retrieved. 
+     * @param mixed $select Comma-separated string or array of the resource fields to return.
+     * @param string $expands Comma-separated string or array of the sub-resource fields to return.
+     * @param array $otherOptions Key-Value array of other query parameters.
+     * @return \stdClass
+     */
     public function getItemById($entityBrowser, $id, $select, $expands = '', $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $result = $this->getItemsByIds($entityBrowser, [$id], $select, $expands, $otherOptions);
@@ -94,6 +154,16 @@ abstract class MiddlewareConnectionDriver {
         return count($result) > 0 ? $result[$first_key] : NULL;
     }
 
+    /**
+     * Returns the resources identified by the array ids in $ids.
+     *
+     * @param EntityDefinitionBrowser $entityBrowser A reference to the entity datasource.
+     * @param String $id The unique identifier of the resource to be retrieved. 
+     * @param mixed $select Comma-separated string or array of the resource fields to return.
+     * @param string $expands Comma-separated string or array of the sub-resource fields to return.
+     * @param array $otherOptions Key-Value array of other query parameters.
+     * @return \stdClass
+     */
     public function getItemsByIds($entityBrowser, $ids, $select, $expands = '', $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
 
@@ -101,6 +171,17 @@ abstract class MiddlewareConnectionDriver {
         return $result;
     }
 
+    /**
+     * Undocumented function
+     *
+     * @param EntityDefinitionBrowser | String $entityBrowser  A reference to the entity datasource.
+     * @param EntityFieldDefinition $entityField A reference to the resource field definition to be used as match criteria.
+     * @param array $values An array of values to be used as search criteria.
+     * @param array | String $select Comma-separated string or array of the resource fields to return.
+     * @param string $expands Comma-separated string or array of the sub-resource fields to return.
+     * @param array $otherOptions Key-Value array of other query parameters.
+     * @return \stdClass
+     */
     public function getItemsByFieldValues($entityBrowser, EntityFieldDefinition $entityField, array $values, $select, $expands = '', &$otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
 
@@ -139,19 +220,16 @@ abstract class MiddlewareConnectionDriver {
         $obj = new \stdClass();
         foreach ($setFields as $setField) {
             // avoid objects
-            if (!is_object($object->{$setField}) && !is_array($object->{$setField})) {
-                $obj->{$setField} = $object->{$setField};
+            if (!is_object($object->{$setField->getDisplayName()}) && !is_array($object->{$setField->getDisplayName()})) {
+                $obj->{$setField->getDisplayName()} = $object->{$setField->getDisplayName()};
             }
         }
 
         if (!isset($otherOptions['$select'])) {
-            $otherOptions['$select'] = $setFields;
+            $otherOptions['$select'] = EntityFieldDefinition::getDisplayNames($setFields);
         } else {
-            // $abccc = explode(',', $otherOptions['$select']);
-            // $abccd = array_merge($abccc);
-            // $otherOptions['$select'] = array_unique($abccd, $setFields);
             $abccd = is_string($otherOptions['$select']) ? explode(',', $otherOptions['$select']) : (is_array($otherOptions['$select']) ? $otherOptions['$select'] : []);
-            $abccc = array_merge($abccd, $setFields);
+            $abccc = array_merge($abccd, EntityFieldDefinition::getDisplayNames($setFields));
             $otherOptions['$select'] = array_unique($abccc);
         }
 
@@ -185,16 +263,16 @@ abstract class MiddlewareConnectionDriver {
         $obj = new \stdClass();
         foreach ($setFields as $setField) {
             // avoid objects
-            if (!is_object($object->{$setField}) && !is_array($object->{$setField})) {
-                $obj->{$setField} = $object->{$setField};
+            if (!is_object($object->{$setField->getDisplayName()}) && !is_array($object->{$setField->getDisplayName()})) {
+                $obj->{$setField->getDisplayName()} = $object->{$setField->getDisplayName()};
             }
         }
 
         if (!isset($otherOptions['$select'])) {
-            $otherOptions['$select'] = $setFields;
+            $otherOptions['$select'] = EntityFieldDefinition::getDisplayNames($setFields);
         } else {
             $abccd = is_string($otherOptions['$select']) ? explode(',', $otherOptions['$select']) : (is_array($otherOptions['$select']) ? $otherOptions['$select'] : []);
-            $abccc = array_merge($abccd, $setFields);
+            $abccc = array_merge($abccd, EntityFieldDefinition::getDisplayNames($setFields));
             $otherOptions['$select'] = array_unique($abccc);
         }
 
@@ -215,7 +293,7 @@ abstract class MiddlewareConnectionDriver {
         }
     }
 
-    public function deleteItem($entityBrowser, $id, array $otherOptions = []) {
+    public function deleteItem($entityBrowser, $id, array $otherOptions = [], &$deleteCount = 0) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $entityBrowser = $this->setStrategies($entityBrowser);
         
@@ -223,8 +301,21 @@ abstract class MiddlewareConnectionDriver {
         $otherOptions['retryCount'] = $retryCount + 1;
 
         try{
-            $result = $this->deleteItemInternal($entityBrowser, $this->connectionToken, $id, $otherOptions);
-            return $result;
+            $deleteResult = $this->deleteItemInternal($entityBrowser, $this->connectionToken, $id, $otherOptions);
+            $select = isset($otherOptions['$select'])?$otherOptions['$select']:['Id','Created','Modified'];
+            $filter = isset($otherOptions['$filter'])?$otherOptions['$filter']:'';
+            $expand = isset($otherOptions['$expand'])?$otherOptions['$expand']:'';
+
+            $deleteCount = $deleteResult->d;
+            try{                
+                $return = $this->getItems($entityBrowser, $select, $filter, $expand);
+                $deleteResult = $return;
+                $deleteResult->deleteCount = $deleteCount;
+            } catch(\Exception $ex) {
+                $deleteResult = [];
+            }
+         
+            return $deleteResult;
         } catch(\Exception $exc){
             if($retryCount < $this->maxRetries){
                 return $this->deleteItem($entityBrowser, $id, $otherOptions);
@@ -234,23 +325,46 @@ abstract class MiddlewareConnectionDriver {
         }
     }
 
-    public function getItems($entityBrowser, $fields, $filter, $expandeds = '', $otherOptions = []) {
+    public function getItems($entityBrowser, $fields, $filter, $expandeds = '', $otherOptions = [], &$performance = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
         $scope = $this;
         $entityBrowser = $this->setStrategies($entityBrowser);
         
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
         $otherOptions['retryCount'] = $retryCount + 1;
-
+        
         // Set the default limit        
         if (!isset($otherOptions['$top'])) {
             $otherOptions['$top'] = 100;
+        } else {
+            $top = intval($otherOptions['$top']);
+            $otherOptions['$top'] = $top < 1 ? 100 : $top;
         }
 
         if (!isset($otherOptions['$skip'])) {
-            $otherOptions['$skip'] = 1;
+            $otherOptions['$skip'] = 0;
+        } else {
+            $skip = intval($otherOptions['$skip']);
+            $otherOptions['$skip'] = $skip < 0 ? 0 : $skip;
         }
 
+        if (!isset($otherOptions['$pageNumber'])) {
+            $otherOptions['$pageNumber'] = 1;
+        } else {
+            $pageNumber = intval($otherOptions['$pageNumber']);
+            $otherOptions['$pageNumber'] = $pageNumber < 1 ? 1 : $pageNumber;
+        }
+
+        if (!isset($otherOptions['$pageSize'])) {
+            $otherOptions['$pageSize'] = $otherOptions['$top'];
+        } else {
+            $pageSize = intval($otherOptions['$pageSize']);
+            $otherOptions['$pageSize'] = $pageSize < 1 ? $otherOptions['$top'] : $pageSize;
+        }
+
+        //TODO: Stop overriding $orderBy and implement code to rename fields.
+        $otherOptions['$orderBy'] = "{$entityBrowser->getIdField()->getInternalName()} ASC";
+        
         // Set the default filter
         $filter = strlen(trim($filter)) < 1 ? $this->getDefaultFilter() : $filter;
 
@@ -324,13 +438,21 @@ abstract class MiddlewareConnectionDriver {
 
         // Fetch the data of matching records
         $select = array_unique($entityBrowser->getFieldInternalNames($select));
+        $dateFields = $entityBrowser->getFieldsOfTypeByInternalName(['date', 'datetime'], $select);
 
         $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, "{$filterExpression}", $expands, $otherOptions);
 
         if (!is_null($result)) {
             $select_map = $entityBrowser->getFieldsByInternalNames($select);
-            array_walk($result, function(&$record) use($entityBrowser, $select_map, &$expands) {
+            array_walk($result, function(&$record) use($entityBrowser, $select_map, &$expands, $dateFields) {
                 $record = $entityBrowser->renameFields($record, $select_map);
+                foreach($dateFields as $dateField){
+                    if(!is_null($record->{"{$dateField->getDisplayName()}"})){
+                        $dateVal =  $this->parseDateValue($record->{"{$dateField->getDisplayName()}"});
+                        $record->{"{$dateField->getDisplayName()}"} = ( $dateField->isDateTime() ? $dateVal->format('Y-m-d\TH:i:s') : $dateVal->format('Y-m-d') );
+                    }
+                    
+                }
 
                 // Prepare to fetch expanded data
                 foreach ($expands as $expand_key => &$expand_val) {
@@ -361,7 +483,8 @@ abstract class MiddlewareConnectionDriver {
                 $expand_val['ids'] = array_unique($expand_val['ids']);
 
                 // Divide the keys into manageable chunks
-                $expand_chunks = array_chunk($expand_val['ids'], 100);
+                $max_chunk_size = $this->getMaxInToOrConversionChunkSize();
+                $expand_chunks = array_chunk($expand_val['ids'], $max_chunk_size);
                 $data = NULL;
 
                 $ex = isset($expand_val['expand'][$localField->getDisplayName()]) ? $expand_val['expand'][$localField->getDisplayName()] : [];
@@ -392,7 +515,7 @@ abstract class MiddlewareConnectionDriver {
                 throw new \Exception("Failed to get data from Entity {$entityBrowser->getDisplayName()}");
             }
         }
-
+        
         return $result;
     }
 
@@ -403,7 +526,15 @@ abstract class MiddlewareConnectionDriver {
     public function addExpansionToRecord($entity, &$record, EntityFieldDefinition $fieldInfo, $vals) {
 
         $keyVal = $record->{$fieldInfo->getRelatedLocalFieldName()};
-        $results = isset($vals["{$keyVal}"]) ? $vals["{$keyVal}"] : ($fieldInfo->isMany() ? [] : NULL);
+
+        if(is_array($vals)){
+            $results = isset($vals["{$keyVal}"]) ? $vals["{$keyVal}"] : ($fieldInfo->isMany() ? [] : NULL);
+        } else if ($vals instanceof MiddlewareComplexEntity ) {
+            $results = $vals->getByKey("{$keyVal}", $fieldInfo->isMany());
+        } else {
+            $results = NULL;
+        }
+
         $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => $results] : $results;
 
         return $record;
@@ -423,7 +554,17 @@ abstract class MiddlewareConnectionDriver {
                         $r->{$displayName} = $record->{$key}[0];
                     }
                 } else {
-                    $r->{$displayName} = $record->{$key};
+                    $r->{$displayName} = $field->isInteger()?intval($record->{$key}):$record->{$key};
+                }
+            } else if (is_array($record) && isset($record[$key])){
+                if (is_array($record[$key])) {
+                    if ($field->isArray()) {
+                        $r->{$displayName} = $record[$key];
+                    } else if (count($record[$key]) > 0) {
+                        $r->{$displayName} = $record[$key][0];
+                    }
+                } else {
+                    $r->{$displayName} = $field->isInteger()?intval($record[$key]):$record[$key];
                 }
             } else {
                 $r->{$displayName} = $field->isArray() ? [] : NULL;
@@ -585,7 +726,9 @@ class MiddlewareEntity extends \stdClass {
 }
 
 class MiddlewareComplexEntity extends MiddlewareEntity {
-    
+    public function getByKey($key, $isMany = FALSE){
+        return $isMany?[]:NULL;
+    }
 }
 
 class MiddlewareEntityCollection extends \RecursiveArrayIterator {

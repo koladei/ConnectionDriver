@@ -67,7 +67,7 @@ class MiddlewareODataFilterProcessor {
 
         // Date and String comparisons
         $matchs = [];
-        preg_match_all('/([\w][\w\d\/]*[^\/])\s+([\w]{2})\s+(((datetime)([\'"]))|([\'"]))((4)?([\d\-:]+|[^\'"]+))((\6)?(\6)|(\7))/', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/([\w][\w\d\/]*[^\/])\s+([\w]{2})\s+(((datetime)([\'"]))|([\'"]))((4)?([\d\-:]+|[^\'"]{0,}))((\6)?(\6)|(\7))/', $expression, $matchs, PREG_SET_ORDER);
 
         foreach ($matchs as $mat) {
             $place = count($this->fragments);

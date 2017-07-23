@@ -100,7 +100,18 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         , 'remote_field' => 'AccountNumber'
                         , 'remote_type' => 'child'
                     ],
-                ],
+                ]
+                , '_INVOICES' => [
+                    'preferred_name' => 'Invoices'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'AccountNumber'
+                        , 'remote_field' => 'AccountNumber'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cust_invoice_table'
+                        , 'filter' => ' and IsPosted eq 1'
+                    ],
+                ]
             ]
         ]
         , 'rootaccount' => [
@@ -140,6 +151,16 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'Name'
                     , 'type' => 'string'
                     , 'mandatory' => 1
+                ]
+                , '_ACCOUNTS' => [
+                    'preferred_name' => 'Accounts'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'RootAccount'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cust_table'
+                    ]
                 ]
             ]
         ]
@@ -352,17 +373,27 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         , 'remote_entity' => 'cust_table'
                     ]
                 ]
-                , 'INVOICEID' => [
-                    'preferred_name' => 'InvoiceInformation'
+                , 'ORDERACCOUNT' => [
+                    'preferred_name' => 'OrderAccount'
                     , 'type' => 'string'
                     , 'relationship' => [
-                        'local_field' => 'InvoiceInformation'
-                        , 'preferred_local_key_name' => 'InvoiceNumber'
-                        , 'remote_field' => 'Invoice'
-                        , 'filter' => 'InvoiceNumber ne $NULL$ and TransactionType eq 8'
+                        'local_field' => 'OrderAccount'
+                        , 'remote_field' => 'AccountNumber'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'cust_trans'
-                    ],
+                        , 'remote_entity' => 'cust_table'
+                    ]
+                ]
+                , 'INVOICEID' => [
+                    'preferred_name' => 'InvoiceId'
+                    , 'type' => 'string'
+                    // , 'relationship' => [
+                    //     'local_field' => 'InvoiceInformation'
+                    //     , 'preferred_local_key_name' => 'InvoiceNumber'
+                    //     , 'remote_field' => 'Invoice'
+                    //     , 'filter' => 'InvoiceNumber ne $NULL$ and TransactionType eq 8'
+                    //     , 'remote_type' => 'parent'
+                    //     , 'remote_entity' => 'cust_trans'
+                    // ],
                 ]
                 , 'DATAAREAID' => [
                     'preferred_name' => 'DataArea'
@@ -386,6 +417,18 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         , 'remote_field' => 'InvoiceId'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'cust_invoice_line'
+                    ],
+                ]
+                , '_INVOICEFINANCIALS' => [
+                    'preferred_name' => 'InvoiceInformation'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'InvoiceId'
+                        , 'preferred_local_key_name' => 'InvoiceInformationId'
+                        , 'remote_field' => 'Invoice'
+                        , 'filter' => '(InvoiceNumber ne $BLANK$ and TransactionType eq 8)'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'cust_trans'
                     ],
                 ]
             ]

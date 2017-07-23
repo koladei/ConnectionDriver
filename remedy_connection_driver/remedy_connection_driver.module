@@ -20,13 +20,36 @@ include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/BMCRemedyCon
 use com\mainone\middleware\BMCRemedyConnectionDriver;
 
 function remedy_connection_driver_connection_driver_bmc_remedy_alter(&$container) {
+    $connection_settings = remedy_connection_driver__get_settings();
     $driver = new BMCRemedyConnectionDriver(function($x) {
         return mware_connection_driver__get_driver($x);
-    });
+    }, $connection_settings);
 
     $defs = remedy_connection_driver__get_entity_definitions();
     $driver->setEntities($defs);
     $container['bmc_remedy'] = $driver;
+}
+
+
+/**
+ * Returns the connection settings with which to connect to salesforce.
+ * @return \stdClass
+ */
+function remedy_connection_driver__get_settings($settings = 'default') {
+    $s = new stdClass();
+    $sT = $settings == 'default' ? variable_get('REMEDY_SETTINGS_USE_PRODUCTION', FALSE) : ($settings == 'production' ? TRUE : FALSE);
+
+    if ($sT == FALSE) {
+        $s->URL = variable_get('REMEDY_SANDBOX_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('REMEDY_SANDBOX_SETTINGS_USERNAME');
+        $s->Password = variable_get('REMEDY_SANDBOX_SETTINGS_PASSWORD');
+    } else {
+        $s->URL = variable_get('REMEDY_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('REMEDY_SETTINGS_USERNAME');
+        $s->Password = variable_get('REMEDY_SETTINGS_PASSWORD');
+    }
+    
+    return $s;
 }
 
 /**
@@ -62,7 +85,6 @@ function remedy_connection_driver__get_entity_definitions() {
             , 'fields' => [
                 'Incident_Number' => [
                     'preferred_name' => 'Id'
-//                    , 'preferred_query_name' => 'Incident ID*+'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
@@ -125,7 +147,6 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'IncidentStartTime' => [
                     'preferred_name' => 'StartTime'
-//                     ,'preferred_query_name' => 'Incident Start Time'
                     , 'type' => 'datetime'
                 ]
                 , 'Last_Modified_Date' => [
@@ -212,7 +233,6 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'IncidentStartTime' => [
                     'preferred_name' => 'StartTime'
-//                     ,'preferred_query_name' => 'Incident Start Time'
                     , 'type' => 'datetime'
                 ]
                 , 'Last_Modified_Date' => [
@@ -321,6 +341,104 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'remote_driver' => 'ldap'
                         , 'filter' => 'ObjectClass eq \'person\''
                     ],
+                ]
+            ]
+        ]
+        , 'asset' => [
+            'internal_name' => 'MSDynamics_Remedy'
+            , 'soap_methods' => [
+                'create' => 'OpCreate'
+                , 'query' => 'OpGet'
+            ]
+            , 'fields' => [
+                'Request_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Serial_Number__c' => [
+                    'preferred_name' => 'SerialNumber'
+                    , 'type' => 'string'
+                ]
+                , 'Region__c' => [
+                    'preferred_name' => 'Region'
+                    , 'type' => 'string'
+                ]
+                , 'Name__c' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'Building__c' => [
+                    'preferred_name' => 'Building'
+                    , 'type' => 'string'
+                ]
+                , 'Floor__c' => [
+                    'preferred_name' => 'Floor'
+                    , 'type' => 'string'
+                ]
+                , 'Room__c' => [
+                    'preferred_name' => 'Room'
+                    , 'type' => 'string'
+                ]
+                , 'Item_Group__c' => [
+                    'preferred_name' => 'ItemGroup'
+                    , 'type' => 'string'
+                ]
+                , 'Item_Number__c' => [
+                    'preferred_name' => 'ItemNumber'
+                    , 'type' => 'string'
+                ]
+                , 'Pallet_ID__c' => [
+                    'preferred_name' => 'PalletID'
+                    , 'type' => 'string'
+                ]
+                , 'Size__c' => [
+                    'preferred_name' => 'Size'
+                    , 'type' => 'string'
+                ]
+                , 'Warehouse__c' => [
+                    'preferred_name' => 'Warehouse'
+                    , 'type' => 'string'
+                ]
+                , 'Site__c' => [
+                    'preferred_name' => 'Site'
+                    , 'type' => 'string'
+                ]
+                , 'MainOne_Site__c' => [
+                    'preferred_name' => 'MainOneSite'
+                    , 'type' => 'string'
+                ]
+                , 'Batch_Number__c' => [
+                    'preferred_name' => 'BatchNumber'
+                    , 'type' => 'string'
+                ]
+                , 'Asset_Description__c' => [
+                    'preferred_name' => 'AssetDescription'
+                    , 'type' => 'string'
+                ]
+                , 'TotalAvailable__c' => [
+                    'preferred_name' => 'TotalAvailable'
+                    , 'type' => 'string'
+                ]
+                , 'PhysicalReserved__c' => [
+                    'preferred_name' => 'PhysicalReserved'
+                    , 'type' => 'string'
+                ]
+                , 'OrderedReserved__c' => [
+                    'preferred_name' => 'OrderedReserved'
+                    , 'type' => 'string'
+                ]
+                , 'On_Order__c' => [
+                    'preferred_name' => 'OnOrder'
+                    , 'type' => 'string'
+                ]
+                , 'Ordered__c' => [
+                    'preferred_name' => 'Ordered'
+                    , 'type' => 'string'
+                ]
+                , 'Physical_Inventory__c' => [
+                    'preferred_name' => 'PhysicalInventory'
+                    , 'type' => 'string'
                 ]
             ]
         ]

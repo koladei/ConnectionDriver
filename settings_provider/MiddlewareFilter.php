@@ -352,7 +352,6 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 }
             case self::IN: {
                     $ret = "";
-//                    $ret = "{$this->field} {$this->operator}({$this->quoteValue()})";
                     foreach($this->value as $v){
                         $ret = "{$ret}'{$field}' == \"{$v}\" ||";
                     }
@@ -368,8 +367,64 @@ class MiddlewareFilter extends MiddlewareFilterBase {
     }
 
     protected function SQLStringer(MiddlewareFilterBase &$scope) {
-        // TODO: Implement 
-        return $this->XPPStringer($scope);
+        $ret = '';
+
+        $value = $this->value;
+        if ($value instanceof \DateTime) {
+            $value = $value->format('\'Y-m-d H:i:s\'');
+        } else if (is_null($value)) {
+            $value = 'NULL';
+        } else {
+            $value = $this->quoteValue();
+        }
+
+        switch ($this->operator) {
+            case self::STARTS_WITH: {
+                    $ret = "{$this->field} LIKE '{$this->value}%'";
+                    break;
+                }
+            case self::ENDS_WITH: {
+                    $ret = "{$this->field} LIKE '%{$this->value}'";
+                    break;
+                }
+            case self::SUBSTRING_OF: {
+                    $ret = "{$this->field} LIKE '%{$this->value}%'";
+                    break;
+                }
+            case self::NOT_EQUAL_TO: {
+                    $ret = "{$this->field} != {$value}";
+                    break;
+                }
+            case self::EQUAL_TO: {
+                    $ret = "{$this->field} = {$value}";
+                    break;
+                }
+            case self::GREATER_THAN: {
+                    $ret = "{$this->field} > {$value}";
+                    break;
+                }
+            case self::GREATER_THAN_EQUAL_TO: {
+                    $ret = "{$this->field} >= {$value}";
+                    break;
+                }
+            case self::LESS_THAN: {
+                    $ret = "{$this->field} < {$value}";
+                    break;
+                }
+            case self::LESS_THAN_EQUAL_TO: {
+                    $ret = "{$this->field} <= {$value}";
+                    break;
+                }
+            case self::IN: {
+                    $ret = "{$this->field} {$this->operator}({$this->quoteValue()})";
+                    break;
+                }
+            default: {
+                    throw new \Exception('Unknown query operand encountered.');
+                }
+        }
+
+        return $ret;
     }
 
     protected function XPPStringer(MiddlewareFilterBase &$context) {
@@ -388,7 +443,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             case self::STARTS_WITH:
             case self::ENDS_WITH:
             case self::SUBSTRING_OF: {
-                    $ret = "{$this->operator}({$this->field},'{$value}')";
+                    $ret = "{$this->operator}({$this->field},{$value})";
                     break;
                 }
             case self::NOT_EQUAL_TO:

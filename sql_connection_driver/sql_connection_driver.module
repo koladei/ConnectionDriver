@@ -1,0 +1,140 @@
+<?php
+
+module_load_include('module', 'settings_provider');
+$module_path = drupal_get_path('module', 'sql_connection_driver');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/SQLConnectionDriver.php');
+
+use com\mainone\middleware\SQLConnectionDriver;
+
+function sql_connection_driver_connection_driver_sql_alter(&$container) {
+    $driver = new SQLConnectionDriver(function($x) {
+        $return = mware_connection_driver__get_driver($x);
+        return $return;
+    }, function($source_name){
+        return sql_connection_driver__get_settings($source_name);
+    });
+
+    $defs = sql_connection_driver__get_entity_definitions();
+    $driver->setEntities($defs);
+    $container['sql'] = $driver;
+}
+
+function sql_connection_driver__get_settings($key){
+    $settings = new \stdClass();
+
+    $settings->DSN = variable_get("SQL_SETTINGS_DSN_{$key}");
+    $settings->Username = variable_get("SQL_SETTINGS_USERNAME_{$key}");
+    $settings->Password = variable_get("SQL_SETTINGS_PASSWORD_{$key}");
+    $settings->DatabaseType = variable_get("SQL_SETTINGS_DBTYPE_{$key}");
+
+    return $settings;
+}
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function sql_connection_driver_permission() {
+    $permission = [];
+
+    return $permission;
+}
+
+/**
+ * Confirms if a user should be allowed to access something.
+ * @param type $args
+ * @return boolean
+ */
+function sql_connection_driver__user_access($args) {
+    return true;
+}
+
+/**
+ * Returns all the entity definitions implemented in Dynamics AX.
+ * @return type
+ */
+function sql_connection_driver__get_entity_definitions() {
+    return [
+        'customerinfo' => [
+            'internal_name' => 'CustomerInfo'
+            , 'datasource' => 'default'
+            , 'fields' => [
+                'ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'Address' => [
+                    'preferred_name' => 'Address'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'CID' => [
+                    'preferred_name' => 'GCID'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'GCID'
+                        , 'preferred_local_key_name' => 'GCID'
+                        , 'remote_field' => 'GCID'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'CustomerName' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'DateOfModification' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'DateOfCreation' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'BillingAddress' => [
+                    'preferred_name' => 'BillingAddress'
+                    , 'type' => 'string'
+                ]
+                , 'System' => [
+                    'preferred_name' => 'System'
+                    , 'type' => 'string'
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'int'
+                ]
+                , 'Entity' => [
+                    'preferred_name' => 'Entity'
+                    , 'type' => 'string'
+                ]   
+                , '_AdvancedInfo' => [
+                    'preferred_name' => 'AdvancedInformation'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'GCID'
+                        , 'remote_field' => 'GCID'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , '_FinancialRootAccountInfo' => [
+                    'preferred_name' => 'FinancialRootAccountInformation'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'GCID'
+                        , 'remote_field' => 'Customer'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'rootaccount'
+                        , 'remote_driver' => 'dynamics_ax'
+                    ]
+                ] 
+            ]
+        ]        
+    ];
+}

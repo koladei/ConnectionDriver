@@ -27,6 +27,9 @@ class EntityDefinitionBrowser {
     private $fieldValueFetchStrategy = NULL;
     private $mergeExpansionChunksStrategy = NULL;
     private $expansionJoinStrategy = NULL;
+    private $dataSource = 'default';
+    private $cacheData = false;
+    private $context = 'default';
 
     public function __construct($internalName, array $definition, MiddlewareConnectionDriver &$parent) {
         $this->parent = $parent;
@@ -35,6 +38,18 @@ class EntityDefinitionBrowser {
         
         if (isset($definition['soap_methods'])) {
             $this->soapMethods = (object) $definition['soap_methods'];
+        }
+
+        if (isset($definition['datasource'])){
+            $this->dataSource = $definition['datasource'];
+        }
+
+        if (isset($definition['context'])){
+            $this->context = $definition['context'];
+        }
+
+        if (isset($definition['cache'])){
+            $this->cacheData = $definition['contecachext'];
         }
 
         $this->setFields($definition['fields']);
@@ -71,6 +86,18 @@ class EntityDefinitionBrowser {
         return $this->soapMethods;
     }
 
+    public function getDataSourceName(){
+        return $this->dataSource;
+    }
+
+    public function shouldCacheData(){
+        return $this->cacheData;
+    }
+
+    public function getContext(){
+        return $this->context;
+    }
+
     private function setFields(array $fields) {
 
         foreach ($fields as $internalName => $field) {
@@ -97,7 +124,7 @@ class EntityDefinitionBrowser {
         $internalName = $fieldDef->getInternalName(FALSE);
         $this->fieldsByInternalName[$internalName] = $fieldDef;
         $this->fieldsByDisplayName[$fieldDef->getDisplayName()] = &$this->fieldsByInternalName[$internalName];
-        if (isset($field['mandatory']) && $field['mandatory'] == 1) {
+        if (isset($field['mandatory']) && ($field['mandatory'] == 1 || $field['mandatory'] == 1)) {
             if ($fieldDef->isExpandable()) {
                 if (!in_array($fieldDef->getRelatedLocalFieldName(), $this->mandatoryFields))
                     $this->mandatoryFields[] = $fieldDef->getRelatedLocalFieldName();
@@ -108,6 +135,12 @@ class EntityDefinitionBrowser {
         }
     }
 
+    /**
+     * Returns array of the internal names of the fields supplied as parameter.
+     *
+     * @param array $fieldNames
+     * @return array
+     */
     public function getFieldInternalNames(array $fieldNames) {
         foreach ($fieldNames as &$fieldName) {
             if (isset($this->fieldsByDisplayName[$fieldName])) {
@@ -125,6 +158,12 @@ class EntityDefinitionBrowser {
         return array_values($fieldNames);
     }
 
+    /**
+     * Returns an array of EntityFieldDefinition references based the supplied array of internal names.
+     *
+     * @param array $fieldNames
+     * @return array
+     */
     public function getFieldsByInternalNames(array $fieldNames = NULL) {
         $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByInternalName) : $fieldNames;
         $r = [];
@@ -141,6 +180,12 @@ class EntityDefinitionBrowser {
         return $r;
     }
 
+    /**
+     * Returns an array of EntityFieldDefinition references based the supplied array of display names.
+     *
+     * @param array $fieldNames
+     * @return array
+     */
     public function getFieldsByDisplayNames(array $fieldNames = NULL) {
         $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByDisplayName) : $fieldNames;
         $r = [];
@@ -157,6 +202,14 @@ class EntityDefinitionBrowser {
         return $r;
     }
 
+    /**
+     * Returns a key-value array of fields names.
+     * The internal name is the key while the display name is the value.
+     * Returns all fields if $fieldNames is null or not provided at all.
+     *
+     * @param array $fieldNames
+     * @return array
+     */
     public function getFieldInternalToDisplayNames(array $fieldNames = NULL) {
         $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByInternalName) : $fieldNames;
         $r = [];
@@ -173,6 +226,14 @@ class EntityDefinitionBrowser {
         return $r;
     }
 
+    /**
+     * Returns a key-value array of fields names.
+     * The display name is the key while the internal name is the value.
+     * Returns all fields if $fieldNames is null or not provided at all.
+     *
+     * @param array $fieldNames
+     * @return array
+     */
     public function getFieldDisplayToInternalNames(array $fieldNames = NULL) {
         $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByDisplayName) : $fieldNames;
         $r = [];
@@ -189,23 +250,71 @@ class EntityDefinitionBrowser {
         return $r;
     }
 
+    /**
+     * Returns an array of EntityFieldDefinition references based on the array of display names provided.
+     * Ignores invalid fields.
+     * 
+     * @param array $fieldNames
+     * @return array
+     */
     public function getValidFieldsByDisplayName(array $fieldNames = NULL) {
-        $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByDisplayName) : $fieldNames;
+        $is_null = is_null($fieldNames);
+        $fieldNames = $is_null ? array_keys($this->fieldsByDisplayName) : $fieldNames;
         $r = [];
 
-        foreach ($fieldNames as $fieldName) {
-            if (isset($this->fieldsByDisplayName[$fieldName])) {
-                $r[] = $fieldName;
+        if($is_null){
+            $r = array_values($this->fieldsByDisplayName);
+        } else {
+            foreach ($fieldNames as $fieldName) {
+                if (isset($this->fieldsByDisplayName[$fieldName])) {
+                    $r[] = $this->fieldsByDisplayName[$fieldName];
+                }
             }
         }
 
         return $r;
     }
 
+    /**
+     * Returns an array of EntityFieldDefinition references based on the array of display names provided.
+     * Ignores invalid fields.
+     * 
+     * @param array $fieldNames
+     * @return array
+     */
+    public function getValidFieldsByInternalName(array $fieldNames = NULL) {
+        $is_null = is_null($fieldNames);
+        $fieldNames = $is_null ? array_keys($this->fieldsByInternalName) : $fieldNames;
+        $r = [];
+
+        if($is_null){
+            $r = array_values($this->fieldsByInternalName);
+        } else {
+            foreach ($fieldNames as $fieldName) {
+                if (isset($this->fieldsByInternalName[$fieldName])) {
+                    $r[] = $this->fieldsByInternalName[$fieldName];
+                }
+            }
+        }
+
+        return $r;
+    }
+
+    /**
+     * Returns a reference to the Id field.
+     *
+     * @return EntityFieldDefinition
+     */
     public function getIdField() {
         return $this->idField;
     }
 
+    /**
+     * Returns a reference to the field with the specified internal name.
+     *
+     * @param string $name
+     * @return EntityFieldDefinition
+     */
     public function getFieldByInternalName($name) {
         if (isset($this->fieldsByInternalName[$name])) {
             return $this->fieldsByInternalName[$name];
@@ -214,6 +323,12 @@ class EntityDefinitionBrowser {
         }
     }
 
+    /**
+     * Returns a reference to the field with the specified display name.
+     *
+     * @param [type] $name
+     * @return void
+     */
     public function getFieldByDisplayName($name) {
         if (isset($this->fieldsByDisplayName[$name])) {
             return $this->fieldsByDisplayName[$name];
@@ -222,8 +337,57 @@ class EntityDefinitionBrowser {
         }
     }
 
+    /**
+     * Sets $strategy as the function used to rename fields of this EntityDefinitionBrowser.
+     *
+     * @param [type] $strategy
+     * @return void
+     */
     public function setRenameStrategy($strategy) {
         $this->renameStrategy = $strategy;
+    }
+
+    /**
+     * Returns the fields of the entity that have the specified types.
+     *
+     * @param array $typeNames
+     * @param [type] $fieldNames
+     * @return void
+     */
+    public function getFieldsOfTypeByDisplayName(array $typeNames, array $fieldNames = NULL){
+        $fields = $this->getValidFieldsByDisplayName($fieldNames);
+        $matched = [];
+
+        foreach($fields as $field){
+            if(in_array($field->getDataType(), $typeNames)){
+                $matched[] = $field;
+            }
+        }
+
+        // unset($fields);
+        return $matched;
+    }
+
+    /**
+     * Returns the fields of the entity that have the specified types.
+     *
+     * @param array $typeNames
+     * @param [type] $fieldNames
+     * @return void
+     */
+    public function getFieldsOfTypeByInternalName(array $typeNames, array $fieldNames = NULL){
+        $fields = $this->getValidFieldsByInternalName($fieldNames);
+        $matched = [];
+
+        foreach($fields as $field){
+            // var_dump($field);
+            if(in_array($field->getDataType(), $typeNames)){
+                $matched[] = $field;
+            }
+        }
+
+        // unset($fields);
+        return $matched;
     }
 
     public function setFieldValueFetchStrategy($strategy) {
@@ -262,6 +426,8 @@ class EntityDefinitionBrowser {
             foreach ($selected_fields as $key => $displayName) {
                 if (property_exists($record, $key)) {
                     $r->{$displayName} = $record->{$key};
+                } else if (is_array($record) && isset($record[$key])){
+                    $r->{$displayName} = $record[$key];
                 }
             }
 

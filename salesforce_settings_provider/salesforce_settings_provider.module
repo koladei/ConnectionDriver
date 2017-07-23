@@ -247,6 +247,10 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'Status'
                     , 'type' => 'string'
                 ]
+                , 'Billing_Start_Date__c' => [
+                    'preferred_name' => 'BillingStartDate'
+                    , 'type' => 'date'
+                ]
                 , 'Account__c' => [
                     'preferred_name' => 'Account'
                     , 'type' => 'string'
@@ -304,6 +308,10 @@ function salesforce_settings_provider__get_entity_definitions() {
                 ]
                 , 'Amount_Paid__c' => [
                     'preferred_name' => 'AmountPaid'
+                    , 'type' => 'int'
+                ]
+                , 'Amount_Unpaid__c' => [
+                    'preferred_name' => 'AmountDue'
                     , 'type' => 'int'
                 ]
                 , 'Cash_Amount__c' => [
@@ -399,10 +407,6 @@ function salesforce_settings_provider__get_entity_definitions() {
                 , 'CreatedDate' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
-                ]
-                , 'Auxiliary_Circuit_ID__c' => [
-                    'preferred_name' => 'AuxiliaryCircuitID'
-                    , 'type' => 'string'
                 ]
                 , 'Id' => [
                     'preferred_name' => 'Id'

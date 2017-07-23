@@ -21,6 +21,28 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         $this->connection_settings = $connection_settings;
     }
 
+    /**
+     * @override
+     * Overrides the default implementation.
+     *
+     * @param \DateTime $value
+     * @return void
+     */
+    protected function parseDateValue($value) {
+        $type_1 = '/^([\d]{4})\-([\d]{2})\-([\d]{2})T([\d]{2})\:([\d]{2})\:([\d]{2})\.([\d\+]+)$/';
+        $type_3 = '/^([\d]{4})\\-([\d]{2})\-([\d]{2})$/';
+
+        if (preg_match($type_3, $value) == 1) {
+            //$value = substr($value, 0, strpos($value, '.'));
+            return \DateTime::createFromFormat('Y-m-d', $value);
+        } else if (preg_match($type_1, $value) == 1) {
+            $value = substr($value, 0, strpos($value, '.'));
+            return \DateTime::createFromFormat('Y-m-d\TH:i:s', $value);
+        }
+
+        throw new \Exception("The date / datetime format is not known. {$value}");
+    }
+
     public function fetchFieldValues($record, $selected_field) {
         return parent::fetchFieldValues($record, $selected_field);
     }
@@ -210,7 +232,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
      * @param array $otherOptions
      */
     public function deleteItemInternal($entityBrowser, &$connectionToken = NULL, $id, array $otherOptions = []) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
+        throw new \Exception('Not yet implemented.');
     }
 
     /**
@@ -259,7 +281,6 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 . (strlen($filter) > 0 ? "  WHERE {$filter} " : '')
                 . $limit;
 
-            //    var_dump("{$entityBrowser->getInternalName()} :=:  WHERE {$filter} ");
             // Execute the POST request.
             $new_url = $connectionToken->instance_url . '/services/data/v35.0/query?' . drupal_http_build_query(['q' => $query_url]);
             $feed = mware_blocking_http_request($new_url, ['options' => $options]);
@@ -339,5 +360,4 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             return FALSE;
         }
     }
-
 }

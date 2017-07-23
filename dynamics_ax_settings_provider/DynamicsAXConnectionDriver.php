@@ -21,6 +21,22 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         $this->endpoint = $endpoint;
     }
 
+    /**
+     * @overrides MiddlewareConnectionDriver.getMaxInToOrConversionChunkSize
+     *
+     * @return void
+     */
+    public function getMaxInToOrConversionChunkSize(){
+        return 90;
+    }
+
+    /**
+     * @overrides MiddlewareConnectionDriver.fetchFieldValues
+     *
+     * @param [type] $record
+     * @param [type] $selected_field
+     * @return void
+     */
     public function fetchFieldValues($record, $selected_field) {
         $r = [];
 
@@ -31,6 +47,13 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         return $r;
     }
 
+    /**
+     * @overrides MiddlewareConnectionDriver.renameRecordFields
+     *
+     * @param [type] $record
+     * @param [type] $selected_fields
+     * @return void
+     */
     public function renameRecordFields($record, $selected_fields) {
 
         foreach ($record as &$member) {
@@ -46,6 +69,15 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         return $record;
     }
 
+    /**
+     * @overrides MiddlewareConnectionDriver.mergeRecordArray
+     *
+     * @param [type] $data
+     * @param [type] $chunkResult
+     * @param EntityFieldDefinition $localField
+     * @param EntityFieldDefinition $remoteField
+     * @return void
+     */
     public function mergeRecordArray($data, $chunkResult, EntityFieldDefinition $localField, EntityFieldDefinition $remoteField = NULL) {
         $r = $data instanceof DynamicsAXComplexEntity ? $data : (new DynamicsAXComplexEntity());
 
@@ -59,33 +91,35 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         return $r;
     }
 
+    /**
+     * @overrides MiddlewareConnectionDriver.addExpansionToRecord
+     *
+     * @param [type] $entity
+     * @param [type] $records
+     * @param EntityFieldDefinition $fieldInfo
+     * @param [type] $vals
+     * @return void
+     */
     function addExpansionToRecord($entity, &$records, EntityFieldDefinition $fieldInfo, $vals) {
-//        var_dump(count($vals));
-//        if (count($vals) > 0) {
+
         foreach ($records as &$record) {
             if ($vals instanceof DynamicsAXComplexEntity) {
                 if ($entity == 'DAT') {
-//                        if (count($vals->{'DAT'}) > 0) {
+
                     foreach ($vals as $child_entity => $child_items) {
                         parent::addExpansionToRecord($child_entity, $record, $fieldInfo, $child_items);
                     }
-//                        } else {
-//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//                        }
+
                 } else if (property_exists($vals, $entity)) {
                     $val_items = $vals->{$entity};
-//                        if (count($val_items) > 0) {
+
                     parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
-//                        } else {
-//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//                        }
+
                 } else if (property_exists($vals, 'DAT')) {
                     $val_items = $vals->{'DAT'};
-//                        if (count($val_items) > 0) {
+
                     parent::addExpansionToRecord($entity, $record, $fieldInfo, $val_items);
-//                        } else {
-//                            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//                        }
+
                 } else {
                     $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
                 }
@@ -93,38 +127,35 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
                 parent::addExpansionToRecord($entity, $record, $fieldInfo, $vals);
             }
         }
-//        } else {
-//            $record->{$fieldInfo->getDisplayName()} = $fieldInfo->isMany() ? ['results' => []] : NULL;
-//        }
 
         return $records;
     }
-    
+
+    /**
+     * @implements MiddlewareConnectionDriver.executeFunctionInternal
+     *
+     * @param [type] $functionName
+     * @param array $objects
+     * @param [type] $connectionToken
+     * @param array $otherOptions
+     * @return void
+     */
     public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
         
         throw new \Exception('Not yet implemented');
         
-        foreach($entityBrowsers as &$entityBrowser){
-                $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
-        }
-
-        // Get a connection token
-        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
-            $objs = [];
-            foreach($entityBrowsers as $key => &$entityBrowser){
-                if(isset($objects[$key])){
-                    $object = $entityBrowser->reverseRenameFields($objects[$key]);
-                    $objs[] = $object;//json_encode($object);
-                }
-            }
-            $obj = json_encode($objs);
-            
-            
-        } else {
-            throw new \Exception('Unable to connect to Salesforce');
-        }
     }
-
+    
+    /**
+     * @overrides MiddlewareConnectionDriver.getItemById
+     *
+     * @param [type] $entityBrowser
+     * @param [type] $id
+     * @param [type] $select
+     * @param string $expands
+     * @param array $otherOptions
+     * @return void
+     */
     public function getItemById($entityBrowser, $id, $select, $expands = '', $otherOptions = []) {
 
         $return = parent::getItemById(... func_get_args());
@@ -134,11 +165,21 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         return NULL;
     }
 
+    /**
+     * @implements MiddlewareConnectionDriver.updateItemInternal
+     *
+     * @param [type] $entityBrowser
+     * @param [type] $connectionToken
+     * @param [type] $id
+     * @param \stdClass $obj
+     * @param array $otherOptions
+     * @return void
+     */
     public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $obj, array $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
         $url = "{$this->endpoint}/UpdateTable";//QueryTable/[~]
-//        $url = "{$this->endpoint}http://molsptest:82/drp/CPortalService.svc/UpdateTable"; //{$entityBrowser->getInternalName()}?{$query_string}";
+
         $recordInfo = [];
         $recordInfo['Table'] = $entityBrowser->getInternalName();
         $recordInfo['Entity'] = $obj->DataArea;
@@ -172,11 +213,20 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         }
     }
 
+    /**
+     * @implements Implements MiddlewareConnectionDriver.createItemInternal.
+     *
+     * @param [type] $entityBrowser
+     * @param [type] $connectionToken
+     * @param \stdClass $obj
+     * @param array $otherOptions
+     * @return void
+     */
     public function createItemInternal($entityBrowser, &$connectionToken = NULL, \stdClass $obj, array $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
         $url = "{$this->endpoint}/CreateRecord";
-//        $url = "{$this->endpoint}http://molsptest:82/drp/CPortalService.svc/UpdateTable"; //{$entityBrowser->getInternalName()}?{$query_string}";
+
         $recordInfo = [];
         $recordInfo['Table'] = $entityBrowser->getInternalName();
         $recordInfo['Entity'] = $obj->DataArea;
@@ -197,7 +247,6 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , CURLOPT_CONNECTTIMEOUT => 15
         ];
 
-
         $content = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
         $res = $content->getContent();
 
@@ -209,8 +258,17 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         }
     }
 
+    /**
+     * @implements MiddlewareConnectionDriver.deleteItemInternal
+     *
+     * @param [type] $entityBrowser
+     * @param [type] $connectionToken
+     * @param [type] $id
+     * @param array $otherOptions
+     * @return void
+     */
     public function deleteItemInternal($entityBrowser, &$connectionToken = NULL, $id, array $otherOptions = []) {
-        
+        throw new \Exception('Not yet implemented');
     }
 
     /**
@@ -233,11 +291,11 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , '$top' => $otherOptions['$top']
         ];
 
+        // return [];
 
         $query_string = drupal_http_build_query($invoice_params);
         $url = "{$this->endpoint}/QueryTable/[~]/{$entityBrowser->getInternalName()}?{$query_string}";
 
-//        var_dump("{$entityBrowser->getInternalName()}::{$filter}");
         $tokenOption = array(
             CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
             , CURLOPT_PROTOCOLS => CURLPROTO_HTTP
@@ -246,14 +304,15 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , CURLOPT_TIMEOUT => 15
             , CURLOPT_CONNECTTIMEOUT => 15
         );
-        // var_dump($url);
 
         $feed = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
         $res = (json_decode($feed->getContent()));
-//        var_dump("{$entityBrowser->getInternalName()} :: {$filter} :: ", $res);
 
+        
+        $z = new DynamicsAXEntityCollection();
         if (is_object($res) && property_exists($res, 'd')) {
-            $z = new DynamicsAXEntityCollection();
+        // var_dump($filter);
+        // var_dump($res->Logging);
 
             foreach ($res->d as $a => $b) {
                 $z[$a] = $b;
@@ -265,6 +324,11 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         }
     }
 
+    /**
+     * @implements MiddlewareConnectionDriver.getStringer()
+     *
+     * @return void
+     */
     public function getStringer() {
         return MiddlewareFilter::XPP;
     }
@@ -276,7 +340,26 @@ class DynamicsAXEntity extends MiddlewareEntity {
 }
 
 class DynamicsAXComplexEntity extends MiddlewareComplexEntity {
-    
+    public function getByKey($key, $isMany = FALSE){
+
+        if($isMany) {
+            $vals = get_object_vars($this);
+            $x = [];
+            foreach($vals as $val){
+                if(isset($val[$key])){
+                    $x[] = $vals[$key];
+                }
+            }
+            return $x;
+        } else {
+            $vals = get_object_vars($this);
+            $vals = array_values($vals);
+            $vals = array_merge(...$vals);
+            return isset($vals[$key]) ? $vals[$key]: NULL;
+        }
+
+        return $isMany?[]:NULL;
+    }
 }
 
 class DynamicsAXEntityCollection extends MiddlewareEntityCollection {
