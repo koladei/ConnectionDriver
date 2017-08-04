@@ -64,6 +64,54 @@ function salesforce_settings_provider__get_settings($settings = 'default') {
 }
 
 /**
+ * Returns entity definitions that have been marked as cacheable to the specified entity.
+ *
+ * @param String $targetDriver the connection driver to use to retrieve the cache.
+ * @return void
+ */
+function salesforce_settings_provider__get_cached_entity_definitions($targetDriver){
+    $entities = salesforce_settings_provider__get_entity_definitions();
+    $return = [];
+
+    foreach($entities as $entity_name => $entity){
+        if(isset($entity['cache_to']) && $entity['cache_to'] == $targetDriver){
+            //TODO: Ensure that values that were ommitted are populated.
+            $fields = &$entity['fields'];
+            $name = "salesforce__{$entity_name}";
+            $entity['internal_name'] = $name;
+            $return[$name] = $entity;
+        }
+    }
+
+    return $return;
+}
+
+/**
+ * Returns entity definitions that have been marked as cacheable to the specified entity.
+ *
+ * @param String $targetDriver the connection driver to use to retrieve the cache.
+ * @return void
+ */
+function salesforce_settings_provider__get_cached_entity_definitions2(){
+    $entities = salesforce_settings_provider__get_entity_definitions();
+    $return = [];
+
+    foreach($entities as $entity_name => $entity){
+        if(isset($entity['cached']) && $entity['cached'] == TRUE){
+            //TODO: Ensure that values that were ommitted are populated.
+            $fields = &$entity['fields'];
+            $name = "salesforce__{$entity_name}";
+            $entity['internal_name'] = $name;
+            $return[$name] = $entity;
+        }
+    }
+
+    // $return = array_me
+
+    return $return;
+}
+
+/**
  * Returns the full definition of an entity or the definition of the specified component.
  * Components include: fields, internal_name
  * @param string $entity_name
@@ -72,7 +120,81 @@ function salesforce_settings_provider__get_settings($settings = 'default') {
  */
 function salesforce_settings_provider__get_entity_definitions() {
     return [
-        'cash_inflow' => [
+        'record_types' => [
+            'internal_name' => 'RecordType'
+            , 'cache_to' => 'sql'
+            , 'fields' => [
+                'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'DeveloperName' => [
+                    'preferred_name' => 'DeveloperName'
+                    , 'type' => 'string'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedById' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CreatedBy'
+                        , 'preferred_local_key_name' => 'CreatedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'LastModifiedById' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+                , 'NamespacePrefix' => [
+                    'preferred_name' => 'NamespacePrefix'
+                    , 'type' => 'string'
+                ]
+                , 'BusinessProcessId' => [
+                    'preferred_name' => 'BusinessProcessId'
+                    , 'type' => 'string'
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
+                ]
+                , 'SobjectType' => [
+                    'preferred_name' => 'SObjectType'
+                    , 'type' => 'string'
+                ]
+                , 'sActive' => [
+                    'preferred_name' => 'IsActive'
+                    , 'type' => 'string'
+                ]
+                , 'SystemModstamp' => [
+                    'preferred_name' => 'SystemModstamp'
+                    , 'type' => 'datetime'
+                ]                
+            ]
+        ]
+        , 'cash_inflow' => [
             'internal_name' => 'Cash_Inflow__c'
             , 'fields' => [
                 'Name' => [
@@ -220,41 +342,131 @@ function salesforce_settings_provider__get_entity_definitions() {
         ]
         , 'customer_product' => [
             'internal_name' => 'Customer_Products__c'
+            , 'cache_to' => 'sql'
             , 'fields' => [
-                'Name' => [
+                'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Name' => [
                     'preferred_name' => 'Name'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
-                , 'LastModifiedDate' => [
-                    'preferred_name' => 'Modified'
-                    , 'type' => 'datetime'
+                , 'RecordTypeId' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Type'
+                        , 'preferred_local_key_name' => 'TypeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'record_types'
+                        // , 'remote_driver' => 'salesforce'
+                    ]
                 ]
                 , 'CreatedDate' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
+                , 'CreatedById' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CreatedBy'
+                        , 'preferred_local_key_name' => 'CreatedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'LastModifiedById' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
                 , 'Auxiliary_Circuit_ID__c' => [
                     'preferred_name' => 'AuxiliaryCircuitID'
                     , 'type' => 'string'
                 ]
-                , 'Id' => [
-                    'preferred_name' => 'Id'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
                 , 'Status__c' => [
                     'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Description__c' => [
+                    'preferred_name' => 'Description'
                     , 'type' => 'string'
                 ]
                 , 'Billing_Start_Date__c' => [
                     'preferred_name' => 'BillingStartDate'
                     , 'type' => 'date'
                 ]
+                , 'Product_Type__c' => [
+                    'preferred_name' => 'SubType'
+                    , 'type' => 'string'
+                ]
+                , 'MRC__c' => [
+                    'preferred_name' => 'MRC'
+                    , 'type' => 'int'
+                ]
+                , 'NRC__c' => [
+                    'preferred_name' => 'NRC'
+                    , 'type' => 'int'
+                ]
+                , 'POP__c' => [
+                    'preferred_name' => 'POP'
+                    , 'type' => 'string'
+                ]
+                , 'State__c' => [
+                    'preferred_name' => 'State'
+                    , 'type' => 'string'
+                ]
+                , 'Suspended__c' => [
+                    'preferred_name' => 'Suspended'
+                    , 'type' => 'datetime'
+                ]
+                , 'Deactivated__c' => [
+                    'preferred_name' => 'Deactivated'
+                    , 'type' => 'datetime'
+                ]
+                , 'Activated__c' => [
+                    'preferred_name' => 'Activated'
+                    , 'type' => 'datetime'
+                ]
+                , 'Reactivated__c' => [
+                    'preferred_name' => 'Reactivated'
+                    , 'type' => 'datetime'
+                ]
+                , 'Units__c' => [
+                    'preferred_name' => 'Capacity'
+                    , 'type' => 'int'
+                ]
+                , 'Burst_Capacity__c' => [
+                    'preferred_name' => 'BurstCapacity'
+                    , 'type' => 'int'
+                ]
+                , 'Unit_Of_Measure__c' => [
+                    'preferred_name' => 'UnitOfMeasure'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Mile__c' => [
+                    'preferred_name' => 'LastMile'
+                    , 'type' => 'string'
+                ]
                 , 'Account__c' => [
                     'preferred_name' => 'Account'
                     , 'type' => 'string'
-                    , 'lookup_entity' => 'account'
                     , 'mandatory' => 1
                     , 'relationship' => [
                         'local_field' => 'Account'
@@ -267,7 +479,13 @@ function salesforce_settings_provider__get_entity_definitions() {
                 , 'Opportunity__c' => [
                     'preferred_name' => 'Opportunity'
                     , 'type' => 'string'
-                    , 'lookup_entity' => 'opportunity'
+                    , 'relationship' => [
+                        'local_field' => 'Account'
+                        , 'preferred_local_key_name' => 'AccountId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                    ]
                 ]
                 , '_CashInflows' => [
                     'preferred_name' => 'CashInflows'
@@ -474,7 +692,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                         'local_field' => 'Id'
                         , 'remote_field' => 'Account'
                         , 'remote_type' => 'child'
-                        , 'remote_entity' => 'customer_product'
+                        , 'remote_entity' => 'salesforce__customer_product'
                     ],
                 ]
                 , '_CashInflows' => [

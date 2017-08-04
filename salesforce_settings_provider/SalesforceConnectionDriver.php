@@ -33,7 +33,6 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         $type_3 = '/^([\d]{4})\\-([\d]{2})\-([\d]{2})$/';
 
         if (preg_match($type_3, $value) == 1) {
-            //$value = substr($value, 0, strpos($value, '.'));
             return \DateTime::createFromFormat('Y-m-d', $value);
         } else if (preg_match($type_1, $value) == 1) {
             $value = substr($value, 0, strpos($value, '.'));
@@ -61,7 +60,6 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
             $objs = ['inputs' => $objects];
             // $obj = json_encode($objs);
-            var_dump($obj);
             
             // Prepare the POST request
             $options = array(
@@ -249,6 +247,8 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
     public function getItemsInternal($entityBrowser, &$connectionToken = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
+        $retryCount = 0;
+
         // Get the requstToken
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
 
@@ -275,6 +275,9 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 // $tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
             }
 
+            // $filter = trim($filter, '[]');
+            // $filter = str_replace('[[', '(', str_replace(']]', ')', $filter));
+
             // Generate the SOQL query to send in the POST request
             $query_url =  'SELECT ' . implode(',', $select)
                 . " FROM {$entityBrowser->getInternalName()}"
@@ -283,6 +286,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
             // Execute the POST request.
             $new_url = $connectionToken->instance_url . '/services/data/v35.0/query?' . drupal_http_build_query(['q' => $query_url]);
+            
             $feed = mware_blocking_http_request($new_url, ['options' => $options]);
 
             // Process the request
@@ -313,6 +317,9 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
      * @return boolean
      */
     private function getConnectionToken() {
+        // $t = self::retrieveValue('SF_access_token', $token_response);
+        // var_dump($t);
+
         try {
             $sf_settings = $this->connection_settings;
             $uri = $sf_settings->URL;
@@ -344,14 +351,13 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 //$tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
             }
 
-
             $feed = mware_blocking_http_request($uri, ['options' => $tokenOption, 'block' => true]);
             $token_response = json_decode($feed->getContent());
 
-            // var_dump($token_response);
 
             if(!is_null($token_response) && property_exists($token_response, 'access_token')){
                 $token_response->ConnectionParameters = $sf_settings;
+                self::storeValue('SF_access_token', $token_response);
                 return $token_response;
             } else {
                 return FALSE;

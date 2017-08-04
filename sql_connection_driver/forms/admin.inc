@@ -39,7 +39,6 @@ function sql_connection_driver_form_settings_provider_admin_alter(&$form, &$form
         , '#title' => t('New data source')
         , 'SQL_SETTINGS_NEW_GROUP' => [
             '#type' => 'textfield'
-            // , '#title' => t('New data source')
         ]
         , 'SQL_SETTINGS_NEW_GROUP_ACTION' => [
             '#type' => 'submit'
@@ -47,8 +46,6 @@ function sql_connection_driver_form_settings_provider_admin_alter(&$form, &$form
             , '#submit' => ['sql_conneciton_driver_settings_add']
         ]
     ];
-
-    // $groups = eval('return '.variable_get('SQL_SETTINGS_GROUPS', "['default'=>'DEFAULT']").';');
   
     $groups = unserialize($def);
 
@@ -57,7 +54,7 @@ function sql_connection_driver_form_settings_provider_admin_alter(&$form, &$form
             '#type' => 'fieldset'
             , '#title' => "{$value} : ({$key})"
             , '#collapsible' => TRUE
-            // , '#collapsed' => TRUE
+            , '#collapsed' => TRUE
         ];
 
         $form['sql_settings']['groups']["{$key}"]["SQL_SETTINGS_ALIAS_{$key}"] = [

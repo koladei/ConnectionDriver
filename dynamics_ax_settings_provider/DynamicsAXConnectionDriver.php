@@ -273,7 +273,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
     /**
      * Implements the get items operation.
-     * @param type $entityBrowser the specific entity whose record is to be retrieved.
+     * @param String|EntityDefinitionBrowser $entityBrowser the specific entity whose record is to be retrieved.
      * @param type $connectionToken an existing token object that can be used in this operation.
      * @param array $select An array of fields to be returned by this query
      * @param array $filter The filter expression to be passed to the remote server.

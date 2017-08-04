@@ -1,0 +1,7 @@
+name = Cached Data Connection Driver
+description = Enables other modules to cache data to the SQL Server for quicker retrieval.
+configure = admin/config/administration/settings_provider
+dependencies[] = settings_provider
+package = MainOne
+version = 7.x-1.0 
+core = 7.x

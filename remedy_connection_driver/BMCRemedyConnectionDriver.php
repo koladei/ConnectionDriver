@@ -76,6 +76,7 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 $getListInputMap = new \stdClass();
 
                 //execute the query
+                // var_dump(get_class_methods($client));
                 try {
                     //get the result
                     $d = $client->{$methods->create}($object);
@@ -138,9 +139,10 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 //execute the query
                 try {
                     //get the result
-                    $ld = $client->{$methods->query}($getListInputMap);
+                    $ld = $client->{$methods->query}($getListInputMap);                    
+                    $return = (intval($otherOptions['$top']) < 2 || is_object($ld)) ? [$ld]:$ld->getListValues;  
                     
-                    return intval($otherOptions['$top']) > 1 ? $ld->getListValues : [$ld->getListValues];                
+                    return $return;              
                 } catch (\SoapFault $sf) {
                     if(strpos(strtolower($sf->faultstring), 'error (302):') == 0){
                         return [];

@@ -276,20 +276,46 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             $pageSize = $otherOptions['$pageSize'];
             $orderBy = $otherOptions['$orderBy'];
 
+            // Remove distinct fields from select
+            $distinct = $otherOptions['$distinct'];
+            $sel = [];
+            foreach($select as $dis){
+                if(!in_array($dis, $distinct)){
+                    $sel[] = $dis;
+                }
+            }
+            $select2 = implode(',', $select);
+
+            // $distinct = implode(',', $otherOptions['$distinct']);
+            $occurence = '';
+            if (count($distinct) < 1) {
+                $distinct = 'ID';
+            } else {
+                $distinct = implode(',', $otherOptions['$distinct']);
+                $distinct = "{$distinct}";
+                $occurence = ' WHERE OCCURENCE = 1 ';
+            }
+
             $start = ($pageSize * ($pageNumber - 1)) + 1 + $skip;
             $end = $start + $pageSize;
 
             // Generate the SQL query to send in the POST request   
             $where = (strlen($filter) > 0 ? "  WHERE {$filter} " : '');         
-            $sel = implode(',', $select);            
+            $sel = implode(',', $sel);       
+
             $query_url = <<<"QRY"
-SELECT  {$sel}
-FROM    ( SELECT    ROW_NUMBER() OVER ( ORDER BY {$orderBy} ) AS RowNum, {$sel}
-          FROM      {$entityBrowser->getInternalName()}
-          {$where}
+WITH DEDUPE AS (
+    SELECT {$select2}, ROW_NUMBER() OVER (PARTITION BY {$distinct} ORDER BY {$distinct}) AS OCCURENCE
+    FROM {$entityBrowser->getInternalName()}
+    {$where}
+)
+
+SELECT  {$select2}
+FROM    ( SELECT  ROW_NUMBER() OVER ( ORDER BY {$orderBy} ) AS RowNum, {$select2}
+          FROM DEDUPE {$occurence}
         ) AS RowConstrainedResult
 WHERE   RowNum >= {$start}
-    AND RowNum < {$end}
+        AND RowNum < {$end}
 ORDER BY RowNum
 QRY;
 

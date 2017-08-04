@@ -1,0 +1,65 @@
+<?php
+
+module_load_include('module', 'settings_provider');
+$module_path = drupal_get_path('module', 'cached_data_driver');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/CachedDataConnectionDriver.php');
+
+use com\mainone\middleware\CachedDataConnectionDriver;
+
+function cached_data_driver_connection_driver_cache_alter(&$container) {
+    $driver = new CachedDataConnectionDriver(function($x) {
+        $return = mware_connection_driver__get_driver($x);
+        return $return;
+    }, function($source_name){
+        return cached_data_driver__get_settings($source_name);
+    });
+
+    $defs = cached_data_driver__get_entity_definitions();
+    $driver->setEntities($defs);
+    $container['cache'] = $driver;
+}
+
+function cached_data_driver__get_settings($key){
+    $settings = new \stdClass();
+
+    $settings->DSN = variable_get("SQL_SETTINGS_DSN_{$key}");
+    $settings->Username = variable_get("SQL_SETTINGS_USERNAME_{$key}");
+    $settings->Password = variable_get("SQL_SETTINGS_PASSWORD_{$key}");
+    $settings->DatabaseType = variable_get("SQL_SETTINGS_DBTYPE_{$key}");
+
+    return $settings;
+}
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function cached_data_driver_permission() {
+    $permission = [];
+
+    return $permission;
+}
+
+/**
+ * Confirms if a user should be allowed to access something.
+ * @param type $args
+ * @return boolean
+ */
+function cached_data_driver__user_access($args) {
+    return true;
+}
+
+/**
+ * Returns all the entity definitions implemented in Dynamics AX.
+ * @return type
+ */
+function cached_data_driver__get_entity_definitions() {
+    $return = [];
+
+    // Add other entities that have been cached to this driver.
+    $cached = module_invoke_all('_get_cached_entity_definitions2');
+    $return = array_merge($return, $cached);
+
+    return $return;
+}

@@ -442,5 +442,310 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
             ]
         ]
+        , 'people' => [
+            'internal_name' => 'MainOne_GNOC_CustomerClientService'
+            , 'soap_methods' => [
+                'create' => 'CreateClientService_Operation'
+                , 'query' => 'GetAllClientServices_Operation'
+            ]
+            , 'fields' => [
+                'Request_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Create_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_By' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Switch' => [
+                    'preferred_name' => 'Switch'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_CI_Type' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_Account_Name' => [
+                    'preferred_name' => 'ServiceAccountName'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_Account_ID' => [
+                    'preferred_name' => 'ServiceAccountId'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Circuit_Capacity' => [
+                    'preferred_name' => 'CircuitCapacity'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Product' => [
+                    'preferred_name' => 'Product'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Start_Date' => [
+                    'preferred_name' => 'StartDate'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_CI' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Name' => [
+                    'preferred_name' => 'CustomerId'
+                    , 'type' => 'string'
+                ]
+                , 'PoP_Location' => [
+                    'preferred_name' => 'PoPLocation'
+                    , 'type' => 'string'
+                ]
+                , 'First_Name' => [
+                    'preferred_name' => 'FirstName'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Name' => [
+                    'preferred_name' => 'LastName'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_ID' => [
+                    'preferred_name' => 'CustomerId'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Escalation_List' => [
+                    'preferred_name' => 'CustomerEscalationList'
+                    , 'type' => 'string'
+                ]
+            ]
+        ]
+        , 'serviceaccount' => [
+            'internal_name' => 'MainOne_GNOC_CustomerServiceAccount'
+            , 'soap_methods' => [
+                'create' => 'CreateServiceAccount_Operation'
+                , 'query' => 'GetAllAccounts_Operation'
+            ]
+            , 'fields' => [
+                'Request_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Create_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_By' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Short_Description' => [
+                    'preferred_name' => 'ShortDescription'
+                    , 'type' => 'string'
+                ]
+                , 'Status_History' => [
+                    'preferred_name' => 'StatusHistory'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Name' => [
+                    'preferred_name' => 'CustomerName'
+                    , 'preferred_query_name' => 'Customer_Name__c'
+                    , 'type' => 'string'
+                ]
+                , 'Service_Account_Name__c' => [
+                    'preferred_name' => 'Name'
+                    // , 'preferred_query_name' => 'Service_Account_Name'
+                    , 'type' => 'string'
+                ]
+                , 'Escalation_List__c' => [
+                    'preferred_name' => 'EscalationList'
+                    , 'preferred_query_name' => 'Escalation_List'
+                    , 'type' => 'string'
+                ]
+                , 'First_Name' => [
+                    'preferred_name' => 'FirstName'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Name' => [
+                    'preferred_name' => 'LastName'
+                    , 'type' => 'string'
+                ]
+                , 'id_OLD__c' => [
+                    'preferred_name' => 'OldId'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_ID__c' => [
+                    'preferred_name' => 'CustomerId'
+                    , 'type' => 'string'
+                ]
+                , 'Flag' => [
+                    'preferred_name' => 'Flag'
+                    , 'type' => 'string'
+                ]
+                , 'id_Country__c' => [
+                    'preferred_name' => 'CountryId'
+                    , 'type' => 'string'
+                ]
+                , 'str_SATownAddress' => [
+                    'preferred_name' => 'SATownAddress'
+                    , 'type' => 'string'
+                ]
+            ]
+        ]
+        , 'service' => [
+            'internal_name' => 'MainOne_GNOC_CustomerClientServices'
+            , 'soap_methods' => [
+                'create' => 'CreateClientService_Operation'
+                , 'query' => 'GetAllClientServices_Operation'
+            ]
+            , 'fields' => [
+                'Request_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Create_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_By' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Switch' => [
+                    'preferred_name' => 'Switch'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_CI_Type' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_Account_Name' => [
+                    'preferred_name' => 'ServiceAccountName'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_Account_ID' => [
+                    'preferred_name' => 'ServiceAccount'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ServiceAccount'
+                        , 'preferred_local_key_name' => 'ServiceAccountId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'serviceaccount'
+                    ]
+                ]
+                , 'Circuit_Capacity' => [
+                    'preferred_name' => 'CircuitCapacity'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Product' => [
+                    'preferred_name' => 'Product'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Start_Date' => [
+                    'preferred_name' => 'StartDate'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_CI' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Name' => [
+                    'preferred_name' => 'CustomerId'
+                    , 'type' => 'string'
+                ]
+                , 'PoP_Location' => [
+                    'preferred_name' => 'PoPLocation'
+                    , 'type' => 'string'
+                ]
+                , 'First_Name' => [
+                    'preferred_name' => 'FirstName'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Name' => [
+                    'preferred_name' => 'LastName'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_ID' => [
+                    'preferred_name' => 'CustomerId'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Escalation_List' => [
+                    'preferred_name' => 'EscalationList'
+                    , 'type' => 'string'
+                ]
+            ]
+        ]
     ];
 }

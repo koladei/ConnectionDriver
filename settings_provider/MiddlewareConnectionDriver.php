@@ -41,9 +41,15 @@ abstract class MiddlewareConnectionDriver {
         $this->driverLoader = $driverLoader;
         $this->sourceLoader = $sourceLoader;
     }
-
-    public function setEntities($entities) {
-
+    
+    /**
+     * Loads the entity definition in the DataDictionary into memory.
+     *
+     * @param array $entities
+     * @return MiddlewareConnectonDriver
+     */
+    public function setEntities(array $entities) {
+        
         foreach ($entities as $entity_name => $entity) {
             $entityDef = new EntityDefinitionBrowser($entity_name, $entity, $this);
             $this->entitiesByInternalName[$entity['internal_name']] = $entityDef;
@@ -109,6 +115,31 @@ abstract class MiddlewareConnectionDriver {
         return 100;
     }
 
+    //TODO: Make this function less nostic of the Drupal function.
+
+    /**
+     * Stores a value for later retrieval.
+     *
+     * @param String $key The key to identify the value to store.
+     * @param mixed $value
+     * @return void
+     */
+    public function storeValue($key, $value){
+        variable_set("MW__{$key}", $value);
+        return $this;
+    }
+
+    /**
+     * Retrieves a value from that has been previously stored
+     *
+     * @param String $key The key to identity the value to be retrieved.
+     * @param mixed $default
+     * @return mixed
+     */
+    public function retrieveValue($key, $default = NULL){
+        return variable_get("MW__{$key}", $default);
+    }
+
     /**
      * Invokes a function call on the underlying system, passing the specified objects as parameters.
      *
@@ -145,7 +176,11 @@ abstract class MiddlewareConnectionDriver {
      * @return \stdClass
      */
     public function getItemById($entityBrowser, $id, $select, $expands = '', $otherOptions = []) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
+        if(is_null($entityBrowser)){
+            throw new \Exception('Invalid entity could not be found.');
+        }
+        
         $result = $this->getItemsByIds($entityBrowser, [$id], $select, $expands, $otherOptions);
 
         reset($result);
@@ -165,7 +200,10 @@ abstract class MiddlewareConnectionDriver {
      * @return \stdClass
      */
     public function getItemsByIds($entityBrowser, $ids, $select, $expands = '', $otherOptions = []) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
+        if(is_null($entityBrowser)){
+            throw new \Exception('Invalid entity could not be found.');
+        }
 
         $result = $this->getItemsByFieldValues($entityBrowser, $entityBrowser->getIdField(), $ids, $select, $expands, $otherOptions);
         return $result;
@@ -183,7 +221,10 @@ abstract class MiddlewareConnectionDriver {
      * @return \stdClass
      */
     public function getItemsByFieldValues($entityBrowser, EntityFieldDefinition $entityField, array $values, $select, $expands = '', &$otherOptions = []) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
+        if(is_null($entityBrowser)){
+            throw new \Exception('Invalid entity could not be found.');
+        }
 
         // implode the values based on the type of the field
         $implosion = '';
@@ -208,7 +249,11 @@ abstract class MiddlewareConnectionDriver {
     }
 
     public function updateItem($entityBrowser, $id, \stdClass $object, array $otherOptions = []) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
+        if(is_null($entityBrowser)){
+            throw new \Exception('Invalid entity could not be found.');
+        }
+
         $entityBrowser = $this->setStrategies($entityBrowser);
 
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
@@ -252,7 +297,11 @@ abstract class MiddlewareConnectionDriver {
 
     public function createItem($entityBrowser, \stdClass $object, array $otherOptions = []) {
 
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
+        if(is_null($entityBrowser)){
+            throw new \Exception('Invalid entity could not be found.');
+        }
+        
         $entityBrowser = $this->setStrategies($entityBrowser);
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
         $otherOptions['retryCount'] = $retryCount + 1;
@@ -294,7 +343,12 @@ abstract class MiddlewareConnectionDriver {
     }
 
     public function deleteItem($entityBrowser, $id, array $otherOptions = [], &$deleteCount = 0) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
+        
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
+        if(is_null($entityBrowser)){
+            throw new \Exception('Invalid entity could not be found.');
+        }
+        
         $entityBrowser = $this->setStrategies($entityBrowser);
         
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']: 0;
@@ -325,8 +379,24 @@ abstract class MiddlewareConnectionDriver {
         }
     }
 
+    /**
+     * Returns an array of entity items.
+     *
+     * @param [type] $entityBrowser
+     * @param [type] $fields
+     * @param [type] $filter
+     * @param string $expandeds
+     * @param array $otherOptions
+     * @param array $performance
+     * @return void
+     */
     public function getItems($entityBrowser, $fields, $filter, $expandeds = '', $otherOptions = [], &$performance = []) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByDisplayName[$entityBrowser];
+        
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
+        if(is_null($entityBrowser)){
+            throw new \Exception('Invalid entity could not be found.');
+        }
+
         $scope = $this;
         $entityBrowser = $this->setStrategies($entityBrowser);
         
@@ -361,6 +431,30 @@ abstract class MiddlewareConnectionDriver {
             $pageSize = intval($otherOptions['$pageSize']);
             $otherOptions['$pageSize'] = $pageSize < 1 ? $otherOptions['$top'] : $pageSize;
         }
+
+        if (!isset($otherOptions['$distinct'])) {
+            $otherOptions['$distinct'] = [];
+        } else {
+            $distinct = str_replace(' ', '', $otherOptions['$distinct']);
+            $distinctRe = [];
+            $distinctEx = explode(',', $distinct);
+            foreach($distinctEx as $dis){
+                $distinctRe[] = $entityBrowser->getFieldByDisplayName($dis)->getInternalName();
+            }
+            $otherOptions['$distinct'] = array_unique($distinctRe);
+        }
+
+        // if (!isset($otherOptions['$orderBy'])) {
+        //     $otherOptions['$orderBy'] = 0;
+        // } else {
+        //     $orderBy = $otherOptions['$orderBy'];//str_replace(' ', '', $otherOptions['$orderBy']);
+        //     $orderByRe = [];
+        //     $orderByEx = explode(',', $orderBy);
+        //     foreach($orderByEx as $dis){
+        //         $distinctRe[] = $entityBrowser->getFieldByDisplayName($dis)->getInternalName();
+        //     }
+        //     $otherOptions['$orderBy'] = implode(',', $distinctRe);
+        // }
 
         //TODO: Stop overriding $orderBy and implement code to rename fields.
         $otherOptions['$orderBy'] = "{$entityBrowser->getIdField()->getInternalName()} ASC";
@@ -411,25 +505,30 @@ abstract class MiddlewareConnectionDriver {
             if ($fieldInfo->isExpandable()) {
                 // Get a reference to the remote driver
                 $remoteDriver = $fieldInfo->getRemoteDriver();
-                $remoteEntityBrowser = $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()];
-                $remoteField = $remoteEntityBrowser->getFieldByDisplayName($fieldInfo->getRelatedForeignFieldName());
+                // $remoteEntityBrowser = $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()];
+                $remoteEntityBrowser = isset($remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()])? $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()]:NULL;
 
-                // Get the selected subfields of this expanded field
-                $expandX = self::getCurrentExpansions($entityBrowser, $expand, $fields);
+                //TODO: Review this later. Problem is because of cached entities
+                if(!is_null($remoteEntityBrowser)){ //TODO: 
+                    $remoteField = $remoteEntityBrowser->getFieldByDisplayName($fieldInfo->getRelatedForeignFieldName());
 
-                // Ensure that the lookup of the remote entity is included in the remote entity's selection
-                if (!in_array($remoteField->getDisplayName(), $expandX)) {
-                    $expandX[] = $remoteField->getDisplayName();
-                }
+                    // Get the selected subfields of this expanded field
+                    $expandX = self::getCurrentExpansions($entityBrowser, $expand, $fields);
 
-                $ex0 = isset($expands[$expand]) ? $expands[$expand] : [];
-                $ex1 = array_merge(['select' => $expandX, 'ids' => [], 'info' => $fieldInfo, 'remoteFieldInfo' => $remoteField, 'data' => []], $ex0);
-                $expands[$expand] = $ex1;
+                    // Ensure that the lookup of the remote entity is included in the remote entity's selection
+                    if (!in_array($remoteField->getDisplayName(), $expandX)) {
+                        $expandX[] = $remoteField->getDisplayName();
+                    }
 
-                // Ensure the field this expansion depends on is selected.
-                $localFieldName = $fieldInfo->getRelatedLocalFieldName();
-                if (!in_array($localFieldName, $select)) {
-                    $select[] = $localFieldName;
+                    $ex0 = isset($expands[$expand]) ? $expands[$expand] : [];
+                    $ex1 = array_merge(['select' => $expandX, 'ids' => [], 'info' => $fieldInfo, 'remoteFieldInfo' => $remoteField, 'data' => []], $ex0);
+                    $expands[$expand] = $ex1;
+
+                    // Ensure the field this expansion depends on is selected.
+                    $localFieldName = $fieldInfo->getRelatedLocalFieldName();
+                    if (!in_array($localFieldName, $select)) {
+                        $select[] = $localFieldName;
+                    }
                 }
             } else {
                 throw new \Exception("Field {$expand} can not be expanded.");
@@ -446,12 +545,22 @@ abstract class MiddlewareConnectionDriver {
             $select_map = $entityBrowser->getFieldsByInternalNames($select);
             array_walk($result, function(&$record) use($entityBrowser, $select_map, &$expands, $dateFields) {
                 $record = $entityBrowser->renameFields($record, $select_map);
-                foreach($dateFields as $dateField){
-                    if(!is_null($record->{"{$dateField->getDisplayName()}"})){
-                        $dateVal =  $this->parseDateValue($record->{"{$dateField->getDisplayName()}"});
-                        $record->{"{$dateField->getDisplayName()}"} = ( $dateField->isDateTime() ? $dateVal->format('Y-m-d\TH:i:s') : $dateVal->format('Y-m-d') );
-                    }
-                    
+                foreach($dateFields as $dateField) {
+                    $dateFieldName = $dateField->getDisplayName();
+
+                    if(is_object($record) && !is_null($record) && !is_null($record->{$dateFieldName})) {
+                        $dateVal =  $this->parseDateValue($record->{$dateFieldName});
+                        $record->{$dateFieldName} = ( $dateField->isDateTime() ? $dateVal->format('Y-m-d\TH:i:s') : $dateVal->format('Y-m-d') );
+                    } else if(is_array($record)) {
+                        foreach($record as &$innerRecord){
+                            if(is_object($innerRecord) && !is_null($innerRecord) && !is_null($innerRecord->{$dateFieldName})) {
+                                $dateVal =  $this->parseDateValue($innerRecord->{$dateFieldName});
+                                $innerRecord->{$dateFieldName} = ( $dateField->isDateTime() ? $dateVal->format('Y-m-d\TH:i:s') : $dateVal->format('Y-m-d') );
+                            } else {                                
+                                throw new \Exception('Error on date field');
+                            } 
+                        }
+                    }      
                 }
 
                 // Prepare to fetch expanded data
@@ -546,7 +655,7 @@ abstract class MiddlewareConnectionDriver {
 
         foreach ($selected_fields as $key => $field) {
             $displayName = $field->getDisplayName();
-            if (property_exists($record, $key)) {
+            if (is_object($record) && property_exists($record, $key)) {
                 if (is_array($record->{$key})) {
                     if ($field->isArray()) {
                         $r->{$displayName} = $record->{$key};

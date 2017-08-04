@@ -164,6 +164,37 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                 ]
             ]
         ]
+        , 'dataarea' => [
+            'internal_name' => 'DataArea'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                ]
+                , 'ID' => [
+                    'preferred_name' => 'DataAreaId'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'ISVIRTUAL' => [
+                    'preferred_name' => 'IsVirtual'
+                    , 'type' => 'string'
+                ]
+                , 'NAME' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+            ]
+        ]
         , 'cust_trans' => [
             'internal_name' => 'CustTrans'
             , 'fields' => [
@@ -274,9 +305,9 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                     , 'relationship' => [
                         'local_field' => 'Invoice'
                         , 'preferred_local_key_name' => 'InvoiceNumber'
-                        , 'remote_field' => 'InvoiceNumber'
+                        , 'remote_field' => 'InvoiceId'
                         , 'remote_type' => 'parent'
-                        , 'filter' => 'InvoiceNumber ne $NULL$'
+                        , 'filter' => 'InvoiceId ne $NULL$'
                         , 'remote_entity' => 'cust_invoice_table'
                     ]
                 ]
@@ -310,7 +341,7 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         , 'lookup_entity' => 'cust_trans'
                         , 'relationship' => [
                             'local_field' => 'InvoiceNumber'
-                            , 'remote_field' => 'InvoiceNumber'
+                            , 'remote_field' => 'InvoiceId'
                             , 'remote_type' => 'parent'
                             , 'filter' => 'TransactionType eq 8'
                         ]

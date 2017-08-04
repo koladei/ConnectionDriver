@@ -50,14 +50,20 @@ function sql_connection_driver__user_access($args) {
     return true;
 }
 
+function sql_connection_driver__get_cached_entity_definitions2(){
+    $return = sql_connection_driver__get_entity_definitions();
+    
+    return $return;
+}
+
 /**
  * Returns all the entity definitions implemented in Dynamics AX.
  * @return type
  */
 function sql_connection_driver__get_entity_definitions() {
-    return [
+    $return = [
         'customerinfo' => [
-            'internal_name' => 'CustomerInfo'
+            'internal_name' => 'CustomerDictionary'
             , 'datasource' => 'default'
             , 'fields' => [
                 'ID' => [
@@ -65,12 +71,7 @@ function sql_connection_driver__get_entity_definitions() {
                     , 'type' => 'int'
                     , 'mandatory' => 1,
                 ]
-                , 'Address' => [
-                    'preferred_name' => 'Address'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1
-                ]
-                , 'CID' => [
+                , 'GCID' => [
                     'preferred_name' => 'GCID'
                     , 'type' => 'string'
                     , 'mandatory' => 1
@@ -83,35 +84,58 @@ function sql_connection_driver__get_entity_definitions() {
                         , 'remote_driver' => 'salesforce'
                     ]
                 ]
-                , 'CustomerName' => [
+                , '_Siblings' => [
+                    'preferred_name' => 'Siblings'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'GCID'
+                        , 'remote_field' => 'GCID'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'customerinfo'
+                        , 'filter' => 'SystemId ne 3'
+                    ]
+                ]
+                , 'Name' => [
                     'preferred_name' => 'Name'
                     , 'type' => 'string'
                     , 'mandatory' => 1
                 ]
-                , 'DateOfModification' => [
+                , 'DateModified' => [
                     'preferred_name' => 'Modified'
                     , 'type' => 'datetime'
                 ]
-                , 'DateOfCreation' => [
+                , 'DateCreated' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
-                , 'BillingAddress' => [
-                    'preferred_name' => 'BillingAddress'
+                , 'LocalId' => [
+                    'preferred_name' => 'SystemKey'
                     , 'type' => 'string'
                 ]
                 , 'System' => [
                     'preferred_name' => 'System'
-                    , 'type' => 'string'
-                ]
-                , 'Status' => [
-                    'preferred_name' => 'Status'
                     , 'type' => 'int'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'System'
+                        , 'preferred_local_key_name' => 'SystemId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'system'
+                    ]
                 ]
                 , 'Entity' => [
                     'preferred_name' => 'Entity'
-                    , 'type' => 'string'
-                ]   
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'Entity'
+                        , 'preferred_local_key_name' => 'EntityId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'system_entity'
+                    ]
+                ] 
                 , '_AdvancedInfo' => [
                     'preferred_name' => 'AdvancedInformation'
                     , 'type' => 'detail'
@@ -136,5 +160,81 @@ function sql_connection_driver__get_entity_definitions() {
                 ] 
             ]
         ]        
+        , 'system_entity' => [
+            'internal_name' => 'SystemEntity'
+            , 'datasource' => 'default'
+            , 'fields' => [
+                'ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Modified' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Created' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'SystemId' => [
+                    'preferred_name' => 'System'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'System'
+                        , 'preferred_local_key_name' => 'SystemId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'system'
+                    ]
+                ]
+            ]
+        ]      
+        , 'system' => [
+            'internal_name' => 'System'
+            , 'datasource' => 'default'
+            , 'fields' => [
+                'ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Modified' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Created' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , '_Entities' => [
+                    'preferred_name' => 'Entities'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'SystemId'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'system_entity'
+                    ]
+                ]
+            ]
+        ]  
     ];
+
+    // Add other entities that have been cached to this driver.
+    $cached = module_invoke_all('_get_cached_entity_definitions', 'sql');
+    $return = array_merge($return, $cached);
+
+    return $return;
 }

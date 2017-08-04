@@ -115,8 +115,15 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
     }
 
     protected function SQLStringer(MiddlewareFilterBase &$scope){
-        // TODO: Implement 
-        return $this->SOQLStringer($scope);
+        $ret = '';
+
+        foreach($this->parts as $index => $part){
+            $conjection = ($part[0] == self::FRAGMENT_OR) ? 'OR': (($part[0] == self::FRAGMENT_AND) ? 'AND' : '');
+            $fragment = $part[1];
+            $ret .= ($index == 0) ? "({$fragment})" : " {$conjection} ({$fragment})";
+        }
+
+        return $ret;
     }
 
     protected function XPPStringer(MiddlewareFilterBase &$scope){
