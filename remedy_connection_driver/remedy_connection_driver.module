@@ -345,14 +345,15 @@ function remedy_connection_driver__get_entity_definitions() {
             ]
         ]
         , 'asset' => [
-            'internal_name' => 'MSDynamics_Remedy'
+            'internal_name' => 'MSDynamicsToRemedyInventory'
             , 'soap_methods' => [
                 'create' => 'OpCreate'
-                , 'query' => 'OpGet'
+                , 'query' => 'GetAllOperation'
             ]
             , 'fields' => [
                 'Request_ID' => [
                     'preferred_name' => 'Id'
+                    , 'preferred_query_name' => 'Request ID'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]

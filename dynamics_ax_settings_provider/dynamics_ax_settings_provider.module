@@ -515,6 +515,11 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                         , 'remote_driver' => 'salesforce'
                     ],
                 ]
+                , 'SCOMS_NEEDSREVISIT' => [
+                    'preferred_name' => 'SCOMSRevisitRequired'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
                 , 'DATAAREAID' => [
                     'preferred_name' => 'DataArea'
                     , 'type' => 'string',
@@ -623,6 +628,193 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
                 , 'AMOUNT' => [
                     'preferred_name' => 'Amount'
                     , 'type' => 'int',
+                ]
+            ]
+        ]
+        , 'purchased_item_reference' => [
+            'internal_name' => 'MONE_PurchLine'
+            , 'description' => 'A table'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                ]
+                , 'DATAAREAID' => [
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string'
+                ]
+                , 'PURCHPARMLINERECID' => [
+                    'preferred_name' => 'PurchParmLineRecId'
+                    , 'type' => 'string'
+                ]
+                , 'SENTTOREMEDY' => [
+                    'preferred_name' => 'SentToRemedy'
+                    , 'type' => 'string'
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+            ]
+        ]
+        , 'invent_trans' => [
+            'internal_name' => 'InventTrans'
+            , 'description' => 'A table'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                ]
+                , 'DATAAREAID' => [
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string'
+                ]
+                , 'ITEMID' => [
+                    'preferred_name' => 'ItemId'
+                    , 'type' => 'string'
+                ]
+                , 'SENTTOREMEDY' => [
+                    'preferred_name' => 'SentToRemedy'
+                    , 'type' => 'int'
+                ]
+                , 'QTY' => [
+                    'preferred_name' => 'Quantity'
+                    , 'type' => 'int'
+                ]
+                , 'INVENTDIMID' => [
+                    'preferred_name' => 'InventDimId'
+                    , 'type' => 'string'
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+            ]
+        ]
+        , 'invent_table' => [
+            'internal_name' => 'InventTable'
+            , 'description' => 'A table'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                ]
+                , 'DATAAREAID' => [
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string'
+                ]
+                , 'ITEMID' => [
+                    'preferred_name' => 'ItemId'
+                    , 'type' => 'string'
+                ]
+                , 'NAMEALIAS' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'int'
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+            ]
+        ]
+        , 'invent_sum' => [
+            'internal_name' => 'InventSum'
+            , 'description' => 'A table'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                ]
+                , 'DATAAREAID' => [
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string'
+                ]
+                , 'ITEMID' => [
+                    'preferred_name' => 'ItemId'
+                    , 'type' => 'string'
+                ]
+                , 'ITEMGROUPID' => [
+                    'preferred_name' => 'ItemGroupId'
+                    , 'type' => 'int'
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+            ]
+        ]
+        , 'invent_dim' => [
+            'internal_name' => 'InventDim'
+            , 'description' => 'A table'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                ]
+                , 'DATAAREAID' => [
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string'
+                ]
+                , 'INVENTDIMID' => [
+                    'preferred_name' => 'InventDimId'
+                    , 'type' => 'string'
+                ]
+                , 'INVENTBATCHID' => [
+                    'preferred_name' => 'BatchId'
+                    , 'type' => 'string'
+                ]
+                , 'INVENTLOCATIONID' => [
+                    'preferred_name' => 'WarehouseId'
+                    , 'type' => 'string'
+                ]
+                , 'WMSLOCATIONID' => [
+                    'preferred_name' => 'LocationId'
+                    , 'type' => 'string'
+                ]
+                , 'WMSPALLETID' => [
+                    'preferred_name' => 'PalletId'
+                    , 'type' => 'string'
+                ]
+                , 'INVENTSITEID' => [
+                    'preferred_name' => 'SiteId'
+                    , 'type' => 'string'
+                ]
+                , 'INVENTSIZEID' => [
+                    'preferred_name' => 'SizeId'
+                    , 'type' => 'string'
+                ]
+                , 'INVENTSERIALID' => [
+                    'preferred_name' => 'SerialId'
+                    , 'type' => 'string'
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
                 ]
             ]
         ]

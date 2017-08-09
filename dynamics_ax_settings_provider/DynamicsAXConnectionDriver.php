@@ -178,7 +178,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $obj, array $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
-        $url = "{$this->endpoint}/UpdateTable";//QueryTable/[~]
+        $url = "{$this->endpoint}/UpdateTable";
 
         $recordInfo = [];
         $recordInfo['Table'] = $entityBrowser->getInternalName();

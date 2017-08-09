@@ -139,8 +139,10 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 //execute the query
                 try {
                     //get the result
-                    $ld = $client->{$methods->query}($getListInputMap);                    
-                    $return = (intval($otherOptions['$top']) < 2 || is_object($ld)) ? [$ld]:$ld->getListValues;  
+                    $ld = $client->{$methods->query}($getListInputMap);      
+                              
+                    $return = (intval($otherOptions['$top']) < 2) ? [$ld->getListValues]:(is_array($ld->getListValues)?$ld->getListValues:[$ld->getListValues]);
+                    // $resturn = property_exists($ld,'getListValues')?((intval($otherOptions['$top']) < 2) ? [$ld->getListValues]:$ld->getListValues):[];
                     
                     return $return;              
                 } catch (\SoapFault $sf) {
