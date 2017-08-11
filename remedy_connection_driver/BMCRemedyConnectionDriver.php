@@ -19,6 +19,16 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
         $this->connection_settings = $connection_settings;
     }
 
+    
+    /**
+     * @overrides MiddlewareConnectionDriver.getMaxInToOrConversionChunkSize
+     *
+     * @return void
+     */
+    public function getMaxInToOrConversionChunkSize(){
+        return 100;
+    }
+
     /**
      * @override
      * Overrides the default implementation.
@@ -119,13 +129,13 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
             //get the result
             $methods = $entityBrowser->getSoapMethods();
             if (!is_null($methods) && property_exists($methods, 'query')) {
-                $uri = "{$connectionToken->URL}/{$entityBrowser->getInternalName()}";                
+                $uri = "{$connectionToken->URL}/{$entityBrowser->getInternalName()}";        
 
-                $client = new \SoapClient("$uri"); //TODO: uptimize performance by caching the WSDL.
+                $client = new \SoapClient("$uri", ['cache_wsdl' => WSDL_CACHE_NONE]); //TODO: uptimize performance by caching the WSDL.
                 $authenticationInfo = new \stdClass();
                 $authenticationInfo->userName = $connectionToken->Username;
                 $authenticationInfo->password = $connectionToken->Password;
-                $ns = "urn:{$entityBrowser->getInternalName()}";
+                $ns = "urn:{$entityBrowser->getInternalName()}";                
 
                 //Create Soap Header with the authentication parameters      
                 $header = new \SOAPHeader($ns, 'AuthenticationInfo', $authenticationInfo);
@@ -138,17 +148,22 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
 
                 //execute the query
                 try {
+                    // $functions = $client->__getFunctions();
+                    // var_dump ($functions);
+
                     //get the result
-                    $ld = $client->{$methods->query}($getListInputMap);      
+                    $ld = $client->{$methods->query}($getListInputMap);
                               
                     $return = (intval($otherOptions['$top']) < 2) ? [$ld->getListValues]:(is_array($ld->getListValues)?$ld->getListValues:[$ld->getListValues]);
-                    // $resturn = property_exists($ld,'getListValues')?((intval($otherOptions['$top']) < 2) ? [$ld->getListValues]:$ld->getListValues):[];
                     
                     return $return;              
                 } catch (\SoapFault $sf) {
-                    if(strpos(strtolower($sf->faultstring), 'error (302):') == 0){
-                        return [];
-                    }
+                    // echo 'ERRR'.strpos(strtolower($sf->faultstring), 'error (302):');
+                    // if(strpos(strtolower($sf->faultstring), 'error (302):') == 0){
+                    //     return [];
+                    // }
+
+                    // var_dump($sf);
 
                     throw new \Exception("{$sf->getMessage()}");
                 }

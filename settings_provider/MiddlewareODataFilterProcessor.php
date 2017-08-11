@@ -55,7 +55,17 @@ class MiddlewareODataFilterProcessor {
 
         // String match operations
         $matchs = [];
-        preg_match_all('/((substringof|startswith|endswith)\s*\()\s*([\w][\w\d\/]*[^\/])\s*\,\s*(([\'"])([^\'"\)]{0,})(\\5))\s*(\))/i', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/((substringof|startswith|endswith)\s*\()\s*([\w][\w\d\/]*[^\/])\s*\,\s*(([\'"])(\\5)\s*(\)))/', $expression, $matchs, PREG_SET_ORDER);
+        foreach ($matchs as $mat) {
+            $place = count($this->fragments);
+            $key = "#{$place}#";
+            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[3], '', $mat[2], $mat[5], '', $this->valueContext, $this->stringerType, $this->expressionStringer);
+            $expression = self::str_replace_first($mat[0], $key, $expression);
+        }
+
+        // String match operations
+        $matchs = [];
+        preg_match_all('/((substringof|startswith|endswith)\s*\()\s*([\w][\w\d\/]*[^\/])\s*\,\s*(([\'"])([^\'"\)]{0,})(\5))\s*(\))/i', $expression, $matchs, PREG_SET_ORDER);
 
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
@@ -93,13 +103,13 @@ class MiddlewareODataFilterProcessor {
             }
         }
 
-        while (strpos($expression, '(') > -1) {
+        $parenPos = strpos($expression, '(');
+        while ($parenPos > -1) {
             $matchs = [];
-            preg_match_all('/([\(])([^\)\(]+)(\))/', $expression, $matchs, PREG_SET_ORDER);
-            // var_dump(($matchs[0][2]));
-
+            
+            preg_match_all('/([\(])([^\)\(]{0,})([\)])/', $expression, $matchs, PREG_SET_ORDER);
+            
             foreach ($matchs as $mat) {
-
                 $place = count($this->groups);
                 $this->lastGroupKey = "@{$place}@";
                 $group = new MiddlewareFilterGroup($this->stringerType, $this->expressionGroupStringer);
@@ -107,6 +117,7 @@ class MiddlewareODataFilterProcessor {
 
                 $this->groups[$this->lastGroupKey] = $group;
                 $expression = self::str_replace_first($mat[0], $this->lastGroupKey, $expression);
+                $parenPos = strpos($expression, '(');
             }
         }
     }

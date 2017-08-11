@@ -33,6 +33,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
     public function __construct(EntityDefinitionBrowser $entityDefinition = NULL, $field, $value, $operator = EQUAL_TO, $quote = '', $formater = '', $context = NULL, $behaviour = self::DEFAULT_STRINGER, callable $stringer = NULL) {
         parent::__construct($behaviour, $stringer);
+        // var_dump($field, $value, $operator, $quote);
 
         if ($operator == self::IN) {
             if (!is_array($value)) {
@@ -377,7 +378,6 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         } else {
             $value = $this->quoteValue();
         }
-
         switch ($this->operator) {
             case self::STARTS_WITH: {
                     $ret = "{$this->field} LIKE '{$this->value}%'";
@@ -388,6 +388,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                     break;
                 }
             case self::SUBSTRING_OF: {
+
                     $ret = "{$this->field} LIKE '%{$this->value}%'";
                     break;
                 }
@@ -446,6 +447,18 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                     $ret = "{$this->operator}({$this->field},{$value})";
                     break;
                 }
+            // case self::STARTS_WITH: {
+            //         $ret = "{$this->field} LIKE '{$this->value}*'";
+            //         break;
+            //     }
+            // case self::ENDS_WITH: {
+            //         $ret = "{$this->field} LIKE '*{$this->value}'";
+            //         break;
+            //     }
+            // case self::SUBSTRING_OF: {
+            //         $ret = "{$this->field} LIKE '*{$this->value}*'";
+            //         break;
+            //     }
             case self::NOT_EQUAL_TO:
             case self::EQUAL_TO:
             case self::GREATER_THAN:

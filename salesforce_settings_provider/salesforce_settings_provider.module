@@ -644,6 +644,22 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'Status'
                     , 'type' => 'string',
                 ]
+                , 'Email_address__c' => [
+                    'preferred_name' => 'Email'
+                    , 'type' => 'string',
+                ]
+                , 'BillingAddress' => [
+                    'preferred_name' => 'BillingAddress'
+                    , 'type' => 'string',
+                ]
+                , 'ShippingAddress' => [
+                    'preferred_name' => 'ShippingAddress'
+                    , 'type' => 'string',
+                ]
+                , 'Phone' => [
+                    'preferred_name' => 'Phone'
+                    , 'type' => 'string',
+                ]
                 , 'Primary_Sector__c' => [
                     'preferred_name' => 'PrimarySector'
                     , 'type' => 'string'

@@ -42,7 +42,7 @@ function dynamics_ax_settings_provider__user_access($args) {
  * @return type
  */
 function dynamics_ax_settings_provider__get_entity_definitions() {
-    return [
+    $return = [
         'cust_table' => [
             'internal_name' => 'CustTable'
             , 'fields' => [
@@ -819,4 +819,8 @@ function dynamics_ax_settings_provider__get_entity_definitions() {
             ]
         ]
     ];
+
+    $return['account'] = $return['rootaccount'];
+
+    return $return;
 }

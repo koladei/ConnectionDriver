@@ -505,6 +505,7 @@ abstract class MiddlewareConnectionDriver {
             if ($fieldInfo->isExpandable()) {
                 // Get a reference to the remote driver
                 $remoteDriver = $fieldInfo->getRemoteDriver();
+
                 // $remoteEntityBrowser = $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()];
                 $remoteEntityBrowser = isset($remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()])? $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()]:NULL;
 
@@ -515,7 +516,7 @@ abstract class MiddlewareConnectionDriver {
                     // Get the selected subfields of this expanded field
                     $expandX = self::getCurrentExpansions($entityBrowser, $expand, $fields);
 
-                    // Ensure that the lookup of the remote entity is included in the remote entity's selection
+                    // Ensure that the lookup field of the remote entity is included in the remote entity's selection
                     if (!in_array($remoteField->getDisplayName(), $expandX)) {
                         $expandX[] = $remoteField->getDisplayName();
                     }

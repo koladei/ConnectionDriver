@@ -444,22 +444,22 @@ function remedy_connection_driver__get_entity_definitions() {
             ]
         ]
         , 'people' => [
-            'internal_name' => 'MainOne_GNOC_CustomerClientService'
+            'internal_name' => 'MainOne_ITPeoplesService'
             , 'soap_methods' => [
-                'create' => 'CreateClientService_Operation'
-                , 'query' => 'GetAllClientServices_Operation'
+                'create' => 'Create'
+                , 'query' => 'GetAllPeople'
             ]
             , 'fields' => [
-                'Request_ID' => [
+                'Person_ID' => [
                     'preferred_name' => 'Id'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
-                , 'Create_Date' => [
+                , 'Submit_Date' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
-                , 'Modified_Date' => [
+                , 'Last_Modified_Date' => [
                     'preferred_name' => 'Modified'
                     , 'type' => 'datetime'
                 ]
@@ -477,57 +477,19 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'filter' => 'ObjectClass eq \'person\''
                     ]
                 ]
-                , 'Status' => [
-                    'preferred_name' => 'Status'
+                , 'Submitter' => [
+                    'preferred_name' => 'Submitter'
                     , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Switch' => [
-                    'preferred_name' => 'Switch'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Service_CI_Type' => [
-                    'preferred_name' => 'Type'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Service_Account_Name' => [
-                    'preferred_name' => 'ServiceAccountName'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Service_Account_ID' => [
-                    'preferred_name' => 'ServiceAccountId'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Circuit_Capacity' => [
-                    'preferred_name' => 'CircuitCapacity'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Product' => [
-                    'preferred_name' => 'Product'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Start_Date' => [
-                    'preferred_name' => 'StartDate'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Service_CI' => [
-                    'preferred_name' => 'Name'
-                    , 'type' => 'string'
-                ]
-                , 'Customer_Name' => [
-                    'preferred_name' => 'CustomerId'
-                    , 'type' => 'string'
-                ]
-                , 'PoP_Location' => [
-                    'preferred_name' => 'PoPLocation'
-                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'Submitter'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
                 ]
                 , 'First_Name' => [
                     'preferred_name' => 'FirstName'
@@ -537,21 +499,69 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'LastName'
                     , 'type' => 'string'
                 ]
-                , 'Customer_ID' => [
-                    'preferred_name' => 'CustomerId'
+                , 'Region' => [
+                    'preferred_name' => 'Region'
                     , 'type' => 'string'
                 ]
-                , 'Customer_Escalation_List' => [
-                    'preferred_name' => 'CustomerEscalationList'
+                , 'Site_Group' => [
+                    'preferred_name' => 'SiteGroup'
+                    , 'type' => 'string'
+                ]
+                , 'Site' => [
+                    'preferred_name' => 'Site'
+                    , 'type' => 'string'
+                ]
+                , 'Department' => [
+                    'preferred_name' => 'Department'
+                    , 'type' => 'string'
+                ]
+                , 'Locale2' => [
+                    'preferred_name' => 'Locale'
+                    , 'type' => 'string'
+                ]
+                , 'Alternate_ID' => [
+                    'preferred_name' => 'AlternateId'
+                    , 'type' => 'string'
+                ]
+                , 'Company' => [
+                    'preferred_name' => 'Company'
+                    , 'type' => 'string'
+                ]
+                , 'Site_Country' => [
+                    'preferred_name' => 'SiteCountry'
+                    , 'type' => 'string'
+                ]
+                , 'Client_Type' => [
+                    'preferred_name' => 'ClientType'
+                    , 'type' => 'string'
+                ]
+                , 'Site_Street' => [
+                    'preferred_name' => 'SiteStreet'
+                    , 'type' => 'string'
+                ]
+                , 'Default_Country' => [
+                    'preferred_name' => 'DefaultCountry'
+                    , 'type' => 'string'
+                ]
+                , 'Remedy_Login_ID' => [
+                    'preferred_name' => 'RemedyLoginID'
+                    , 'type' => 'string'
+                ]
+                , 'Site' => [
+                    'preferred_name' => 'Site'
+                    , 'type' => 'string'
+                ]
+                , 'Full_Name' => [
+                    'preferred_name' => 'FullName'
                     , 'type' => 'string'
                 ]
             ]
         ]
-        , 'serviceaccount' => [
+        , 'account' => [
             'internal_name' => 'MainOne_GNOC_CustomerServiceAccount'
             , 'soap_methods' => [
                 'create' => 'CreateServiceAccount_Operation'
-                , 'query' => 'GetAllAccounts_Operation'
+                , 'query' => 'New_GetList_Operation_2'
             ]
             , 'fields' => [
                 'Request_ID' => [
@@ -600,7 +610,6 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Service_Account_Name__c' => [
                     'preferred_name' => 'Name'
-                    // , 'preferred_query_name' => 'Service_Account_Name'
                     , 'type' => 'string'
                 ]
                 , 'Escalation_List__c' => [
@@ -636,13 +645,23 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'SATownAddress'
                     , 'type' => 'string'
                 ]
+                , '_Services' => [
+                    'preferred_name' => 'Services'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'ServiceAccount'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'service'
+                    ],
+                ]
             ]
         ]
         , 'service' => [
             'internal_name' => 'MainOne_GNOC_CustomerClientServices'
             , 'soap_methods' => [
                 'create' => 'CreateClientService_Operation'
-                , 'query' => 'GetAllClientServices_Operation'
+                , 'query' => 'GetAllCustomerService'
             ]
             , 'fields' => [
                 'Request_ID' => [
@@ -656,6 +675,10 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Modified_Date' => [
                     'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Start_Date__c' => [
+                    'preferred_name' => 'StartDate'
                     , 'type' => 'datetime'
                 ]
                 , 'Last_Modified_By' => [
@@ -677,57 +700,48 @@ function remedy_connection_driver__get_entity_definitions() {
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
-                , 'Switch' => [
-                    'preferred_name' => 'Switch'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Service_CI_Type' => [
+                , 'Service_CI_Type__c' => [
                     'preferred_name' => 'Type'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
-                , 'Service_Account_Name' => [
+                , 'Service_Account_Name__c' => [
                     'preferred_name' => 'ServiceAccountName'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
-                , 'Service_Account_ID' => [
+                , 'Service_Account_ID__c' => [
                     'preferred_name' => 'ServiceAccount'
                     , 'type' => 'string'
+                    , 'preferred_query_name' => 'Service Account ID__c'
                     , 'relationship' => [
                         'local_field' => 'ServiceAccount'
                         , 'preferred_local_key_name' => 'ServiceAccountId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'serviceaccount'
+                        , 'remote_entity' => 'account'
                     ]
                 ]
-                , 'Circuit_Capacity' => [
-                    'preferred_name' => 'CircuitCapacity'
+                , 'Short_Description' => [
+                    'preferred_name' => 'ShortDescription'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
-                , 'Product' => [
+                , 'Product__c' => [
                     'preferred_name' => 'Product'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
-                , 'Start_Date' => [
-                    'preferred_name' => 'StartDate'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Service_CI' => [
+                , 'Service_CI__c' => [
                     'preferred_name' => 'Name'
                     , 'type' => 'string'
                 ]
-                , 'Customer_Name' => [
+                , 'Customer_Name__c' => [
                     'preferred_name' => 'CustomerId'
                     , 'type' => 'string'
                 ]
-                , 'PoP_Location' => [
-                    'preferred_name' => 'PoPLocation'
+                , 'Circuit_Capacity__c' => [
+                    'preferred_name' => 'CircuitCapacity'
                     , 'type' => 'string'
                 ]
                 , 'First_Name' => [
@@ -738,11 +752,11 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'LastName'
                     , 'type' => 'string'
                 ]
-                , 'Customer_ID' => [
+                , 'Customer_ID__c' => [
                     'preferred_name' => 'CustomerId'
                     , 'type' => 'string'
                 ]
-                , 'Customer_Escalation_List' => [
+                , 'Customer_Escalation_List__c' => [
                     'preferred_name' => 'EscalationList'
                     , 'type' => 'string'
                 ]
