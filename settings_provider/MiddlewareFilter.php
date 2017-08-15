@@ -88,12 +88,21 @@ class MiddlewareFilter extends MiddlewareFilterBase {
     private function quoteValue() {
         // Implement checking if field is meant to be a string or otherwise
         if (is_array($this->value)) {
-            $im = implode("{$this->quote},{$this->quote}", $this->value);
+            // $im = implode("{$this->quote},{$this->quote}", $this->value);
+            $im = implode("_x0027_,_x0027_", $this->value);
+            $im = str_replace("{$this->quote}", "\\{$this->quote}", $im);
+            $im = str_replace("_x0027_", "{$this->quote}", $im);
+
             return "{$this->quote}{$im}{$this->quote}";
         } else if ($this->value instanceof \DateTime) {
             return $this->value->format('Y-m-d\\TH:i:s');
         } else {
-            return "{$this->quote}{$this->value}{$this->quote}";
+            $return = "_x0027_{$this->value}_x0027_";
+            $return = str_replace("{$this->quote}", "\\{$this->quote}", $return);
+            $return = str_replace("_x0027_", "{$this->quote}", $return);
+            // $return = "{$this->quote}{$this->value}{$this->quote}";
+
+            return $return;
         }
     }
 
@@ -124,7 +133,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             return \DateTime::createFromFormat('!Y-m-d\\TH:i:s', $value);
         }
 
-        throw new \Exception("The time format is not known. {$value}");
+        throw new \Exception("The time format is not known. Class MiddlewareFilter {$value}");
     }
 
     // $processor(MiddlewareFilter $e);
@@ -332,7 +341,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                     break;
                 }
             case self::EQUAL_TO: {
-                    $ret = "'{$field}' == {$value}";
+                    $ret = "'{$field}' = {$value}";
                     break;
                 }
             case self::GREATER_THAN: {
@@ -354,7 +363,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             case self::IN: {
                     $ret = "";
                     foreach($this->value as $v){
-                        $ret = "{$ret}'{$field}' == \"{$v}\" ||";
+                        $ret = "{$ret}'{$field}' = \"{$v}\" || ";
                     }
                     $ret = strlen($ret)>0?substr($ret, 0, strlen($ret) - 3):"";
                     break;

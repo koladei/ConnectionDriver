@@ -121,6 +121,18 @@ function remedy_connection_driver__get_entity_definitions() {
                     , 'preferred_query_name' => 'Categorization Tier 1'
                     , 'type' => 'string'
                 ]
+                , 'Closure_Product_Category_Tier1' => [
+                    'preferred_name' => 'ClosureCategorizationTier1'
+                    , 'type' => 'string'
+                ]
+                , 'Closure_Product_Category_Tier2' => [
+                    'preferred_name' => 'ClosureCategorizationTier2'
+                    , 'type' => 'string'
+                ]
+                , 'Closure_Product_Category_Tier3' => [
+                    'preferred_name' => 'ClosureCategorizationTier3'
+                    , 'type' => 'string'
+                ]
                 , 'Status' => [
                     'preferred_name' => 'Status'
                     , 'type' => 'string'
@@ -141,8 +153,28 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Description'
                     , 'type' => 'string'
                 ]
+                , 'Localization' => [
+                    'preferred_name' => 'Localization'
+                    , 'type' => 'string'
+                ]
+                , 'CummulativeClientHoldInMinutes' => [
+                    'preferred_name' => 'HoldTime'
+                    , 'type' => 'int'
+                ]
                 , 'IncidentImpact' => [
                     'preferred_name' => 'IncidentImpact'
+                    , 'type' => 'string'
+                ]
+                , 'NOCDownTimeMinutes__c' => [
+                    'preferred_name' => 'Downtime'
+                    , 'type' => 'int'
+                ]
+                , 'Service_CI_Type__c' => [
+                    'preferred_name' => 'ServiceCIType'
+                    , 'type' => 'string'
+                ]
+                , 'FaultType' => [
+                    'preferred_name' => 'FaultType'
                     , 'type' => 'string'
                 ]
                 , 'IncidentStartTime' => [
@@ -175,6 +207,16 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'remote_field' => 'Incident'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'incidentworklog'
+                    ]
+                ]
+                , '_Service' => [
+                    'preferred_name' => 'Service'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'CircuitID'
+                        , 'remote_field' => 'Name'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'service'
                     ]
                 ]
             ]
@@ -734,6 +776,7 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Service_CI__c' => [
                     'preferred_name' => 'Name'
+                    , 'preferred_query_name' => 'Service CI__c'
                     , 'type' => 'string'
                 ]
                 , 'Customer_Name__c' => [

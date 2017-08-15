@@ -26,7 +26,7 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
      * @return void
      */
     public function getMaxInToOrConversionChunkSize(){
-        return 100;
+        return 10;
     }
 
     /**
@@ -148,9 +148,6 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
 
                 //execute the query
                 try {
-                    // $functions = $client->__getFunctions();
-                    // var_dump ($functions);
-
                     //get the result
                     $ld = $client->{$methods->query}($getListInputMap);
                               
@@ -158,12 +155,6 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                     
                     return $return;              
                 } catch (\SoapFault $sf) {
-                    // echo 'ERRR'.strpos(strtolower($sf->faultstring), 'error (302):');
-                    // if(strpos(strtolower($sf->faultstring), 'error (302):') == 0){
-                    //     return [];
-                    // }
-
-                    // var_dump($sf);
 
                     throw new \Exception("{$sf->getMessage()}");
                 }

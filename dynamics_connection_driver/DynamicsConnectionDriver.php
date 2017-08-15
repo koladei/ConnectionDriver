@@ -211,14 +211,6 @@ class DynamicsConnectionDriver extends MiddlewareConnectionDriver {
         
         $z = new DynamicsAXEntityCollection();
         if (is_object($res) && property_exists($res, 'd')) {
-        // var_dump($filter);
-        // var_dump($res->Logging);
-
-            // foreach ($res->d as $a => $b) {
-            //     $z[$a] = $b;
-            // }
-
-            // return $z;
             return $res->d;
         } else {
             throw new \Exception("Failed to get items of entity {$entityBrowser->getDisplayName()} of " . __CLASS__ . " due to error: {$feed->getContent()}");

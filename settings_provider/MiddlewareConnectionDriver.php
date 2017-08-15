@@ -101,7 +101,7 @@ abstract class MiddlewareConnectionDriver {
             return \DateTime::createFromFormat('!Y-m-d\\TH:i:s', $value);
         }
 
-        throw new \Exception("The time format is not known. {$value}");
+        throw new \Exception("The time format is not known. Class MiddlewareConnectionDriver {$value}");
     }
 
     /**
