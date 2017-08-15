@@ -87,7 +87,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
     private function quoteValue() {
         // Implement checking if field is meant to be a string or otherwise
-	$backslash = '\\';
+        $backslash = '\\';
         if (is_array($this->value)) {
             // $im = implode("{$this->quote},{$this->quote}", $this->value);
             $im = implode("_x0027_,_x0027_", $this->value);

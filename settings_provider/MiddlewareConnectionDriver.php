@@ -228,6 +228,7 @@ abstract class MiddlewareConnectionDriver {
 
         // implode the values based on the type of the field
         $implosion = '';
+        $backslash = '\'';
         $type = $entityField->getDataType();
         switch ($type) {
             case 'int': {
@@ -235,7 +236,11 @@ abstract class MiddlewareConnectionDriver {
                     break;
                 }
             default: {
-                    $implosion = implode('\',\'', $values);
+                    $implosion = implode("_x0027_,_x0027_", $values);
+                    $implosion = str_replace("'", "{$backslash}'", $implosion);
+                    $implosion = str_replace("_x0027_", "'", $implosion);
+
+                    // $implosion = implode('\',\'', $values);
                     $implosion = "'{$implosion}'";
                 }
         }
