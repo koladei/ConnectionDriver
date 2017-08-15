@@ -87,10 +87,11 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
     private function quoteValue() {
         // Implement checking if field is meant to be a string or otherwise
+	$backslash = '\\';
         if (is_array($this->value)) {
             // $im = implode("{$this->quote},{$this->quote}", $this->value);
             $im = implode("_x0027_,_x0027_", $this->value);
-            $im = str_replace("{$this->quote}", "\\{$this->quote}", $im);
+            $im = str_replace("{$this->quote}", "{$backslash}{$this->quote}", $im);
             $im = str_replace("_x0027_", "{$this->quote}", $im);
 
             return "{$this->quote}{$im}{$this->quote}";
@@ -98,7 +99,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             return $this->value->format('Y-m-d\\TH:i:s');
         } else {
             $return = "_x0027_{$this->value}_x0027_";
-            $return = str_replace("{$this->quote}", "\\{$this->quote}", $return);
+            $return = str_replace("{$this->quote}", "{$backslash}{$this->quote}", $return);
             $return = str_replace("_x0027_", "{$this->quote}", $return);
             // $return = "{$this->quote}{$this->value}{$this->quote}";
 
