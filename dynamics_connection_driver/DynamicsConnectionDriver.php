@@ -208,8 +208,6 @@ class DynamicsConnectionDriver extends MiddlewareConnectionDriver {
         $feed = mware_blocking_http_request($url, ['options' => $tokenOption, 'block' => true]);
         $res = (json_decode($feed->getContent()));
 
-        
-        $z = new DynamicsAXEntityCollection();
         if (is_object($res) && property_exists($res, 'd')) {
             return $res->d;
         } else {
