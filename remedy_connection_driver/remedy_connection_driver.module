@@ -177,6 +177,10 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'FaultType'
                     , 'type' => 'string'
                 ]
+                , 'RootCause' => [
+                    'preferred_name' => 'RootCause'
+                    , 'type' => 'string'
+                ]
                 , 'IncidentStartTime' => [
                     'preferred_name' => 'StartTime'
                     , 'type' => 'datetime'

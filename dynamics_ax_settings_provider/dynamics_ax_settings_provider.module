@@ -42,6 +42,7 @@ function dynamics_ax_settings_provider__user_access($args) {
  * @return type
  */
 function dynamics_ax_settings_provider__get_entity_definitions() {
+    return dynamics_connection_driver__get_entity_definitions();
     $return = [
         'cust_table' => [
             'internal_name' => 'CustTable'

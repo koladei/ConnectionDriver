@@ -480,6 +480,14 @@ function dynamics_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime',
                 ]
+                , 'INVOICECREATIONDATE' => [
+                    'preferred_name' => 'InvoiceCreated'
+                    , 'type' => 'datetime',
+                ]     
+                , 'INVOICEDUEDATE' => [
+                    'preferred_name' => 'InvoiceDueDate'
+                    , 'type' => 'date',
+                ]                
                 , 'PARENTRECID' => [
                     'preferred_name' => 'Invoice'
                     , 'type' => 'int'
