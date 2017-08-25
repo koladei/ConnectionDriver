@@ -364,7 +364,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             case self::IN: {
                     $ret = "";
                     foreach($this->value as $v){
-                        $ret = "{$ret}'{$field}' = \"{$v}\" || ";
+                        $ret = "{$ret}'{$field}' = \"{$v}\" OR ";
                     }
                     $ret = strlen($ret)>0?substr($ret, 0, strlen($ret) - 3):"";
                     break;

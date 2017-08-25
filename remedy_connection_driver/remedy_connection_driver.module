@@ -181,6 +181,10 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'StartTime'
                     , 'type' => 'datetime'
                 ]
+                , 'IncidentResolutionTime' => [
+                    'preferred_name' => 'ResolutionTime'
+                    , 'type' => 'datetime'
+                ]
                 , 'Last_Modified_Date' => [
                     'preferred_name' => 'Modified'
                     , 'preferred_query_name' => 'Last Modified Date'
@@ -608,6 +612,7 @@ function remedy_connection_driver__get_entity_definitions() {
             , 'fields' => [
                 'Request_ID' => [
                     'preferred_name' => 'Id'
+                    , 'preferred_query_name' => 'Request ID'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
@@ -708,6 +713,7 @@ function remedy_connection_driver__get_entity_definitions() {
             , 'fields' => [
                 'Request_ID' => [
                     'preferred_name' => 'Id'
+                    , 'preferred_query_name' => 'Request ID'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]

@@ -141,10 +141,17 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 $header = new \SOAPHeader($ns, 'AuthenticationInfo', $authenticationInfo);
                 $client->__setSoapHeaders($header);
                 $getListInputMap = new \stdClass();
+                
+                // echo $filter;
+                // var_dump($otherOptions);
 
                 $getListInputMap->Qualification = "{$filter}";
                 $getListInputMap->maxLimit = $otherOptions['$top'];
                 $getListInputMap->startRecord = $otherOptions['$skip'];
+                if(isset($otherOptions['$all'])) {
+                    $getListInputMap->maxLimit = '';
+                }
+                // var_dump($getListInputMap);
 
                 //execute the query
                 try {
@@ -153,9 +160,12 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                               
                     $return = (intval($otherOptions['$top']) < 2) ? [$ld->getListValues]:(is_array($ld->getListValues)?$ld->getListValues:[$ld->getListValues]);
                     
+                    // var_dump($return);
                     return $return;              
                 } catch (\SoapFault $sf) {
-
+                    if(trim($sf->getMessage()) == 'ERROR (302): Entry does not exist in database;'){
+                        return [];
+                    }
                     throw new \Exception("{$sf->getMessage()}");
                 }
             } else {
