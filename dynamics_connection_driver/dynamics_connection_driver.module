@@ -395,10 +395,11 @@ function dynamics_connection_driver__get_entity_definitions() {
                     , 'type' => 'string'
                 ]
                 , 'INVOICEACCOUNT' => [
-                    'preferred_name' => 'AccountNumber'
+                    'preferred_name' => 'InvoiceAccount'
                     , 'type' => 'string'
                     , 'relationship' => [
-                        'local_field' => 'AccountNumber'
+                        'local_field' => 'InvoiceAccount'
+                        , 'preferred_local_key_name' => 'InvoiceAccountNumber'
                         , 'remote_field' => 'AccountNumber'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cust_table'
@@ -409,6 +410,7 @@ function dynamics_connection_driver__get_entity_definitions() {
                     , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'OrderAccount'
+                        , 'preferred_local_key_name' => 'OrderAccountNumber'
                         , 'remote_field' => 'AccountNumber'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cust_table'
