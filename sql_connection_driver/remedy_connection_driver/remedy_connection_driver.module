@@ -1,0 +1,819 @@
+<?php
+
+module_load_include('module', 'settings_provider');
+$module_path = drupal_get_path('module', 'remedy_connection_driver');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
+
+if (!class_exists('nusoap_base')) {
+    include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/nusoap/nusoap.php');
+}
+
+if (!class_exists('nusoap_client')) {
+    include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/nusoap/class.soapclient.php');
+}
+
+if (!class_exists('nusoap_client')) {
+    include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/nusoap/class.soapclient.php');
+}
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/BMCRemedyConnectionDriver.php');
+
+use com\mainone\middleware\BMCRemedyConnectionDriver;
+
+function remedy_connection_driver_connection_driver_bmc_remedy_alter(&$container) {
+    $connection_settings = remedy_connection_driver__get_settings();
+    $driver = new BMCRemedyConnectionDriver(function($x) {
+        return mware_connection_driver__get_driver($x);
+    }, $connection_settings);
+
+    $defs = remedy_connection_driver__get_entity_definitions();
+    $driver->setEntities($defs);
+    $container['bmc_remedy'] = $driver;
+}
+
+
+/**
+ * Returns the connection settings with which to connect to salesforce.
+ * @return \stdClass
+ */
+function remedy_connection_driver__get_settings($settings = 'default') {
+    $s = new stdClass();
+    $sT = $settings == 'default' ? variable_get('REMEDY_SETTINGS_USE_PRODUCTION', FALSE) : ($settings == 'production' ? TRUE : FALSE);
+
+    if ($sT == FALSE) {
+        $s->URL = variable_get('REMEDY_SANDBOX_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('REMEDY_SANDBOX_SETTINGS_USERNAME');
+        $s->Password = variable_get('REMEDY_SANDBOX_SETTINGS_PASSWORD');
+    } else {
+        $s->URL = variable_get('REMEDY_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('REMEDY_SETTINGS_USERNAME');
+        $s->Password = variable_get('REMEDY_SETTINGS_PASSWORD');
+    }
+    
+    return $s;
+}
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function remedy_connection_driver_permission() {
+    $permission = [];
+
+    return $permission;
+}
+
+/**
+ * Confirms if a user should be allowed to access something.
+ * @param type $args
+ * @return boolean
+ */
+function remedy_connection_driver__user_access($args) {
+    return true;
+}
+
+/**
+ * Returns all the entity definitions implemented in Dynamics AX.
+ * @return type
+ */
+function remedy_connection_driver__get_entity_definitions() {
+    return [
+        'incidentweb' => [
+            'internal_name' => 'MainOne:ShowIncidentsWebService'
+            , 'soap_methods' => [
+                'query' => 'New_GetList_Operation_1'
+            ]
+            , 'fields' => [
+                'Incident_Number' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Submitter' => [
+                    'preferred_name' => 'SubmittedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'SubmittedBy'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ]
+                ]
+                , 'HPD_CI' => [
+                    'preferred_name' => 'CI'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CI'
+                        , 'preferred_local_key_name' => 'CircuitID'
+                        , 'remote_field' => 'Name'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product'
+                        , 'remote_driver' => 'salesforce'
+                    ],
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Operational_Categorization_Tier_1' => [
+                    'preferred_name' => 'OperationalCategorizationTier1'
+                    , 'preferred_query_name' => 'Categorization Tier 1'
+                    , 'type' => 'string'
+                ]
+                , 'Closure_Product_Category_Tier1' => [
+                    'preferred_name' => 'ClosureCategorizationTier1'
+                    , 'type' => 'string'
+                ]
+                , 'Closure_Product_Category_Tier2' => [
+                    'preferred_name' => 'ClosureCategorizationTier2'
+                    , 'type' => 'string'
+                ]
+                , 'Closure_Product_Category_Tier3' => [
+                    'preferred_name' => 'ClosureCategorizationTier3'
+                    , 'type' => 'string'
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Login_ID' => [
+                    'preferred_name' => 'Customer'
+                    , 'type' => 'string'
+                ]
+                , 'First_Name' => [
+                    'preferred_name' => 'FirstName'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Name' => [
+                    'preferred_name' => 'LastName'
+                    , 'type' => 'string'
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
+                ]
+                , 'Localization' => [
+                    'preferred_name' => 'Localization'
+                    , 'type' => 'string'
+                ]
+                , 'CummulativeClientHoldInMinutes' => [
+                    'preferred_name' => 'HoldTime'
+                    , 'type' => 'int'
+                ]
+                , 'IncidentImpact' => [
+                    'preferred_name' => 'IncidentImpact'
+                    , 'type' => 'string'
+                ]
+                , 'NOCDownTimeMinutes__c' => [
+                    'preferred_name' => 'Downtime'
+                    , 'type' => 'int'
+                ]
+                , 'Service_CI_Type__c' => [
+                    'preferred_name' => 'ServiceCIType'
+                    , 'type' => 'string'
+                ]
+                , 'FaultType' => [
+                    'preferred_name' => 'FaultType'
+                    , 'type' => 'string'
+                ]
+                , 'RootCause' => [
+                    'preferred_name' => 'RootCause'
+                    , 'type' => 'string'
+                ]
+                , 'IncidentStartTime' => [
+                    'preferred_name' => 'StartTime'
+                    , 'type' => 'datetime'
+                ]
+                , 'IncidentResolutionTime' => [
+                    'preferred_name' => 'ResolutionTime'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'preferred_query_name' => 'Last Modified Date'
+                    , 'type' => 'datetime'
+                ]
+                , 'Assignee_Login_ID' => [
+                    'preferred_name' => 'AssignedTo'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AssignedTo'
+                        , 'preferred_local_key_name' => 'AssigneeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , '_WorkLog' => [
+                    'preferred_name' => 'WorkLog'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'Incident'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'incidentworklog'
+                    ]
+                ]
+                , '_Service' => [
+                    'preferred_name' => 'Service'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'CircuitID'
+                        , 'remote_field' => 'Name'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'service'
+                    ]
+                ]
+            ]
+        ]
+        , 'incidentworklog' => [
+            'internal_name' => 'MainOne_ShowIncidentWorkLogWebService'
+            , 'soap_methods' => [
+                'query' => 'New_GetList_Operation_0'
+            ]
+            , 'fields' => [
+                'Work_Log_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Incident_Number' => [
+                    'preferred_name' => 'Incident'
+                    , 'type' => 'string'
+                    , 'preferred_query_name' => 'Incident Number'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'Incident'
+                        , 'preferred_local_key_name' => 'IncidentId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'incidentweb'
+                    ]
+                ]
+                , 'Submitter' => [
+                    'preferred_name' => 'SubmittedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'SubmittedBy'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ]
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'string'
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
+                ]
+                , 'Work_Log_Type' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                ]
+                , 'IncidentStartTime' => [
+                    'preferred_name' => 'StartTime'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'preferred_query_name' => 'Last Modified Date'
+                    , 'type' => 'datetime'
+                ]
+                , 'Assignee_Login_ID' => [
+                    'preferred_name' => 'AssignedTo'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AssignedTo'
+                        , 'preferred_local_key_name' => 'AssigneeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+            ]
+        ]
+        , 'customer-incident' => [
+            'internal_name' => 'globalcustomeridwebservice'
+            , 'soap_methods' => [
+                'query' => 'GetList'
+            ]
+            , 'fields' => [
+                'Request_ID__c' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Submitter__c' => [
+                    'preferred_name' => 'SubmittedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'SubmittedBy'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ],
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Submitted'
+                    , 'type' => 'string'
+                ]
+                , 'Assignee_Login_ID' => [
+                    'preferred_name' => 'AssignedTo'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AssignedTo'
+                        , 'preferred_local_key_name' => 'AssigneeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ],
+                ]
+            ]
+        ]
+        , 'incident' => [
+            'internal_name' => 'HPD_IncidentInterface_WS'
+            , 'soap_methods' => [
+                'query' => 'HelpDesk_QueryList_Service'
+            ]
+            , 'fields' => [
+                'Entry_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Submitter' => [
+                    'preferred_name' => 'SubmittedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'SubmittedBy'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ],
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Submitted'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'preferred_query_name' => '\'Last Modified Date\''
+                    , 'type' => 'string'
+                ]
+                , 'Assignee_Login_ID' => [
+                    'preferred_name' => 'AssignedTo'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AssignedTo'
+                        , 'preferred_local_key_name' => 'AssigneeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ],
+                ]
+            ]
+        ]
+        , 'asset' => [
+            'internal_name' => 'MSDynamicsToRemedyInventory'
+            , 'soap_methods' => [
+                'create' => 'OpCreate'
+                , 'query' => 'GetAllOperation'
+            ]
+            , 'fields' => [
+                'Request_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'preferred_query_name' => 'Request ID'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Serial_Number__c' => [
+                    'preferred_name' => 'SerialNumber'
+                    , 'type' => 'string'
+                ]
+                , 'Region__c' => [
+                    'preferred_name' => 'Region'
+                    , 'type' => 'string'
+                ]
+                , 'Name__c' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'Building__c' => [
+                    'preferred_name' => 'Building'
+                    , 'type' => 'string'
+                ]
+                , 'Floor__c' => [
+                    'preferred_name' => 'Floor'
+                    , 'type' => 'string'
+                ]
+                , 'Room__c' => [
+                    'preferred_name' => 'Room'
+                    , 'type' => 'string'
+                ]
+                , 'Item_Group__c' => [
+                    'preferred_name' => 'ItemGroup'
+                    , 'type' => 'string'
+                ]
+                , 'Item_Number__c' => [
+                    'preferred_name' => 'ItemNumber'
+                    , 'type' => 'string'
+                ]
+                , 'Pallet_ID__c' => [
+                    'preferred_name' => 'PalletID'
+                    , 'type' => 'string'
+                ]
+                , 'Size__c' => [
+                    'preferred_name' => 'Size'
+                    , 'type' => 'string'
+                ]
+                , 'Warehouse__c' => [
+                    'preferred_name' => 'Warehouse'
+                    , 'type' => 'string'
+                ]
+                , 'Site__c' => [
+                    'preferred_name' => 'Site'
+                    , 'type' => 'string'
+                ]
+                , 'MainOne_Site__c' => [
+                    'preferred_name' => 'MainOneSite'
+                    , 'type' => 'string'
+                ]
+                , 'Batch_Number__c' => [
+                    'preferred_name' => 'BatchNumber'
+                    , 'type' => 'string'
+                ]
+                , 'Asset_Description__c' => [
+                    'preferred_name' => 'AssetDescription'
+                    , 'type' => 'string'
+                ]
+                , 'TotalAvailable__c' => [
+                    'preferred_name' => 'TotalAvailable'
+                    , 'type' => 'string'
+                ]
+                , 'PhysicalReserved__c' => [
+                    'preferred_name' => 'PhysicalReserved'
+                    , 'type' => 'string'
+                ]
+                , 'OrderedReserved__c' => [
+                    'preferred_name' => 'OrderedReserved'
+                    , 'type' => 'string'
+                ]
+                , 'On_Order__c' => [
+                    'preferred_name' => 'OnOrder'
+                    , 'type' => 'string'
+                ]
+                , 'Ordered__c' => [
+                    'preferred_name' => 'Ordered'
+                    , 'type' => 'string'
+                ]
+                , 'Physical_Inventory__c' => [
+                    'preferred_name' => 'PhysicalInventory'
+                    , 'type' => 'string'
+                ]
+            ]
+        ]
+        , 'people' => [
+            'internal_name' => 'MainOne_ITPeoplesService'
+            , 'soap_methods' => [
+                'create' => 'Create'
+                , 'query' => 'GetAllPeople'
+            ]
+            , 'fields' => [
+                'Person_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_By' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , 'Submitter' => [
+                    'preferred_name' => 'Submitter'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'Submitter'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , 'First_Name' => [
+                    'preferred_name' => 'FirstName'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Name' => [
+                    'preferred_name' => 'LastName'
+                    , 'type' => 'string'
+                ]
+                , 'Region' => [
+                    'preferred_name' => 'Region'
+                    , 'type' => 'string'
+                ]
+                , 'Site_Group' => [
+                    'preferred_name' => 'SiteGroup'
+                    , 'type' => 'string'
+                ]
+                , 'Site' => [
+                    'preferred_name' => 'Site'
+                    , 'type' => 'string'
+                ]
+                , 'Department' => [
+                    'preferred_name' => 'Department'
+                    , 'type' => 'string'
+                ]
+                , 'Locale2' => [
+                    'preferred_name' => 'Locale'
+                    , 'type' => 'string'
+                ]
+                , 'Alternate_ID' => [
+                    'preferred_name' => 'AlternateId'
+                    , 'type' => 'string'
+                ]
+                , 'Company' => [
+                    'preferred_name' => 'Company'
+                    , 'type' => 'string'
+                ]
+                , 'Site_Country' => [
+                    'preferred_name' => 'SiteCountry'
+                    , 'type' => 'string'
+                ]
+                , 'Client_Type' => [
+                    'preferred_name' => 'ClientType'
+                    , 'type' => 'string'
+                ]
+                , 'Site_Street' => [
+                    'preferred_name' => 'SiteStreet'
+                    , 'type' => 'string'
+                ]
+                , 'Default_Country' => [
+                    'preferred_name' => 'DefaultCountry'
+                    , 'type' => 'string'
+                ]
+                , 'Remedy_Login_ID' => [
+                    'preferred_name' => 'RemedyLoginID'
+                    , 'type' => 'string'
+                ]
+                , 'Site' => [
+                    'preferred_name' => 'Site'
+                    , 'type' => 'string'
+                ]
+                , 'Full_Name' => [
+                    'preferred_name' => 'FullName'
+                    , 'type' => 'string'
+                ]
+            ]
+        ]
+        , 'account' => [
+            'internal_name' => 'MainOne_GNOC_CustomerServiceAccount'
+            , 'soap_methods' => [
+                'create' => 'CreateServiceAccount_Operation'
+                , 'query' => 'New_GetList_Operation_2'
+            ]
+            , 'fields' => [
+                'Request_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'preferred_query_name' => 'Request ID'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Create_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_By' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Short_Description' => [
+                    'preferred_name' => 'ShortDescription'
+                    , 'type' => 'string'
+                ]
+                , 'Status_History' => [
+                    'preferred_name' => 'StatusHistory'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Name' => [
+                    'preferred_name' => 'CustomerName'
+                    , 'preferred_query_name' => 'Customer_Name__c'
+                    , 'type' => 'string'
+                ]
+                , 'Service_Account_Name__c' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'Escalation_List__c' => [
+                    'preferred_name' => 'EscalationList'
+                    , 'preferred_query_name' => 'Escalation_List'
+                    , 'type' => 'string'
+                ]
+                , 'First_Name' => [
+                    'preferred_name' => 'FirstName'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Name' => [
+                    'preferred_name' => 'LastName'
+                    , 'type' => 'string'
+                ]
+                , 'id_OLD__c' => [
+                    'preferred_name' => 'OldId'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_ID__c' => [
+                    'preferred_name' => 'CustomerId'
+                    , 'type' => 'string'
+                ]
+                , 'Flag' => [
+                    'preferred_name' => 'Flag'
+                    , 'type' => 'string'
+                ]
+                , 'id_Country__c' => [
+                    'preferred_name' => 'CountryId'
+                    , 'type' => 'string'
+                ]
+                , 'str_SATownAddress' => [
+                    'preferred_name' => 'SATownAddress'
+                    , 'type' => 'string'
+                ]
+                , '_Services' => [
+                    'preferred_name' => 'Services'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'ServiceAccount'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'service'
+                    ],
+                ]
+            ]
+        ]
+        , 'service' => [
+            'internal_name' => 'MainOne_GNOC_CustomerClientServices'
+            , 'soap_methods' => [
+                'create' => 'CreateClientService_Operation'
+                , 'query' => 'GetAllCustomerService'
+            ]
+            , 'fields' => [
+                'Request_ID' => [
+                    'preferred_name' => 'Id'
+                    , 'preferred_query_name' => 'Request ID'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Create_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Start_Date__c' => [
+                    'preferred_name' => 'StartDate'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_By' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_CI_Type__c' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_Account_Name__c' => [
+                    'preferred_name' => 'ServiceAccountName'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_Account_ID__c' => [
+                    'preferred_name' => 'ServiceAccount'
+                    , 'type' => 'string'
+                    , 'preferred_query_name' => 'Service Account ID__c'
+                    , 'relationship' => [
+                        'local_field' => 'ServiceAccount'
+                        , 'preferred_local_key_name' => 'ServiceAccountId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                    ]
+                ]
+                , 'Short_Description' => [
+                    'preferred_name' => 'ShortDescription'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Product__c' => [
+                    'preferred_name' => 'Product'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Service_CI__c' => [
+                    'preferred_name' => 'Name'
+                    , 'preferred_query_name' => 'Service CI__c'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Name__c' => [
+                    'preferred_name' => 'CustomerId'
+                    , 'type' => 'string'
+                ]
+                , 'Circuit_Capacity__c' => [
+                    'preferred_name' => 'CircuitCapacity'
+                    , 'type' => 'string'
+                ]
+                , 'First_Name' => [
+                    'preferred_name' => 'FirstName'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Name' => [
+                    'preferred_name' => 'LastName'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_ID__c' => [
+                    'preferred_name' => 'CustomerId'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Escalation_List__c' => [
+                    'preferred_name' => 'EscalationList'
+                    , 'type' => 'string'
+                ]
+            ]
+        ]
+    ];
+}

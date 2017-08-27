@@ -1,0 +1,131 @@
+<?php
+
+$module_path = drupal_get_path('module', 'settings_provider');
+$middleware_driver_path = str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $middleware_driver_path . '/MiddlewareConnectionDriver.php');
+
+use com\mainone\middleware\MiddlewareConnectionDriver;
+
+spl_autoload_register(function ($class_name) use($middleware_driver_path) {
+    $last = strrpos('\\', $class_name);
+    $class_name = $last > 0 ? substr($class_name, $last + 1) : $class_name;
+    $file = $middleware_driver_path . "{$class_name}.php";
+    return (file_exists($file) ? require_once $file : false);
+});
+
+function mware_connection_driver__get_driver($driver_name) {
+    $data = [];
+    drupal_alter(['connection_driver', 'connection_driver_' . $driver_name], $data);
+    
+    return isset($data[$driver_name])?$data[$driver_name]: FALSE;
+}
+
+/**
+ * Implement hook_menu().
+ */
+function settings_provider_menu() {
+    $items = array();
+
+    $items['admin/config/administration/settings_provider'] = array(
+        'title' => 'Service connection settings',
+        'description' => 'Use this page to provide settings for the Middleware application',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('settings_provider_admin'),
+        'access arguments' => array('settings_provider administer settings'),
+        'file path' => drupal_get_path('module', 'settings_provider') . '/forms',
+        'file' => 'admin.inc',
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    return $items;
+}
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function settings_provider_permission() {
+    $permission = [
+        'settings_provider administer settings' => [
+            'title' => t('Administer settings'),
+            'description' => t('Manage Middleware and it\'s dependencies\' settings.'),
+        ],
+    ];
+    return $permission;
+}
+
+/**
+ * Implements hook_library
+ * @return array
+ */
+function settings_provider_library() {
+    $libraries = array();
+
+    return $libraries;
+}
+
+/**
+ * Implements hook_ctools_plugin_api
+ * @param type $owner
+ * @param type $api
+ * @return type
+ */
+function settings_provider_ctools_plugin_api($owner, $api) {
+    if ($owner == 'services' && $api == 'services') {
+        return array(
+            'version' => 3,
+            'file' => 'endpoints.inc', // Optional parameter to indicate the file name to load.
+            'path' => drupal_get_path('module', 'settings_provider'), // If specifying the file key, path is required.
+        );
+    }
+}
+
+/**
+ * Processes a URI rquest.
+ * @param string $url
+ * @param array $settings
+ */
+function settings_provider_http_request($url, $settings = array()) {
+
+    $request = new \cURL\Request($url);
+    $request->getOptions()
+            ->set(CURLOPT_TIMEOUT, 10)->set(CURLOPT_RETURNTRANSFER, true);
+
+    if (isset($settings['options'])) {
+        $default = $settings['options'];
+        foreach ($default as $key => $value) {
+            $request->getOptions()->set($key, $value);
+        }
+    }
+
+    //Add the listener
+    $request->addListener('complete', $settings['callback']);
+
+    while ($request->socketPerform()) {
+        $request->socketSelect();
+    }
+}
+
+/**
+ * Processes a URI rquest.
+ * @param string $url
+ * @param array $settings
+ */
+function settings_provider_blocking_http_request($url, $settings = array()) {
+
+    $request = new \cURL\Request($url);
+    $request->getOptions()
+            ->set(CURLOPT_TIMEOUT, 10)
+            ->set(CURLOPT_RETURNTRANSFER, true);
+
+    // Set other request options
+    if (isset($settings['options'])) {
+        $default = $settings['options'];
+        foreach ($default as $key => $value) {
+            $request->getOptions()->set($key, $value);
+        }
+    }
+
+    $response = $request->send();
+    return $response;
+}
