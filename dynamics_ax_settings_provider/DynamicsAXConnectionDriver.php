@@ -291,8 +291,6 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
             , '$top' => $otherOptions['$top']
         ];
 
-        // return [];
-
         $query_string = drupal_http_build_query($invoice_params);
         $url = "{$this->endpoint}/QueryTable/[~]/{$entityBrowser->getInternalName()}?{$query_string}";
 

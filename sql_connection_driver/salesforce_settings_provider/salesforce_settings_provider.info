@@ -1,7 +1,0 @@
-name = Salesforce Settings Provider
-description = Implements a webservice API that can be queried to get certain information about a customer from Dynamics AX.
-configure = admin/config/administration/settings_provider
-dependencies[] = settings_provider
-package = MainOne
-version = 7.x-1.0 
-core = 7.x

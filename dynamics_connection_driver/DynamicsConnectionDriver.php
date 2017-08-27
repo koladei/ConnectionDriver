@@ -191,8 +191,6 @@ class DynamicsConnectionDriver extends MiddlewareConnectionDriver {
             , '$collate' => 0
         ];
 
-        // return [];
-
         $query_string = drupal_http_build_query($invoice_params);
         $url = "{$this->endpoint}/QueryTable/[~]/{$entityBrowser->getInternalName()}?{$query_string}";
 
