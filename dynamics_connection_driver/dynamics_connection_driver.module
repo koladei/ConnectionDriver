@@ -560,7 +560,7 @@ function dynamics_connection_driver__get_entity_definitions() {
                 ]
                 , 'INVOICETXT' => [
                     'preferred_name' => 'InvoiceText'
-                    , 'type' => 'int',
+                    , 'type' => 'string',
                 ]
                 , '_TRANSACTIONS' => [
                     'preferred_name' => 'Transactions'
