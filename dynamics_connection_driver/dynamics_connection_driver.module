@@ -195,6 +195,33 @@ function dynamics_connection_driver__get_entity_definitions() {
                 ]
             ]
         ]
+        , 'paymentterm' => [
+            'internal_name' => 'paymterm'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                ]
+                , 'PAYMTERMID' => [
+                    'preferred_name' => 'PaymentTermId'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'DESCRIPTION' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+            ]
+        ]
         , 'cust_trans' => [
             'internal_name' => 'CustTrans'
             , 'fields' => [
@@ -254,6 +281,10 @@ function dynamics_connection_driver__get_entity_definitions() {
                 , 'CORRECT' => [
                     'preferred_name' => 'IsCorrection'
                     , 'type' => 'int'
+                ]
+                , 'PAYMMETHOD' => [
+                    'preferred_name' => 'PaymentMethod'
+                    , 'type' => 'string'
                 ]
                 , 'OFFSETRECID' => [
                     'preferred_name' => 'OffsetTransaction'
@@ -405,6 +436,17 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'cust_table'
                     ]
                 ]
+                , 'PAYMENT' => [
+                    'preferred_name' => 'PaymentTerms'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'PaymentTerms'
+                        , 'preferred_local_key_name' => 'PaymentTermId'
+                        , 'remote_field' => 'PaymentTermId'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'paymentterm'
+                    ]
+                ]
                 , 'ORDERACCOUNT' => [
                     'preferred_name' => 'OrderAccount'
                     , 'type' => 'string'
@@ -427,6 +469,10 @@ function dynamics_connection_driver__get_entity_definitions() {
                     //     , 'remote_type' => 'parent'
                     //     , 'remote_entity' => 'cust_trans'
                     // ],
+                ]
+                , 'INVOICEREFERENCE' => [
+                    'preferred_name' => 'Reference'
+                    , 'type' => 'string'
                 ]
                 , 'DATAAREAID' => [
                     'preferred_name' => 'DataArea'
