@@ -247,6 +247,9 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
     public function getItemsInternal($entityBrowser, &$connectionToken = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
+        // Deal with field prefix
+        $filter = str_replace('_xENTITYNAME_', '', $filter);
+        
         $retryCount = 0;
 
         // Get the requstToken

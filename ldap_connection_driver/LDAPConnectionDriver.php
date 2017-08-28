@@ -74,15 +74,15 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
 
     public function getItemsInternal($entityBrowser, &$ldapbind = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
 
+        // Remove the field prefix
+        $filter = str_replace('_xENTITYNAME_', '', $filter);
 
         // Try getting the phone number from active directory
         $con = NULL;
         $dn = $this->dn;
 
         // obtain a connection binding.
-        // if (is_null($ldapbind)) {
         $ldapbind = $this->bindTOLDAPServer($con);
-        // }
 
         $limit = isset($otherOptions['$top']) ? $otherOptions['$top'] : 100;
 

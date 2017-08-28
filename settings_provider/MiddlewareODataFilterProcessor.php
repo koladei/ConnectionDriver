@@ -84,7 +84,7 @@ class MiddlewareODataFilterProcessor {
             $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $mat[8], $mat[2], $mat[11], $mat[5], $this->valueContext, $this->stringerType, $this->expressionStringer);
             $expression = self::str_replace_first($mat[0], $key, $expression);
         }
-
+        
         // Integer and Constants comparisons
         $matchs = [];
         preg_match_all('/([\w][\w\d\/]*[^\/])\s+([\w]{2})\s+(([\d]+(\.[\d]+)?)|(\$[\w]+\$))/', $expression, $matchs, PREG_SET_ORDER);
@@ -93,6 +93,17 @@ class MiddlewareODataFilterProcessor {
             $place = count($this->fragments);
             $key = "#{$place}#";
             $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $mat[3], $mat[2], '', '', $this->valueContext, $this->stringerType, $this->expressionStringer);
+            $expression = self::str_replace_first($mat[0], $key, $expression);
+        }               
+
+        // Field to field comparisons
+        $matchs = [];
+        preg_match_all('/([\w][\w\d\/]*[^\/])\s+([\w]{2})\s+(([\-])?[\w\d\_]+)/', $expression, $matchs, PREG_SET_ORDER);
+
+        foreach ($matchs as $mat) {
+            $place = count($this->fragments);
+            $key = "#{$place}#";
+            $this->fragments[$key] = new MiddlewareFilter($entityDefinition, $mat[1], $mat[3], $mat[2], '', 'field', $this->valueContext, $this->stringerType, $this->expressionStringer);
             $expression = self::str_replace_first($mat[0], $key, $expression);
         }
 

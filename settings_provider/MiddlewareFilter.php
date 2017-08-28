@@ -19,6 +19,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
     private $ors = [];
     private $ands = [];
     private $processor = NULL;
+    private $entityDefinition = NULL;
 
     const EQUAL_TO = 'eq';
     const LESS_THAN = 'lt';
@@ -33,7 +34,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
     public function __construct(EntityDefinitionBrowser $entityDefinition = NULL, $field, $value, $operator = EQUAL_TO, $quote = '', $formater = '', $context = NULL, $behaviour = self::DEFAULT_STRINGER, callable $stringer = NULL) {
         parent::__construct($behaviour, $stringer);
-        // var_dump($field, $value, $operator, $quote);
+        $this->entityDefinition = $entityDefinition;
 
         if ($operator == self::IN) {
             if (!is_array($value)) {
@@ -49,6 +50,9 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
         if ($formater == 'datetime') {
             $this->value = $this->getDateTime($value);
+        } else if ($formater == 'field') {
+            // Get the field
+            $this->value = $this->getField($value);
         } else if (is_string($value) && strtolower($value) == '$now$') {
             $this->value = new \DateTime();
             $this->quote = '\'';
@@ -67,7 +71,6 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         $this->operator = strtolower($operator);
 
         if (is_null($fieldInfo)) {
-            // var_dump($fieldInfo);
             $this->quote = (strlen($quote) > 0) ? '\'' : '';
         } else {
             if (!is_null($this->value)) {
@@ -120,7 +123,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             return "{$this->quote}{$this->value}{$this->quote}";
         }
     }
-
+    
     private function getDateTime($value) {
         $type_1 = '/^(([\d]{4})\-([\d]{2})\-([\d]{2})(T([\d]{2})\:([\d]{2})(\:([\d]{2}))?)?)$/';
         $type_2 = '/^(([\d]{4})\-([\d]{2})\-([\d]{2})(T([\d]{2})\:([\d]{2})))$/';
@@ -135,6 +138,19 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         }
 
         throw new \Exception("The time format is not known. Class MiddlewareFilter {$value}");
+    }
+    
+    private function getField($field) {
+        $fieldInfo = NULL;
+        $sign = substr($field, 0, 1);
+        
+        if(($sign == '-') || ($sign == '+')){
+            $fieldInfo = $this->entityDefinition->getFieldByDisplayName(substr($field, 1));
+            return "{$sign}(_xENTITYNAME_{$fieldInfo->getInternalName()})";
+        } else {
+            $fieldInfo = $this->entityDefinition->getFieldByDisplayName($field);
+            return "_xENTITYNAME_{$fieldInfo->getInternalName()}";
+        }
     }
 
     // $processor(MiddlewareFilter $e);

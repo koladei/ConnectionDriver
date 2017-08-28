@@ -285,6 +285,7 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
     public function getItemsInternal($entityBrowser, &$connection_token = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
+        $filter = str_replace('_xENTITYNAME_', '', $filter);
         $invoice_params = [
             '$filter' => $filter
             , '$select' => implode(',', $select)
@@ -309,8 +310,6 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
         
         $z = new DynamicsAXEntityCollection();
         if (is_object($res) && property_exists($res, 'd')) {
-        // var_dump($filter);
-        // var_dump($res->Logging);
 
             foreach ($res->d as $a => $b) {
                 $z[$a] = $b;

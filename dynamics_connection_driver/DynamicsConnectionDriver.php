@@ -184,6 +184,7 @@ class DynamicsConnectionDriver extends MiddlewareConnectionDriver {
     public function getItemsInternal($entityBrowser, &$connection_token = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 
+        $filter = str_replace('_xENTITYNAME_', 'axTbl_0.', $filter);
         $invoice_params = [
             '$filter' => $filter
             , '$select' => implode(',', $select)
@@ -191,6 +192,7 @@ class DynamicsConnectionDriver extends MiddlewareConnectionDriver {
             , '$collate' => 0
         ];
 
+        // echo $filter;
         $query_string = drupal_http_build_query($invoice_params);
         $url = "{$this->endpoint}/QueryTable/[~]/{$entityBrowser->getInternalName()}?{$query_string}";
 
