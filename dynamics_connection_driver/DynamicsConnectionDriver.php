@@ -58,8 +58,8 @@ class DynamicsConnectionDriver extends MiddlewareConnectionDriver {
     public function getItemById($entityBrowser, $id, $select, $expands = '', $otherOptions = []) {
 
         $return = parent::getItemById(... func_get_args());
-        if (!is_null($return) && count($return > 0)) {
-            return $return[0];
+        if (!is_null($return)) {
+            return $return;
         }
         return NULL;
     }
