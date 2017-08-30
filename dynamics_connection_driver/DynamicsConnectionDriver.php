@@ -188,7 +188,8 @@ class DynamicsConnectionDriver extends MiddlewareConnectionDriver {
         $invoice_params = [
             '$filter' => $filter
             , '$select' => implode(',', $select)
-            , '$top' => $otherOptions['$top']
+            , '$top' => $otherOptions['$pageSize']
+            , '$skip' => ($otherOptions['$pageSize'] * $otherOptions['$pageNumber']) + $otherOptions['$skip']
             , '$collate' => 0
         ];
 
