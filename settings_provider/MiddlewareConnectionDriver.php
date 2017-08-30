@@ -417,18 +417,18 @@ abstract class MiddlewareConnectionDriver {
             $otherOptions['$top'] = $top < 1 ? 100 : $top;
         }
 
-        if (!isset($otherOptions['$skip'])) {
-            $otherOptions['$skip'] = 0;
-        } else {
-            $skip = intval($otherOptions['$skip']);
-            $otherOptions['$skip'] = $skip < 0 ? 0 : $skip;
-        }
-
         if (!isset($otherOptions['$pageNumber'])) {
             $otherOptions['$pageNumber'] = 1;
         } else {
             $pageNumber = intval($otherOptions['$pageNumber']);
             $otherOptions['$pageNumber'] = $pageNumber < 1 ? 1 : $pageNumber;
+        }
+        
+        if (!isset($otherOptions['$skip'])) {
+            $otherOptions['$skip'] = 0;
+        } else {
+            $skip = intval($otherOptions['$skip']);
+            $otherOptions['$skip'] = $skip < 0 ? 0 : $skip;
         }
 
         if (!isset($otherOptions['$pageSize'])) {
