@@ -11,7 +11,7 @@ function data_dictionary_driver_connection_driver_data_dictionary_alter(&$contai
     $driver = new DataDictionaryDriver(function($x) {
         $return = mware_connection_driver__get_driver($x);
         return $return;
-    });
+    }, function(){}, 'data_dictionary');
 
     $defs = data_dictionary_driver__get_entity_definitions();
     $driver->setEntities($defs);

@@ -20,8 +20,8 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
      * @param callable $driverLoader A callable reference that can be used to retrieve data that can be found in other connnection driver instances.
      * @param callable $sourceLoader A callable reference that can be used to load data from various named connections within the current driver.
      */
-    public function __construct(callable $driverLoader, callable $sourceLoader) {
-        parent::__construct($driverLoader, $sourceLoader);
+    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier = __CLASS__) {
+        parent::__construct($driverLoader, $sourceLoader, $identifier);
     }
 
     /**
@@ -152,16 +152,18 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             }   
 
             // Convert the object to an array
+            $obj = $entityBrowser->reverseRenameFields($obj); 
             $obj = get_object_vars($obj);
 
             // Get the fields to be updated.
             $updatedFieldNames = array_keys($obj);
 
             $idField = $entityBrowser->getIdField();
-            $updatedFields = $entityBrowser->getFieldsByDisplayNames($updatedFieldNames);
+            $updatedFields = $entityBrowser->getFieldsByInternalNames($updatedFieldNames);
 
             // Prepare the query
             try {
+                
                 $pdo = new \PDO($connectionToken->DSN, $connectionToken->Username, $connectionToken->Password);
                 $pdo->exec('SET CHARACTER SET utf8');
                 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -175,12 +177,12 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 $sets = implode(',', $sets);
                 $xets = implode(',', $xetz);
 
-                $sql = "INSERT INTO {$entityBrowser->getInternalName()}({$sets}) VALUES({$xets});";
+                $sql = "INSERT INTO {$entityBrowser->getInternalName()}({$sets}) VALUES({$xets})";
 
                 $statement = $pdo->prepare($sql);
 
                 foreach($updatedFields as $updatedField) {                    
-                    $val = $obj["{$updatedField->getDisplayName()}"];
+                    $val = $obj["{$updatedField->getInternalName()}"];
                     
                     if(is_null($val)){
                         $val = 'NULL';
@@ -199,13 +201,18 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                     $statement->bindValue(":{$updatedField->getInternalName()}", $val);
                 }
 
-                // Execute the update
-                $retu = $statement->execute();
-                 
-                $d = new \stdClass();
-                $d->d = $pdo->lastInsertId();
-                $d->success = TRUE;
-                return $d;
+                try {
+                    // Execute the update
+                    $retu = $statement->execute();
+                    
+                    $d = new \stdClass();
+                    $d->d = $pdo->lastInsertId();
+                    $d->success = TRUE;
+                    return $d;
+                }  catch (\Exception $e) {
+                    $info = print_r($statement->errorInfo(), true);
+                    throw new \Exception("Error: {$e->getMessage()} | {$info}");
+                }
 
             } catch (\Exception $e) {
                 throw new \Exception('Connection failed: ' . $e->getMessage());
@@ -296,6 +303,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 $occurence = ' WHERE OCCURENCE = 1 ';
             }
 
+            // Determin the record to start from based on the $pageSize and $pageNumber;
             $start = ($pageSize * ($pageNumber - 1)) + 1 + $skip;
             $end = $start + $pageSize;
 
@@ -324,6 +332,8 @@ QRY;
                 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 $stmt = $pdo->query($query_url);
                 $rs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                
 
                 return array_values($rs);
             } catch (\Exception $e) {

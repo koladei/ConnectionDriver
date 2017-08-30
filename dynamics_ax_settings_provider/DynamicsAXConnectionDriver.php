@@ -15,8 +15,8 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
     private $endpoint;
 
-    public function __construct(callable $driverLoader, $endpoint = '') {
-        parent::__construct($driverLoader);
+    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier = __CLASS__, $endpoint = '') {
+        parent::__construct($driverLoader, $sourceLoader, $identifier);
 
         $this->endpoint = $endpoint;
     }

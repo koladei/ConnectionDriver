@@ -158,10 +158,13 @@ class EntityFieldDefinition {
 
     public function isMany() {
         switch ($this->getForeignEntityRelationship()) {
-            case 'child': {
+            case 'child':
+            case '1:n': {
                     return true;
                 }
             case 'parent':
+            case '1:1':
+            case 'sibling':
             default: {
                     return false;
                 }

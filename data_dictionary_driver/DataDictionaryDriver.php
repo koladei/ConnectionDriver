@@ -15,8 +15,8 @@ class DataDictionaryDriver extends MiddlewareConnectionDriver {
 
     private $endpoint;
 
-    public function __construct(callable $driverLoader, $endpoint = 'http://molsptest:82/drp/CPortalService.svc/QueryTable/[~]') {
-        parent::__construct($driverLoader);
+    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier = __CLASS__, $endpoint = 'http://molsptest:82/drp/CPortalService.svc/QueryTable/[~]') {
+        parent::__construct($driverLoader, $sourceLoader, $identifier);
 
         $this->endpoint = $endpoint;
     }

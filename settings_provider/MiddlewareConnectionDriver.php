@@ -24,6 +24,7 @@ abstract class MiddlewareConnectionDriver {
     protected $connectionToken = NULL;
     protected $maxRetries = 50;    
     protected $sourceLoader = NULL;
+    protected $loadedDrivers = [];
 
     public abstract function getItemsInternal($entityBrowser, &$connection_token = NULL, array $select, $filter, $expands = [], $otherOptions = []);
 
@@ -37,9 +38,10 @@ abstract class MiddlewareConnectionDriver {
     
     public abstract function getStringer();
 
-    public function __construct(callable $driverLoader, callable $sourceLoader = NULL) {
+    public function __construct(callable $driverLoader, callable $sourceLoader = NULL, $identifier = __CLASS__) {
         $this->driverLoader = $driverLoader;
         $this->sourceLoader = $sourceLoader;
+        $this->loadedDrivers[$identifier] = &$this;
     }
     
     /**
@@ -396,7 +398,6 @@ abstract class MiddlewareConnectionDriver {
      * @return void
      */
     public function getItems($entityBrowser, $fields, $filter, $expandeds = '', $otherOptions = [], &$performance = []) {
-        
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
         if(is_null($entityBrowser)){
             throw new \Exception('Invalid entity could not be found.');

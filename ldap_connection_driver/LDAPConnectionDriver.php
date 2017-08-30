@@ -21,8 +21,8 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
     private $password = '';
     private $dn = '';
 
-    public function __construct(callable $driverLoader, $host, $protocol, $port = 636, $username = '', $password = '', $dn = '') {
-        parent::__construct($driverLoader);
+    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier = __CLASS__, $host, $protocol, $port = 636, $username = '', $password = '', $dn = '') {
+        parent::__construct($driverLoader, $sourceLoader, $identifier);
 
         $this->host = $host;
         $this->protocol = $protocol;

@@ -20,7 +20,7 @@ function salesforce_settings_provider_connection_driver_salesforce_alter(&$conta
     $connection_settings = salesforce_settings_provider__get_settings();
     $driver = new SalesforceConnectionDriver(function($x) {
         return mware_connection_driver__get_driver($x);
-    }, $connection_settings);
+    }, function(){}, 'salesforce', $connection_settings);
 
     $defs = salesforce_settings_provider__get_entity_definitions();
     $driver->setEntities($defs);

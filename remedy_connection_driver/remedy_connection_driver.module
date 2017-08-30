@@ -23,7 +23,7 @@ function remedy_connection_driver_connection_driver_bmc_remedy_alter(&$container
     $connection_settings = remedy_connection_driver__get_settings();
     $driver = new BMCRemedyConnectionDriver(function($x) {
         return mware_connection_driver__get_driver($x);
-    }, $connection_settings);
+    }, function(){}, 'bmc_remedy', $connection_settings);
 
     $defs = remedy_connection_driver__get_entity_definitions();
     $driver->setEntities($defs);

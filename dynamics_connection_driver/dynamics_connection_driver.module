@@ -11,7 +11,7 @@ function dynamics_connection_driver_connection_driver_dynamics_alter(&$container
     $driver = new DynamicsConnectionDriver(function($x) {
         $return = mware_connection_driver__get_driver($x);
         return $return;
-    }, variable_get('DYNAMICS_AX_SETTINGS_ENDPOINT_URL'));
+    }, function(){}, 'dynamics', variable_get('DYNAMICS_AX_SETTINGS_ENDPOINT_URL'));
 
     $defs = dynamics_connection_driver__get_entity_definitions();
     $driver->setEntities($defs);

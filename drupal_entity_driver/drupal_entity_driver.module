@@ -11,11 +11,11 @@ function drupal_entity_driver_connection_driver_data_dictionary_alter(&$containe
     $driver = new DrupalEntityDriver(function($x) {
         $return = mware_connection_driver__get_driver($x);
         return $return;
-    });
+    }, function(){}, 'drupal');
 
     $defs = drupal_entity_driver__get_entity_definitions();
     $driver->setEntities($defs);
-    $container['data_dictionary'] = $driver;
+    $container['drupal'] = $driver;
 }
 
 /**

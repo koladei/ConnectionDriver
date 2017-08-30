@@ -20,8 +20,8 @@ class CachedDataConnectionDriver extends MiddlewareConnectionDriver {
      * @param callable $driverLoader A callable reference that can be used to retrieve data that can be found in other connnection driver instances.
      * @param callable $sourceLoader A callable reference that can be used to load data from various named connections within the current driver.
      */
-    public function __construct(callable $driverLoader, callable $sourceLoader) {
-        parent::__construct($driverLoader, $sourceLoader);
+    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier = __CLASS__) {
+        parent::__construct($driverLoader, $sourceLoader, $identifier);
     }
 
     /**

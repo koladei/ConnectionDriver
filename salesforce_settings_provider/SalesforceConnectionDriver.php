@@ -15,8 +15,8 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
     private $connection_settings;
 
-    public function __construct(callable $driverLoader, $connection_settings) {
-        parent::__construct($driverLoader);
+    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier, $connection_settings) {
+        parent::__construct($driverLoader, $sourceLoader, $identifier);
 
         $this->connection_settings = $connection_settings;
     }

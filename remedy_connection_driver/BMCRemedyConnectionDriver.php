@@ -13,8 +13,8 @@ use com\mainone\middleware\EntityDefinitionBrowser;
  */
 class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
 
-    public function __construct(callable $driverLoader, $connection_settings) {
-        parent::__construct($driverLoader);
+    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier = __CLASS__, $connection_settings) {
+        parent::__construct($driverLoader, $sourceLoader, $identifier);
 
         $this->connection_settings = $connection_settings;
     }

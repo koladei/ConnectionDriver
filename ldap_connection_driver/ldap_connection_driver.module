@@ -17,7 +17,7 @@ function ldap_connection_driver_connection_driver_ldap_alter(&$container) {
 
     $driver = new LDAPConnectionDriver(function($x){
         return mware_connection_driver__get_driver($x);
-    }, $host, $protocol, $port, $username, $password, $dn);
+    }, function(){}, 'ldap', $host, $protocol, $port, $username, $password, $dn);
 
     $defs = ldap_connection_driver__get_entity_definitions();
     $driver->setEntities($defs);

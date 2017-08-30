@@ -124,7 +124,7 @@ class EntityDefinitionBrowser {
         $internalName = $fieldDef->getInternalName(FALSE);
         $this->fieldsByInternalName[$internalName] = $fieldDef;
         $this->fieldsByDisplayName[$fieldDef->getDisplayName()] = &$this->fieldsByInternalName[$internalName];
-        if (isset($field['mandatory']) && ($field['mandatory'] == 1 || $field['mandatory'] == 1)) {
+        if (isset($field['mandatory']) && ($field['mandatory'] == 1 || $field['mandatory'] == TRUE)) {
             if ($fieldDef->isExpandable()) {
                 if (!in_array($fieldDef->getRelatedLocalFieldName(), $this->mandatoryFields))
                     $this->mandatoryFields[] = $fieldDef->getRelatedLocalFieldName();
