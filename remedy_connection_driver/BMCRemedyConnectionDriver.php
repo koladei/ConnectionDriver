@@ -149,8 +149,8 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 // var_dump($otherOptions);
 
                 $getListInputMap->Qualification = "{$filter}";
-                $getListInputMap->maxLimit = $otherOptions['$top'];
-                $getListInputMap->startRecord = $otherOptions['$skip'];
+                $getListInputMap->maxLimit = $otherOptions['$pageSize'];
+                $getListInputMap->startRecord = ($otherOptions['$pageSize'] * $otherOptions['$pageNumber']) + $otherOptions['$skip'];
                 if(isset($otherOptions['$all'])) {
                     $getListInputMap->maxLimit = '';
                 }
