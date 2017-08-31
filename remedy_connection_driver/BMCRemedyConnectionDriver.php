@@ -145,25 +145,20 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 $client->__setSoapHeaders($header);
                 $getListInputMap = new \stdClass();
                 
-                // echo $filter;
-                // var_dump($otherOptions);
-
                 $getListInputMap->Qualification = "{$filter}";
                 $getListInputMap->maxLimit = $otherOptions['$pageSize'];
-                $getListInputMap->startRecord = ($otherOptions['$pageSize'] * $otherOptions['$pageNumber']) + $otherOptions['$skip'];
+                $getListInputMap->startRecord = ($otherOptions['$pageSize'] * ($otherOptions['$pageNumber'] - 1)) + $otherOptions['$skip'];
                 if(isset($otherOptions['$all'])) {
                     $getListInputMap->maxLimit = '';
                 }
-                // var_dump($getListInputMap);
-
+                
                 //execute the query
                 try {
                     //get the result
                     $ld = $client->{$methods->query}($getListInputMap);
                               
-                    $return = (intval($otherOptions['$top']) < 2) ? [$ld->getListValues]:(is_array($ld->getListValues)?$ld->getListValues:[$ld->getListValues]);
+                    $return = (intval($otherOptions['$pageSize']) < 2) ? [$ld->getListValues]:(is_array($ld->getListValues)?$ld->getListValues:[$ld->getListValues]);
                     
-                    // var_dump($return);
                     return $return;              
                 } catch (\SoapFault $sf) {
                     if(trim($sf->getMessage()) == 'ERROR (302): Entry does not exist in database;'){
