@@ -708,7 +708,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                         'local_field' => 'Id'
                         , 'remote_field' => 'Account'
                         , 'remote_type' => 'child'
-                        , 'remote_entity' => 'salesforce__customer_product'
+                        , 'remote_entity' => 'customer_product'
                     ],
                 ]
                 , '_CashInflows' => [
