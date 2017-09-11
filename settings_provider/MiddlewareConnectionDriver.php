@@ -549,7 +549,7 @@ abstract class MiddlewareConnectionDriver {
         $select = array_unique($entityBrowser->getFieldInternalNames($select));
         $dateFields = $entityBrowser->getFieldsOfTypeByInternalName(['date', 'datetime'], $select);
 
-        $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, "{$filterExpression}", $expands, $otherOptions);
+        $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, EncoderDecoder::unescapeall("{$filterExpression}"), $expands, $otherOptions);
 
         if (!is_null($result)) {
             $select_map = $entityBrowser->getFieldsByInternalNames($select);
