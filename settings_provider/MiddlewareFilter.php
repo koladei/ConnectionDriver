@@ -4,9 +4,11 @@ namespace com\mainone\middleware;
 
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/MiddlewareFilterBase.php');
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EntityDefinitionBrowser.php');
+include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EncoderDecoder.php');
 
 use com\mainone\middleware\MiddlewareFilterBase;
 use com\mainone\middleware\EntityDefinitionBrowser;
+use com\mainone\middleware\EncoderDecoder;
 
 class MiddlewareFilter extends MiddlewareFilterBase {
 
@@ -79,7 +81,6 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 } else if ($fieldInfo->getDataType() != 'int' && strlen($this->quoteValue()) < 1) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} requires that it's values be quoted. {$value}");
                 } else if (($fieldInfo->getDataType() != 'int' && strlen($this->quote) > 1) || ($fieldInfo->getDataType() != 'int' && ($this->quote != '"' && $this->quote != '\''))) {
-                    
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} only supports qoutes of type ''' or '\"'.");
                 } else {
                     $this->quote = (strlen($this->quote) > 0) ? '\'' : '';
@@ -88,13 +89,19 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         }
     }
 
+    private function unescapeSpecialCharacters($value){
+        return str_replace(['_y0028_','_y0029_', '_y0027_'], ['\(', '\)', "\'"], $value);
+    }
+
     private function quoteValue() {
         // Implement checking if field is meant to be a string or otherwise
         $backslash = '\\';
         if (is_array($this->value)) {
             // $im = implode("{$this->quote},{$this->quote}", $this->value);
             $im = implode("_x0027_,_x0027_", $this->value);
-            $im = str_replace("{$this->quote}", "{$backslash}{$this->quote}", $im);
+            // $im = str_replace("{$this->quote}", "{$backslash}{$this->quote}", $im);
+            // $im = str_replace("{$this->quote}", "_y0027_", $im);
+            // $im = EncoderDecoder::
             $im = str_replace("_x0027_", "{$this->quote}", $im);
 
             return "{$this->quote}{$im}{$this->quote}";
@@ -103,7 +110,8 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         } else {
             $return = "_x0027_{$this->value}_x0027_";
             $return = str_replace("{$this->quote}", "{$backslash}{$this->quote}", $return);
-            $return = str_replace("_x0027_", "{$this->quote}", $return);
+            // $return = str_replace("{$this->quote}", "_y0027_", $return);
+            // $return = str_replace("_x0027_", "{$this->quote}", $return);
             // $return = "{$this->quote}{$this->value}{$this->quote}";
 
             return $return;
@@ -232,6 +240,8 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 }
         }
 
+        $ret = EncoderDecoder::unescape($ret);
+
         return $ret;
     }
 
@@ -262,6 +272,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                     $ret = "{$this->field} {$this->operator} {$value}";
                 }
         }
+        $ret = EncoderDecoder::unescape($ret);
 
         return $ret;
     }
@@ -321,6 +332,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                     throw new \Exception('Unknown query operand encountered.');
                 }
         }
+        $ret = EncoderDecoder::unescape($ret);
 
         return $ret;
     }
@@ -390,6 +402,9 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 }
         }
 
+        // Restore excaped quotes
+        $ret = EncoderDecoder::unescape($ret);
+
         return $ret;
     }
 
@@ -451,6 +466,8 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 }
         }
 
+        // Restore excaped quotes
+        $ret = EncoderDecoder::unescape($ret);
         return $ret;
     }
 
@@ -503,6 +520,8 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 }
         }
 
+        // Restore excaped quotes
+        $ret = EncoderDecoder::unescape($ret);
         return $ret;
     }
 

@@ -5,10 +5,12 @@ namespace com\mainone\middleware;
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/MiddlewareFilter.php');
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/MiddlewareODataFilterProcessor.php');
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EntityDefinitionBrowser.php');
+include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EncoderDecoder.php');
 
 use com\mainone\middleware\MiddlewareFilter;
 use com\mainone\middleware\MiddlewareODataFilterProcessor;
 use com\mainone\middleware\EntityDefinitionBrowser;
+use com\mainone\middleware\EncoderDecoder;
 
 /**
  * Description of MiddlewareConnectionDriver
@@ -239,7 +241,8 @@ abstract class MiddlewareConnectionDriver {
                 }
             default: {
                     $implosion = implode("_x0027_,_x0027_", $values);
-                    $implosion = str_replace("'", "{$backslash}'", $implosion);
+                    // $implosion = str_replace("'", "{$backslash}'", $implosion);str_replace(['(', ')', "'"], ['_y0028_','_y0029_', '_y0027_'], $expression);
+                    $implosion = EncoderDecoder::escape($implosion);//str_replace(['(', ')', "'"], ['_y0028_','_y0029_', '_y0027_'], $implosion);
                     $implosion = str_replace("_x0027_", "'", $implosion);
 
                     // $implosion = implode('\',\'', $values);
@@ -636,7 +639,8 @@ abstract class MiddlewareConnectionDriver {
     }
 
     public function fetchFieldValues($record, $selected_field) {
-        return [$record->{$selected_field}];
+        $value = EncoderDecoder::escapeinner($record->{$selected_field});
+        return [$value];
     }
 
     public function addExpansionToRecord($entity, &$record, EntityFieldDefinition $fieldInfo, $vals) {

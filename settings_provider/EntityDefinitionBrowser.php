@@ -4,9 +4,11 @@ namespace com\mainone\middleware;
 
 include_once 'EntityFieldDefinition.php';
 include_once 'MiddlewareConnectionDriver.php';
+include_once 'EncoderDecoder.php';
 
 use com\mainone\middleware\EntityFieldDefinition;
 use com\mainone\middleware\MiddlewareConnectionDriver;
+use com\mainone\middleware\EncoderDecoder;
 
 /**
  * Description of EntityDefinitionBrowser
@@ -380,7 +382,6 @@ class EntityDefinitionBrowser {
         $matched = [];
 
         foreach($fields as $field){
-            // var_dump($field);
             if(in_array($field->getDataType(), $typeNames)){
                 $matched[] = $field;
             }
@@ -443,7 +444,8 @@ class EntityDefinitionBrowser {
             $r = [];
 
             if (is_object($record) && property_exists($record, $selected_field) && !is_null($record->{$selected_field})) {
-                $r[] = "{$record->{$selected_field}}";
+                $v = "{$record->{$selected_field}}";
+                $r[] = EncoderDecoder::escapeinner($v);
             }
 
             return $r;

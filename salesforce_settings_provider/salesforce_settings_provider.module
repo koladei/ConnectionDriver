@@ -400,6 +400,18 @@ function salesforce_settings_provider__get_entity_definitions() {
                     'preferred_name' => 'AuxiliaryCircuitID'
                     , 'type' => 'string'
                 ]
+                , 'Service_Account_ID__c' => [
+                    'preferred_name' => 'ServiceAccountId'
+                    , 'type' => 'string'
+                    // , 'relationship' => [
+                    //     'local_field' => 'ServiceAccount'
+                    //     , 'preferred_local_key_name' => 'ServiceAccountId'
+                    //     , 'remote_field' => 'Id'
+                    //     , 'remote_type' => 'parent'
+                    //     , 'remote_entity' => 'account'
+                    //     , 'remote_driver' => 'bmc_remedy'
+                    // ]
+                ]
                 , 'Status__c' => [
                     'preferred_name' => 'Status'
                     , 'type' => 'string'
