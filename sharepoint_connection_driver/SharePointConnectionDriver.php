@@ -11,7 +11,7 @@ use com\mainone\middleware\EntityDefinitionBrowser;
  *
  * @author Kolade.Ige
  */
-class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
+class SharePointConnectionDriver extends MiddlewareConnectionDriver {
 
     private $connection_settings;
 
@@ -90,7 +90,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             if (is_array($res)) {
                 throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else if (is_null($res)) {
-                throw new \Exception('Something went wrong. Communication with Salesforce failed.');
+                throw new \Exception('Something went wrong. Communication with SharePoint failed.');
             } else {
                 $d = new \stdClass();
                 $d->d = $res->id;
@@ -98,7 +98,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 return $d;
             }
         } else {
-            throw new \Exception('Unable to connect to Salesforce');
+            throw new \Exception('Unable to connect to SharePoint');
         }
     }
 
@@ -149,7 +149,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
             $content = $response->getContent();
 
-            // Salesforce does return anything on successful update, something is wrong.
+            // SharePoint does return anything on successful update, something is wrong.
             if (strlen($content) > 0) {
                 // Process the request
                 $res = json_decode($content);
@@ -160,7 +160,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             $selectFields = array_keys(get_object_vars($object));
             return $this->getItemById($entityBrowser, $id, $selectFields);
         } else {
-            throw new \Exception('Unable to connect to Salesforce');
+            throw new \Exception('Unable to connect to SharePoint');
         }
     }
 
@@ -210,7 +210,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             if (is_array($res)) {
                 throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else if (is_null($res)) {
-                throw new \Exception('Something went wrong. Communication with Salesforce failed.');
+                throw new \Exception('Something went wrong. Communication with SharePoint failed.');
             } else {
                 $d = new \stdClass();
                 $d->d = $res->id;
@@ -218,7 +218,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 return $d;
             }
         } else {
-            throw new \Exception('Unable to connect to Salesforce');
+            throw new \Exception('Unable to connect to SharePoint');
         }
     }
 
@@ -300,10 +300,10 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             if (is_object($res) && property_exists($res, 'records')) {
                 return $res->records;
             } else {
-                throw new \Exception("An empty response was received from Salesforce. Please retry later. {$query_url}\n{$content}");
+                throw new \Exception("An empty response was received from SharePoint. Please retry later. {$query_url}\n{$content}");
             }
         } else {
-            throw new \Exception('Unable to connect to Salesforce');
+            throw new \Exception('Unable to connect to SharePoint');
         }
     }
 
@@ -320,51 +320,9 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
      * @return boolean
      */
     private function getConnectionToken() {
-        // $t = self::retrieveValue('SF_access_token', $token_response);
-        // var_dump($t);
-
         try {
             $sf_settings = $this->connection_settings;
-            $uri = $sf_settings->URL;
-            $query_array = [
-                'grant_type' => $sf_settings->GrantType,
-                'client_id' => $sf_settings->ClientID,
-                'client_secret' => $sf_settings->ClientSecret,
-                'username' => $sf_settings->Username,
-                'password' => $sf_settings->Password
-            ];
-
-            $query_string = (drupal_http_build_query($query_array));
-
-            $tokenOption = [
-                CURLOPT_HTTPHEADER => array('Content-Type: application/x-www-form-urlencoded')
-                , CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
-                , CURLOPT_PROTOCOLS => CURLPROTO_HTTPS
-                , CURLOPT_SSL_VERIFYPEER => FALSE
-                , CURLOPT_SSL_VERIFYHOST => 0
-                , CURLOPT_FOLLOWLOCATION => TRUE
-                , CURLOPT_HTTPPROXYTUNNEL => TRUE
-                , CURLOPT_VERBOSE => TRUE
-                , CURLOPT_POSTFIELDS => $query_string
-            ];
-
-            if ($sf_settings->UseProxyServer) {
-                $tokenOption[CURLOPT_PROXY] = $sf_settings->ProxyServer;
-                $tokenOption[CURLOPT_PROXYPORT] = $sf_settings->ProxyServerPort;
-                //$tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
-            }
-
-            $feed = mware_blocking_http_request($uri, ['options' => $tokenOption, 'block' => true]);
-            $token_response = json_decode($feed->getContent());
-
-
-            if(!is_null($token_response) && property_exists($token_response, 'access_token')){
-                $token_response->ConnectionParameters = $sf_settings;
-                self::storeValue('SF_access_token', $token_response);
-                return $token_response;
-            } else {
-                return FALSE;
-            }
+            return $sf_settings;
         } catch (Exception $x) {
             return FALSE;
         }

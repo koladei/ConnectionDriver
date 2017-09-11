@@ -1,0 +1,198 @@
+<?php
+
+module_load_include('module', 'settings_provider');
+$module_path = drupal_get_path('module', 'sharepoint_connection_driver');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/SharePointConnectionDriver.php');
+
+use com\mainone\middleware\SharePointConnectionDriver;
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function sharepoint_connection_driver_permission() {
+    $permission = [];
+    return $permission;
+}
+
+function sharepoint_connection_driver_connection_driver_sharepoint_alter(&$container) {
+    $connection_settings = sharepoint_connection_driver__get_settings();
+    $driver = new SharePointConnectionDriver(function($x) {
+        return mware_connection_driver__get_driver($x);
+    }, function(){}, 'sharepoint', $connection_settings);
+
+    $defs = sharepoint_connection_driver__get_entity_definitions();
+    $driver->setEntities($defs);
+    $container['sharepoint'] = $driver;
+}
+
+function sharepoint_connection_driver__user_access($args) {
+    return true;
+}
+
+/**
+ * Returns the connection settings with which to connect to sharepoint.
+ * @return \stdClass
+ */
+function sharepoint_connection_driver__get_settings($settings = 'default') {
+    $s = new stdClass();
+    $sT = $settings == 'default' ? variable_get('SHAREPOINT_SETTINGS_USE_PRODUCTION', FALSE) : ($settings == 'production' ? TRUE : FALSE);
+
+    if ($sT == FALSE) {
+        $s->URL = variable_get('SHAREPOINT_SANDBOX_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('SHAREPOINT_SANDBOX_SETTINGS_USERNAME');
+        $s->Password = variable_get('SHAREPOINT_SANDBOX_SETTINGS_PASSWORD');
+        $s->GrantType = variable_get('SHAREPOINT_SANDBOX_SETTINGS_GRANT_TYPE');
+        $s->ClientID = variable_get('SHAREPOINT_SANDBOX_SETTINGS_CLIENT_ID');
+        $s->ClientSecret = variable_get('SHAREPOINT_SANDBOX_SETTINGS_CLIENT_SECRET');
+        $s->ProxyServer = variable_get('SHAREPOINT_PROXY_SERVER');
+        $s->ProxyServerPort = variable_get('SHAREPOINT_PROXY_SERVER_PORT');
+        $s->UseProxyServer = variable_get('SHAREPOINT_SANDBOX_SETTINGS_USE_PROXY');
+    } else {
+        $s->URL = variable_get('SHAREPOINT_SETTINGS_ENDPOINT_URL');
+        $s->Username = variable_get('SHAREPOINT_SETTINGS_USERNAME');
+        $s->Password = variable_get('SHAREPOINT_SETTINGS_PASSWORD');
+        $s->GrantType = variable_get('SHAREPOINT_SETTINGS_GRANT_TYPE');
+        $s->ClientID = variable_get('SHAREPOINT_SETTINGS_CLIENT_ID');
+        $s->ClientSecret = variable_get('SHAREPOINT_SETTINGS_CLIENT_SECRET');
+        $s->ProxyServer = variable_get('SHAREPOINT_PROXY_SERVER');
+        $s->ProxyServerPort = variable_get('SHAREPOINT_PROXY_SERVER_PORT');
+        $s->UseProxyServer = variable_get('SHAREPOINT_SETTINGS_USE_PROXY');
+    }
+
+    return $s;
+}
+
+/**
+ * Returns entity definitions that have been marked as cacheable to the specified entity.
+ *
+ * @param String $targetDriver the connection driver to use to retrieve the cache.
+ * @return void
+ */
+function sharepoint_connection_driver__get_cached_entity_definitions($targetDriver){
+    $entities = sharepoint_connection_driver__get_entity_definitions();
+    $return = [];
+
+    foreach($entities as $entity_name => $entity){
+        if(isset($entity['cache_to']) && $entity['cache_to'] == $targetDriver){
+            //TODO: Ensure that values that were ommitted are populated.
+            $fields = &$entity['fields'];
+            $name = "sharepoint__{$entity_name}";
+            $entity['internal_name'] = $name;
+            $return[$name] = $entity;
+        }
+    }
+
+    return $return;
+}
+
+/**
+ * Returns entity definitions that have been marked as cacheable to the specified entity.
+ *
+ * @param String $targetDriver the connection driver to use to retrieve the cache.
+ * @return void
+ */
+function sharepoint_connection_driver__get_cached_entity_definitions2(){
+    $entities = sharepoint_connection_driver__get_entity_definitions();
+    $return = [];
+
+    foreach($entities as $entity_name => $entity){
+        if(isset($entity['cached']) && $entity['cached'] == TRUE){
+            //TODO: Ensure that values that were ommitted are populated.
+            $fields = &$entity['fields'];
+            $name = "sharepoint__{$entity_name}";
+            $entity['internal_name'] = $name;
+            $return[$name] = $entity;
+        }
+    }
+
+    // $return = array_me
+
+    return $return;
+}
+
+/**
+ * Returns the full definition of an entity or the definition of the specified component.
+ * Components include: fields, internal_name
+ * @param string $entity_name
+ * @param string $component
+ * @return array
+ */
+function sharepoint_connection_driver__get_entity_definitions() {
+    return [
+        'performance_report' => [
+            'internal_name' => 'RecordType'
+            , 'fields' => [
+                'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'DeveloperName' => [
+                    'preferred_name' => 'DeveloperName'
+                    , 'type' => 'string'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedById' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CreatedBy'
+                        , 'preferred_local_key_name' => 'CreatedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'sharepoint_user'
+                    ]
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'LastModifiedById' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'sharepoint_user'
+                    ]
+                ]
+                , 'NamespacePrefix' => [
+                    'preferred_name' => 'NamespacePrefix'
+                    , 'type' => 'string'
+                ]
+                , 'BusinessProcessId' => [
+                    'preferred_name' => 'BusinessProcessId'
+                    , 'type' => 'string'
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
+                ]
+                , 'SobjectType' => [
+                    'preferred_name' => 'SObjectType'
+                    , 'type' => 'string'
+                ]
+                , 'sActive' => [
+                    'preferred_name' => 'IsActive'
+                    , 'type' => 'string'
+                ]
+                , 'SystemModstamp' => [
+                    'preferred_name' => 'SystemModstamp'
+                    , 'type' => 'datetime'
+                ]                
+            ]
+        ]
+    ];
+}
