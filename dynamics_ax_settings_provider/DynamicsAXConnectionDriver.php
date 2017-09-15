@@ -130,21 +130,6 @@ class DynamicsAXConnectionDriver extends MiddlewareConnectionDriver {
 
         return $records;
     }
-
-    /**
-     * @implements MiddlewareConnectionDriver.executeFunctionInternal
-     *
-     * @param [type] $functionName
-     * @param array $objects
-     * @param [type] $connectionToken
-     * @param array $otherOptions
-     * @return void
-     */
-    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
-        
-        throw new \Exception('Not yet implemented');
-        
-    }
     
     /**
      * @overrides MiddlewareConnectionDriver.getItemById

@@ -29,21 +29,6 @@ class DynamicsConnectionDriver extends MiddlewareConnectionDriver {
     public function getMaxInToOrConversionChunkSize(){
         return 90;
     }
-
-    /**
-     * @implements MiddlewareConnectionDriver.executeFunctionInternal
-     *
-     * @param [type] $functionName
-     * @param array $objects
-     * @param [type] $connectionToken
-     * @param array $otherOptions
-     * @return void
-     */
-    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
-        
-        throw new \Exception('Not yet implemented');
-        
-    }
     
     /**
      * @overrides MiddlewareConnectionDriver.getItemById

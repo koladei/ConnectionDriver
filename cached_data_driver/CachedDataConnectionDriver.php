@@ -47,12 +47,6 @@ class CachedDataConnectionDriver extends MiddlewareConnectionDriver {
         throw new \Exception("The date / datetime format is not known. {$value}");
     }
     
-    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
-        
-        throw new \Exception('Not yet implemented');
-        
-    }
-    
     public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $object, array $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
         $source = $entityBrowser->getDataSourceName();

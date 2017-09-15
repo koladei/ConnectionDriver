@@ -95,32 +95,6 @@ class DataDictionaryDriver extends MiddlewareConnectionDriver {
         return NULL;
     }
 
-    
-    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
-        
-        throw new \Exception('Not yet implemented');
-        
-        foreach($entityBrowsers as &$entityBrowser){
-                $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
-        }
-
-        // Get a connection token
-        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
-            $objs = [];
-            foreach($entityBrowsers as $key => &$entityBrowser){
-                if(isset($objects[$key])){
-                    $object = $entityBrowser->reverseRenameFields($objects[$key]);
-                    $objs[] = $object;//json_encode($object);
-                }
-            }
-            $obj = json_encode($objs);
-            
-            
-        } else {
-            throw new \Exception('Unable to connect to Salesforce');
-        }
-    }
-
     public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $obj, array $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
 

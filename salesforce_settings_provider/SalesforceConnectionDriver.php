@@ -54,7 +54,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         return parent::mergeRecordArray($data, $chunkResult, $localField, $remoteField);
     }
 
-    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
+    public function executeFunctionInternal($entityBrowser, $functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
         
         // Get a connection token
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {

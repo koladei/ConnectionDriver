@@ -136,6 +136,17 @@ function sql_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'system_entity'
                     ]
                 ] 
+                , '_RemedyInfo' => [
+                    'preferred_name' => 'RemedyInformation'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'SystemKey'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                        , 'remote_driver' => 'bmc_remedy'
+                    ]
+                ]
                 , '_AdvancedInfo' => [
                     'preferred_name' => 'AdvancedInformation'
                     , 'type' => 'detail'

@@ -36,7 +36,13 @@ abstract class MiddlewareConnectionDriver {
 
     public abstract function deleteItemInternal($entityBrowser, &$connectionToken = NULL, $id, array $otherOptions = []);
 
-    public abstract function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []);
+    public function executeFunctionInternal($entityBrowser, $functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []){
+        throw new \Exception('Not yet implemented');
+    }
+    
+    public function executeTargetedFunctionInternal($entityBrowser, $id, $functionName, array $data = [], &$connectionToken = NULL, array $otherOptions = []){
+        throw new \Exception('Not yet implemented');
+    }
     
     public abstract function getStringer();
 
@@ -152,17 +158,42 @@ abstract class MiddlewareConnectionDriver {
      * @param array $otherOptions
      * @return \stdClass representing the result of the function call.
      */
-    public function executeFunction($functionName, array $objects = [], array $otherOptions = []) {
+    public function executeFunction($entityBrowser, $functionName, array $data = [], array $otherOptions = []) {
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
+        if(is_null($entityBrowser)){
+            throw new \Exception('Invalid entity could not be found.');
+        }
+        
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:-1;
+        $otherOptions['retryCount'] = $retryCount + 1;
+
+        try{
+            $result = $this->executeFunctionInternal($entityBrowser, $functionName, $data, $this->connectionToken, $otherOptions);
+            return $result;
+        } catch(\Exception $exc){
+            if($retryCount < $this->maxRetries){
+                return $this->executeFunction($entityBrowser, $functionName, $data, $otherOptions);
+            } else {
+                throw $exc;
+            }
+        }
+    }
+
+    public function executeTargetedFunction($entityBrowser, $id, $functionName, array $data = [], array $otherOptions = []) {
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
+        if(is_null($entityBrowser)){
+            throw new \Exception('Invalid entity could not be found.');
+        }
 
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:-1;
         $otherOptions['retryCount'] = $retryCount + 1;
 
         try{
-            $result = $this->executeFunctionInternal($functionName, $objects, $this->connectionToken, $otherOptions);
+            $result = $this->executeTargetedFunctionInternal($functionName, $data, $this->connectionToken, $otherOptions);
             return $result;
         } catch(\Exception $exc){
             if($retryCount < $this->maxRetries){
-                return $this->executeFunction($functionName, $objects, $otherOptions);
+                return $this->executeTargetedFunctionInternal($entityBrowser, $id, $functionName, $data, $otherOptions);
             } else {
                 throw $exc;
             }
