@@ -18,6 +18,7 @@ class EntityFieldDefinition {
     private $remoteField;
     private $remoteEntityRelationship;
     private $remoteDriver;
+    private $remoteDriverName;
     private $remoteEntityName;
     private $expandable = false;
     private $isAnArray = 0;
@@ -42,6 +43,7 @@ class EntityFieldDefinition {
                 $x['preferred_name'] = $fieldDefinition['relationship']['local_field'];
                 $x['preferred_query_name'] = isset($fieldDefinition['preferred_query_name']) ? $fieldDefinition['preferred_query_name'] : $name;
                 unset($x['relationship']);
+
                 $fieldDef = new EntityFieldDefinition($name, $x, $parent);
                 $parent->setField($fieldDef);
             }
@@ -51,7 +53,14 @@ class EntityFieldDefinition {
             $this->remoteEntityRelationship = $fieldDefinition['relationship']['remote_type'];
             $this->remoteEntityName = isset($fieldDefinition['relationship']['remote_entity']) ? $fieldDefinition['relationship']['remote_entity'] : $fieldDefinition['lookup_entity'];
             $this->remoteEntityFilter = isset($fieldDefinition['relationship']['filter']) ? $fieldDefinition['relationship']['filter'] : NULL;
-            $this->remoteDriver = isset($fieldDefinition['relationship']['remote_driver']) ? $this->parent->getParent()->loadDriver($fieldDefinition['relationship']['remote_driver']) : $this->parent->getParent();
+
+            // Before trying to load the remote driver, check if it has been loaded.
+            $this->remoteDriverName = $fieldDefinition['relationship']['remote_driver'] = isset($fieldDefinition['relationship']['remote_driver'])?$fieldDefinition['relationship']['remote_driver']:$this->parent->getParent()->getIdentifier();
+            if(!$this->parent->getParent()->isDriverLoaded($this->remoteDriverName)){
+                $this->remoteDriver = $this->parent->getParent()->loadDriver($this->remoteDriverName);// : $this->parent->getParent();
+            } else {
+                $this->remoteDriver = $this->parent->getParent()->getDriver($this->remoteDriverName);//$this->parent->getParent()->loadDriver($this->remoteDriverName);
+            }
             $this->expandable = true;
         } else if ($this->type == 'detail') {
             $this->localField = $fieldDefinition['relationship']['local_field'];
@@ -59,7 +68,14 @@ class EntityFieldDefinition {
             $this->remoteEntityRelationship = $fieldDefinition['relationship']['remote_type'];
             $this->remoteEntityName = isset($fieldDefinition['relationship']['remote_entity']) ? $fieldDefinition['relationship']['remote_entity'] : $fieldDefinition['lookup_entity'];
             $this->remoteEntityFilter = isset($fieldDefinition['relationship']['filter']) ? $fieldDefinition['relationship']['filter'] : NULL;
-            $this->remoteDriver = isset($fieldDefinition['relationship']['remote_driver']) ? $this->parent->getParent()->loadDriver($fieldDefinition['relationship']['remote_driver']) : $this->parent->getParent();
+            // $this->remoteDriver = isset($fieldDefinition['relationship']['remote_driver']) ? $this->parent->getParent()->loadDriver($fieldDefinition['relationship']['remote_driver']) : $this->parent->getParent();
+            
+            $this->remoteDriverName = $fieldDefinition['relationship']['remote_driver'] = isset($fieldDefinition['relationship']['remote_driver'])?$fieldDefinition['relationship']['remote_driver']:$this->parent->getParent()->getIdentifier();
+            if(!$this->parent->getParent()->isDriverLoaded($this->remoteDriverName)){
+                $this->remoteDriver = $this->parent->getParent()->loadDriver($this->remoteDriverName);// : $this->parent->getParent();
+            } else {
+                $this->remoteDriver = $this->parent->getParent()->getDriver($this->remoteDriverName);//$this->parent->getParent()->loadDriver($this->remoteDriverName);
+            }
             $this->expandable = true;
         }
 

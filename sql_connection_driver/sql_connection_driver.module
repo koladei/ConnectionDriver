@@ -50,8 +50,11 @@ function sql_connection_driver__user_access($args) {
     return true;
 }
 
-function sql_connection_driver__get_cached_entity_definitions2(){
-    $return = sql_connection_driver__get_entity_definitions();
+function sql_connection_driver__get_cached_entity_definitions($targetDriver){
+    $return = [];
+    if($targetDriver != 'sql'){
+        $return = sql_connection_driver__get_entity_definitions();
+    }
     
     return $return;
 }
@@ -250,7 +253,7 @@ function sql_connection_driver__get_entity_definitions() {
 
     // Add other entities that have been cached to this driver.
     $cached = module_invoke_all('_get_cached_entity_definitions', 'sql');
-    $return = array_merge($return, $cached);
+    $return = array_merge($return, is_null($cached)?[]:$cached);
 
     return $return;
 }

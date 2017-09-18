@@ -26,7 +26,8 @@ abstract class MiddlewareConnectionDriver {
     protected $connectionToken = NULL;
     protected $maxRetries = 50;    
     protected $sourceLoader = NULL;
-    protected $loadedDrivers = [];
+    protected static $loadedDrivers = [];
+    protected $identifier = __CLASS__;
 
     public abstract function getItemsInternal($entityBrowser, &$connection_token = NULL, array $select, $filter, $expands = [], $otherOptions = []);
 
@@ -49,7 +50,24 @@ abstract class MiddlewareConnectionDriver {
     public function __construct(callable $driverLoader, callable $sourceLoader = NULL, $identifier = __CLASS__) {
         $this->driverLoader = $driverLoader;
         $this->sourceLoader = $sourceLoader;
-        $this->loadedDrivers[$identifier] = &$this;
+        self::$loadedDrivers[$identifier] = &$this;
+        $this->identifier = $identifier;
+    }
+
+    public function isDriverLoaded($driverName){
+        return in_array($driverName, array_keys(self::$loadedDrivers));
+    }
+
+    public function getLoadedDrivers(){
+        return self::$loadedDrivers;
+    }
+
+    public function getDriver($driverName){
+        return self::$loadedDrivers[$driverName];
+    }
+
+    public function getIdentifier(){
+        return $this->identifier;
     }
     
     /**
@@ -82,13 +100,13 @@ abstract class MiddlewareConnectionDriver {
     }
 
     public function loadDriver($driverName) {
-        if (!isset($drivers[$driverName])) {
+        if (!in_array($driverName, array_keys(self::$loadedDrivers))) {
             $loader = $this->driverLoader;
             $driver = $loader($driverName);
-            $drivers[$driverName] = $driver;
-            return $drivers[$driverName];
+            self::$loadedDrivers[$driverName] = &$driver;
+            return self::$loadedDrivers[$driverName];
         }
-        return $drivers[$driverName];
+        return self::$loadedDrivers[$driverName];
     }
 
     /**
@@ -432,9 +450,18 @@ abstract class MiddlewareConnectionDriver {
      * @return void
      */
     public function getItems($entityBrowser, $fields, $filter, $expandeds = '', $otherOptions = [], &$performance = []) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:NULL);
-        if(is_null($entityBrowser)){
-            throw new \Exception('Invalid entity could not be found.');
+        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : (isset($this->entitiesByDisplayName[$entityBrowser])?$this->entitiesByDisplayName[$entityBrowser]:$entityBrowser);
+        if(is_string($entityBrowser) || is_null($entityBrowser)){
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }
+
+        // If this entity is cached, try getting data from the cache.
+        if($entityBrowser->shouldCacheData() && $this->getIdentifier() != $entityBrowser->getCachingDriverName()){
+            // Load the driver instead
+            $args = func_get_args();
+            $args[0] = "{$this->getIdentifier()}__{$entityBrowser->getInternalName()}";
+            // var_dump($entityBrowser->getCachingDriverName());
+            return $this->loadDriver($entityBrowser->getCachingDriverName())->getItems(...$args);
         }
 
         $scope = $this;

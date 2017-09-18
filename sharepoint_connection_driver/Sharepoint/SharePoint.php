@@ -15,9 +15,14 @@
  */
 namespace Sharepoint;
 
-require_once(dirname(__FILE__) . '/Sharepoint/Exception.php');
-require_once(dirname(__FILE__) . '/Sharepoint/Connection.php');
-require_once(dirname(__FILE__) . '/Sharepoint/SoapClient.php');
+require_once(dirname(__FILE__) . '/Exception.php');
+require_once(dirname(__FILE__) . '/Connection.php');
+require_once(dirname(__FILE__) . '/SoapClient.php');
+
+use Sharepoint\Exception;
+use Sharepoint\Connection;
+use Sharepoint\SoapClient;
+
 class SharePoint {
 	
 	const CHECKIN_MINOR = 0;
@@ -56,21 +61,11 @@ class SharePoint {
 	}
 	
 	/**
-	 * @returns Sharepoint\Connection object that can handle NTLM authentication used in Sharepoint
+	 * @returns Connection object that can handle NTLM authentication used in Sharepoint
 	 */
 	public function getConnection() {
 		if(!$this->conn) {
-			$urlParts = parse_url($this->url);
-			if(!isset($urlParts['scheme']) || strtolower($urlParts['scheme']) == 'http') {
-				$port = 80;
-			}
-			else if(strtolower($urlParts['scheme']) == 'https') {
-				$port = 443;
-			}
-			else {
-				throw new Sharepoint\Exception("Unknown protocol '{$urlParts['scheme']}'");
-			}
-			$this->conn = new Sharepoint\Connection($urlParts['host'], $this->user, $this->pass, $port);
+			$this->conn = new Connection($this->url, $this->user, $this->pass);
 		}
 		$this->conn->debug = $this->debug;
 		return $this->conn;
@@ -84,15 +79,15 @@ class SharePoint {
 	 * @link http://msdn.microsoft.com/en-us/library/dd878586%28v=office.12%29.aspx
 	 */
 	public function getWsdl($section = 'Lists') {
-		$conn = $this->getConnection();
-		$item = self::_getPath($this->url . '/_vti_bin/' . $section . '.asmx?WSDL');
-		$response = $conn->get($item);
-		return $response['body'];
+		$conn = $this->getConnection();		
+		$return = $conn->get('_vti_bin/' . $section . '.asmx?WSDL');
+
+		return $return['body'];
 	}
 	
 	/**
 	 * @param $section The section
-	 * @returns Sharepoint\SoapClient SoapClient that communicates with Sharepoint
+	 * @returns SoapClient SoapClient that communicates with Sharepoint
 	 */
 	public function getSoapClient($section = 'Lists') {
 		if(!isset($this->soapClients[$section])) {
@@ -102,13 +97,16 @@ class SharePoint {
 			if($this->pass) {
 				$settings['password'] = $this->pass;
 			}
+			
 			//Load WSDL into tmp file, SoapClient doesn't handle NTLM auth
 			if(!isset($this->tmpWsdlFiles[$section])) {
 				$this->tmpWsdlFiles[$section] = tempnam($this->tmpDir,'ShareSoap_' . $section . '_');
 				file_put_contents($this->tmpWsdlFiles[$section], $this->getWsdl($section));
 			}
-			$this->soapClients[$section] = new Sharepoint\SoapClient($this->getConnection(), $this->tmpWsdlFiles[$section]);
-		}
+
+			$this->soapClients[$section] = new SoapClient($this->getConnection(), $this->tmpWsdlFiles[$section]);
+		} 
+
 		return $this->soapClients[$section];
 	}
 	
@@ -363,6 +361,11 @@ class SharePoint {
 	 */
 	public function putFile($url, $data) {
 		$conn = $this->getConnection();
+		$url = explode('/', $url);
+		$len = count($url);
+		$url[$len - 1] = str_replace(['=', '?', '&', ':'], ['%3d','%3f', '%26', '%3a'], $url[$len - 1]);
+		$url = implode('/', $url);
+		$url = str_replace(' ', '%20',"{$this->url}/{$url}");
 		$conn->put($url, $data);
 	}
 	
@@ -382,7 +385,7 @@ class SharePoint {
 		);
 		$response = $soap->CopyIntoItemsLocal($options)->Results->CopyResult;
 		if($response->ErrorCode != 'Success') {
-			throw new Sharepoint\Exception($response->ErrorMessage);
+			throw new Exception($response->ErrorMessage);
 		}
 	}
 	
@@ -443,7 +446,7 @@ class SharePoint {
 	 * 
 	 * @param $path Path to the folder (eg. "Shared%20documents/Test")
 	 * @returns bool 
-	 * @throws Sharepoint\Exception creating folder failed
+	 * @throws Exception creating folder failed
 	 * 
 	 * @link http://msdn.microsoft.com/en-us/library/ms774480(v=office.12)
 	 */
@@ -453,10 +456,13 @@ class SharePoint {
 		$xml = $soap->CreateFolder($options)->CreateFolderResult;
 		$dom = new \DOMDocument();
 		$dom->loadXML($xml);
+
 		//Got error
 		foreach($dom->getElementsByTagName('Error') as $item) {
-			throw new Sharepoint\Exception("Creating folder failed: " . $item->nodeValue);
+			$code = $item->getAttribute('ID');
+			throw new Exception("Creating folder failed: " . $item->nodeValue, $code);
 		}
+
 		return true;
 	}
 	
@@ -465,7 +471,7 @@ class SharePoint {
 	 * 
 	 * @param $path Path to the folder (eg. "Shared%20documents/Test")
 	 * @returns bool 
-	 * @throws Sharepoint\Exception creating folder failed
+	 * @throws Exception creating folder failed
 	 * 
 	 * @link http://msdn.microsoft.com/en-us/library/ms772957(v=office.12)
 	 */
@@ -477,7 +483,8 @@ class SharePoint {
 		$dom->loadXML($xml);
 		//Got error
 		foreach($dom->getElementsByTagName('Error') as $item) {
-			throw new Sharepoint\Exception("Deleting folder failed: " . $item->nodeValue);
+			$code = $item->getAttribute('ID');
+			throw new Exception("Creating folder failed: " . $item->nodeValue, $code);
 		}
 		return true;
 	}

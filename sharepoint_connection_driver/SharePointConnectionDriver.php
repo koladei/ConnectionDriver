@@ -5,6 +5,8 @@ namespace com\mainone\middleware;
 use com\mainone\middleware\MiddlewareConnectionDriver;
 use com\mainone\middleware\MiddlewareFilter;
 use com\mainone\middleware\EntityDefinitionBrowser;
+use Sharepoint\Connection;
+use Sharepoint\SharePoint;
 
 /**
  * Description of LDAPConnectionDriver
@@ -60,88 +62,19 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
         $retryCount = 0;
 
         $response = new \stdClass();
-        $procedurePath = variable_get('file_temporary_path');   
+
         
         //Connect to a Sharepoint site
-        $host = 'mainyard.mainone.net';
-        $username = 'mainonecable\spsetup_13';
+        $site = 'https://mainyard.mainone.net/docs';
+        $username = 'mainonecable\spsetup13';
         $password = 'P@55word321';
-        $cookiefile = "{$procedurePath}/{$host}.txt";
         $headers = [
             'Accept: application/json; odata=verbose',
             'Content-Type: application/json'
         ];
-
         
-        // $authorization = base64_encode("{$username}:{$password}");        
-    
-
-        $options = [
-            CURLOPT_HTTPHEADER => [
-                'Accept: application/json; odata=verbose',
-                'Content-Type: application/json',
-                // 'Authorization: Basic {$authorization}'
-            ],
-            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
-            CURLOPT_SSL_VERIFYPEER => 0,
-            CURLOPT_SSL_VERIFYHOST => 0,
-            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_FOLLOWLOCATION => 1,
-            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)',
-            CURLOPT_HTTPAUTH => CURLAUTH_NTLM,            
-            CURLOPT_USERPWD => "$username:$password",
-            CURLOPT_COOKIESESSION => TRUE,
-            // CURLOPT_COOKIEJAR => "{$procedurePath}",
-            // CURLOPT_COOKIE => TRUE,
-            CURLOPT_COOKIEFILE => $cookiefile,
-            CURLOPT_COOKIEJAR => $cookiefile,
-        ];
-
-        $a = function($curl, $header_line) use(&$options){
-            $ax = explode(':', $header_line, 2);
-
-            echo '> ' . $header_line;
-            switch(strtolower($ax[0])){
-                case 'sprequestguid':
-                case 'request-id':{
-                    foreach($options[CURLOPT_HTTPHEADER] as &$header){
-                        // echo  ' '. substr(trim(strtolower($header)), 0, strlen($ax[0])).' == '.$ax[0].'\n';
-                        if(substr(trim(strtolower($header)), 0, strlen($ax[0])) == $ax[0]){
-                            $header = $header_line;
-                        } else {
-                            $options[CURLOPT_HTTPHEADER][] = $header_line;
-                        }
-                    }
-                    
-                    break;
-                }
-                case 'www-authenticate':{
-                    if(substr(trim($header_line), 0, 24) == 'www-authenticate: bearer'){
-                        $header = $header_line;
-                    }
-                }
-            }
-            // }
-            return strlen($header_line);
-        };
+        // Initialize the Sharepoint class
         
-        $options[CURLOPT_HEADERFUNCTION] = $a;
-
-        $contextOpt = $options;
-        $contextOpt[CURLOPT_POSTFIELDS] = '';
-        $contextOpt[CURLOPT_POST] = TRUE;
-        $contextUrl = "https://{$host}/_api/contextinfo";
-        $url = str_replace(' ', '%20', "{$contextUrl}");
-
-        $context = mware_blocking_http_request($url, ['options' => $contextOpt]);
-        
-        $digest = json_decode($context->getContent())->d;
-
-        // return "{$procedurePath}/{$host}.txt";
-        // return $cookiefile;
-
-
         switch($functionName){
             case 'createfolder':{
                 throw new \Exception("Function call '{$functionName} is not supported.");
@@ -151,26 +84,49 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
                 throw new \Exception("Function call '{$functionName} is not supported.");
                 break;
             }            
-            case 'uploadfile':{
-                $fileaddstring = "add(overwrite='true', url='TESTPHPFIEL')";
-                $url = str_replace(' ', '%20', "https://{$host}/docs/_api/web/lists/getbytitle('{$entityBrowser->getInternalName()}')/{$fileaddstring}");    
-                $fileInformation = new \stdClass();                
-                $options[CURLOPT_POST] = TRUE; 
-                $options[CURLOPT_POSTFIELDS] = '';//$fileInformation;
-                $options[CURLOPT_REFERER] = "{$contextUrl}";
-                // unset($options[CURLOPT_HTTPAUTH]);
-                // unset($options[CURLOPT_USERPWD]);
-
-                // $options[CURLOPT_HTTPHEADER] = $headers;
-                var_dump('---------------------',$options[CURLOPT_HTTPHEADER]);
-
-                $options[CURLOPT_HTTPHEADER][] = "X-RequestDigest: {$digest->GetContextWebInformation->FormDigestValue}";
-                $options[CURLOPT_HTTPHEADER][] = "Authorization: Bearer {$authorization}";
-                $options[CURLOPT_HTTPHEADER][] = "Content-Length: 0";
+            case 'downloadfile':{
                 
-                $feed = mware_blocking_http_request($url, ['options' => $options, 'curl_handle' => $context->getHandle()]);
-                // $feed = mware_blocking_http_request($url, ['options' => $options, 'curl_handle' => $context->getHandle()]);
-                $response = json_decode($feed->getContent());
+            }
+            case 'uploadfile':{
+                // Check if all required parameters are present.
+                if(!isset($objects['name'])){
+                    throw new \Exception('Please specify the \'name\' of the file');
+                }
+                
+                if(!isset($objects['folder_path'])){
+                    throw new \Exception('Please specify the \'folder_path\' of the file');
+                }
+                
+                if(!isset($objects['content'])){
+                    throw new \Exception('Please specify the \'content\' of the file as a binary encoded string.');
+                }                
+
+                // Initialize the sharepoint object
+                $sharepoint = new SharePoint($site, $username, $password);
+
+                $folderPath = $objects['folder_path'];
+                $fileName = $objects['name'];
+                $content = $objects['content'];
+
+                if(strlen($folderPath) > 0){
+                    // Create the parent folder(s)
+                    $folders = explode('/', $folderPath);
+
+                    foreach($folders as $id => $folder){
+                        try{
+                            $f = implode('/', array_slice($folders, 0, $id + 1));
+                            $f = "{$entityBrowser->getInternalName()}/{$f}";
+                            $sharepoint->createFolder(str_replace(' ', '%20', $f));
+                        } catch(\Exception $x){
+                            if($x->getCode() != 13){
+                                throw $x;
+                            }
+                        }
+                    }
+                }
+
+                $sharepoint->putFile("{$entityBrowser->getInternalName()}/{$folderPath}/{$fileName}", $content);
+
                 return $response;
             }            
             case 'checkfileexists':{
@@ -191,8 +147,8 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
         switch($functionName){
             case 'fileupload': {        
                 //Connect to a Sharepoint site
-                $host = 'mainyard.mainone.net';
-                $url = str_replace(' ', '%20', "https://{$host}/docs/_api/web/lists/getbytitle('Access Requests')/fields?");
+                $site = 'mainyard.mainone.net';
+                $url = str_replace(' ', '%20', "https://{$site}/docs/_api/web/lists/getbytitle('Access Requests')/fields?");
                 $username = 'mainonecable\spsetup_13';
                 $password = 'P@55word321';
                 $options = array(
@@ -378,8 +334,8 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
             . $limit;
 
         //Connect to a Sharepoint site
-        $host = 'mainyard.mainone.net';
-        $url = str_replace(' ', '%20', "https://{$host}/docs/_api/web/lists/getbytitle('Access Requests')/fields?");
+        $site = 'mainyard.mainone.net';
+        $url = str_replace(' ', '%20', "https://{$site}/docs/_api/web/lists/getbytitle('Access Requests')/fields?");
         $username = 'mainonecable\spsetup_13';
         $password = 'P@55word321';
         $options = array(
@@ -423,38 +379,71 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
         }
     }
 
-    private function getSecurityToken(){
-        $username = 'mainonecable\kolade.ige';
-        $password = 'FGsltw3:20';
-        $envelope =<<<"ENVELOPE"
-<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing" xmlns:u="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
-    <s:Header>
-      <a:Action s:mustUnderstand="1">http://schemas.xmlsoap.org/ws/2005/02/trust/RST/Issue</a:Action>
-      <a:ReplyTo>
-        <a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>
-      </a:ReplyTo>
-      <a:To s:mustUnderstand="1">https://login.microsoftonline.com/extSTS.srf</a:To>
-      <o:Security s:mustUnderstand="1"
-         xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-        <o:UsernameToken>
-          <o:Username>{$username}</o:Username>
-          <o:Password>{$password}</o:Password>
-        </o:UsernameToken>
-      </o:Security>
-    </s:Header>
-    <s:Body>
-      <t:RequestSecurityToken xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust">
-        <wsp:AppliesTo xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
-          <a:EndpointReference>
-            <a:Address>[endpoint]</a:Address>
-          </a:EndpointReference>
-        </wsp:AppliesTo>
-        <t:KeyType>http://schemas.xmlsoap.org/ws/2005/05/identity/NoProofKey</t:KeyType>
-        <t:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</t:RequestType>
-        <t:TokenType>urn:oasis:names:tc:SAML:1.0:assertion</t:TokenType>
-      </t:RequestSecurityToken>
-    </s:Body>
-  </s:Envelope>  
-ENVELOPE;
+    private function getFormDigestValue($site = 'localhost', $username = null, $password = null, &$header = [], $cookiefile = '/dev/null') {
+        
+        
+        
+        $connection = new \Sharepoint\Connection('mainyard.mainone.net', $username, $password, 443, TRUE);
+        $connection->debug = TRUE;
+        $response = $connection->post('https://mainyard.mainone.net/docs/_api/contextinfo', '');
+
+        var_dump($response);
+        $headers = [];
+        return null;
+
+        $options = [
+            CURLOPT_HTTPHEADER => [
+                'Accept: application/json; odata=verbose',
+                // 'Content-Type: application/json',
+                // 'Content-Length: 0'
+            ],
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_FOLLOWLOCATION => 1,
+            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)',
+            CURLOPT_HTTPAUTH => CURLAUTH_NTLM,            
+            CURLOPT_USERPWD => "{$username}:{$password}",
+            // CURLOPT_COOKIESESSION => TRUE,
+            // CURLOPT_COOKIEFILE => $cookiefile,
+            // CURLOPT_COOKIEJAR => $cookiefile,
+            CURLOPT_POSTFIELDS => '',
+            CURLOPT_POST => TRUE
+        ];
+
+        $a = function($curl, $header_line) use(&$options){
+            // $ax = explode(':', $header_line, 2);
+            echo $header_line;
+
+            // switch(strtolower($ax[0])){
+            //     case 'sprequestguid':
+            //     case 'request-id':{
+            //         foreach($options[CURLOPT_HTTPHEADER] as &$header){
+            //             if(substr(trim(strtolower($header)), 0, strlen($ax[0])) == $ax[0]){
+            //                 $header = $header_line;
+            //             } else {
+            //                 $options[CURLOPT_HTTPHEADER][] = $header_line;
+            //             }
+            //             break;
+            //         }                    
+            //     }
+            //     case 'www-authenticate':{
+            //         if(substr(trim($header_line), 0, 24) == 'www-authenticate: bearer'){
+            //             $header = $header_line;
+            //         }
+            //     }
+            // }
+        };
+           
+        $options[CURLOPT_HEADERFUNCTION] = $a;
+        $url = "https://{$site}/_api/contextinfo";
+
+        $context = mware_blocking_http_request($url, ['options' => $options]);  
+        return $context->getContent();      
+        $digest = json_decode($context->getContent())->d;
+
+        return $digest;
     }
 }

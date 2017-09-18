@@ -706,6 +706,17 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'service'
                     ],
                 ]
+                , '_DictionaryInformation' => [
+                    'preferred_name' => 'DictionaryInformation'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'SystemKey'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customerinfo'
+                        , 'remote_driver' => 'sql'
+                    ],
+                ]
             ]
         ]
         , 'service' => [

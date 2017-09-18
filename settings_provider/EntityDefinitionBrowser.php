@@ -32,8 +32,9 @@ class EntityDefinitionBrowser {
     private $dataSource = 'default';
     private $cacheData = false;
     private $context = 'default';
+    private $cachingDriverName = NULL;
 
-    public function __construct($internalName, array $definition, MiddlewareConnectionDriver &$parent) {
+    public function __construct($internalName, array &$definition, MiddlewareConnectionDriver &$parent) {
         $this->parent = $parent;
         $this->displayName = $internalName;
         $this->internalName = $definition['internal_name'];
@@ -49,13 +50,22 @@ class EntityDefinitionBrowser {
         if (isset($definition['context'])){
             $this->context = $definition['context'];
         }
-
-        if (isset($definition['cache'])){
-            $this->cacheData = $definition['contecachext'];
+        
+        // if (isset($definition['cache'])){
+        //     $this->cacheData = $definition['cache'];
+        // }
+        
+        if (isset($definition['cache_to'])){
+            $this->cacheData = true;
+            $this->cachingDriverName = $definition['cache_to'];
         }
 
         $this->setFields($definition['fields']);
         return $this;
+    }
+
+    public function getCachingDriverName(){
+        return $this->cachingDriverName;
     }
 
     public function getParent() {
@@ -91,9 +101,13 @@ class EntityDefinitionBrowser {
     public function getDataSourceName(){
         return $this->dataSource;
     }
-
+    
     public function shouldCacheData(){
         return $this->cacheData;
+    }
+    
+    public function getCacheDriverName(){
+        return $this->cacheDriverName;
     }
 
     public function getContext(){

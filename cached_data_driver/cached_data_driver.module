@@ -58,8 +58,9 @@ function cached_data_driver__get_entity_definitions() {
     $return = [];
 
     // Add other entities that have been cached to this driver.
-    $cached = module_invoke_all('_get_cached_entity_definitions2');
-    $return = array_merge($return, $cached);
+    $cached = module_invoke_all('_get_cached_entity_definitionsX');
+    $return = array_merge($return, is_null($cached)?[]:$cached);
+
 
     return $return;
 }

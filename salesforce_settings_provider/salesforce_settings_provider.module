@@ -70,43 +70,22 @@ function salesforce_settings_provider__get_settings($settings = 'default') {
  * @return void
  */
 function salesforce_settings_provider__get_cached_entity_definitions($targetDriver){
-    $entities = salesforce_settings_provider__get_entity_definitions();
     $return = [];
 
-    foreach($entities as $entity_name => $entity){
-        if(isset($entity['cache_to']) && $entity['cache_to'] == $targetDriver){
-            //TODO: Ensure that values that were ommitted are populated.
-            $fields = &$entity['fields'];
-            $name = "salesforce__{$entity_name}";
-            $entity['internal_name'] = $name;
-            $return[$name] = $entity;
+    if($targetDriver != 'salesforce'){
+        $entities = salesforce_settings_provider__get_entity_definitions();
+        foreach($entities as $entity_name => $entity){
+            if(isset($entity['cache_to']) && $entity['cache_to'] == $targetDriver){
+                //TODO: Ensure that values that were ommitted are populated.
+                $fields = &$entity['fields'];
+                $name = "salesforce__{$entity['internal_name']}";
+                $entity['internal_name'] = $name;
+                unset($entity['cache']);
+                unset($entity['cache_to']);
+                $return[$name] = $entity;
+            }
         }
     }
-
-    return $return;
-}
-
-/**
- * Returns entity definitions that have been marked as cacheable to the specified entity.
- *
- * @param String $targetDriver the connection driver to use to retrieve the cache.
- * @return void
- */
-function salesforce_settings_provider__get_cached_entity_definitions2(){
-    $entities = salesforce_settings_provider__get_entity_definitions();
-    $return = [];
-
-    foreach($entities as $entity_name => $entity){
-        if(isset($entity['cached']) && $entity['cached'] == TRUE){
-            //TODO: Ensure that values that were ommitted are populated.
-            $fields = &$entity['fields'];
-            $name = "salesforce__{$entity_name}";
-            $entity['internal_name'] = $name;
-            $return[$name] = $entity;
-        }
-    }
-
-    // $return = array_me
 
     return $return;
 }
@@ -342,7 +321,7 @@ function salesforce_settings_provider__get_entity_definitions() {
         ]
         , 'customer_product' => [
             'internal_name' => 'Customer_Products__c'
-            // , 'cache_to' => 'sql'
+            , 'cache_to' => 'sql'
             , 'fields' => [
                 'Id' => [
                     'preferred_name' => 'Id'
@@ -363,7 +342,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'record_types'
-                        // , 'remote_driver' => 'salesforce'
+                        , 'remote_driver' => 'salesforce'
                     ]
                 ]
                 , 'CreatedDate' => [
@@ -401,16 +380,16 @@ function salesforce_settings_provider__get_entity_definitions() {
                     , 'type' => 'string'
                 ]
                 , 'Service_Account_ID__c' => [
-                    'preferred_name' => 'ServiceAccountId'
+                    'preferred_name' => 'ServiceAccount'
                     , 'type' => 'string'
-                    // , 'relationship' => [
-                    //     'local_field' => 'ServiceAccount'
-                    //     , 'preferred_local_key_name' => 'ServiceAccountId'
-                    //     , 'remote_field' => 'Id'
-                    //     , 'remote_type' => 'parent'
-                    //     , 'remote_entity' => 'account'
-                    //     , 'remote_driver' => 'bmc_remedy'
-                    // ]
+                    , 'relationship' => [
+                        'local_field' => 'ServiceAccount'
+                        , 'preferred_local_key_name' => 'ServiceAccountId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                        , 'remote_driver' => 'bmc_remedy'
+                    ]
                 ]
                 , 'Status__c' => [
                     'preferred_name' => 'Status'
