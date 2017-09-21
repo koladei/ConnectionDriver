@@ -484,11 +484,11 @@ abstract class MiddlewareConnectionDriver
         // If this entity is cached to another driver
         if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName())) {
             // Load the driver instead
-            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
             $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
             
             // Return the results from the cache driver.
             $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
             $return = $cacheDriver->getItems(...$args);
             return $return;
         }
