@@ -7,11 +7,12 @@ include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/SQLConnectio
 
 use com\mainone\middleware\SQLConnectionDriver;
 
-function sql_connection_driver_connection_driver_sql_alter(&$container) {
-    $driver = new SQLConnectionDriver(function($x) {
+function sql_connection_driver_connection_driver_sql_alter(&$container)
+{
+    $driver = new SQLConnectionDriver(function ($x) {
         $return = mware_connection_driver__get_driver($x);
         return $return;
-    }, function($source_name){
+    }, function ($source_name) {
         return sql_connection_driver__get_settings($source_name);
     }, 'sql');
 
@@ -20,7 +21,8 @@ function sql_connection_driver_connection_driver_sql_alter(&$container) {
     $container['sql'] = $driver;
 }
 
-function sql_connection_driver__get_settings($key){
+function sql_connection_driver__get_settings($key)
+{
     $settings = new \stdClass();
 
     $settings->DSN = variable_get("SQL_SETTINGS_DSN_{$key}");
@@ -35,7 +37,8 @@ function sql_connection_driver__get_settings($key){
  * Implements hook_permission
  * @return array
  */
-function sql_connection_driver_permission() {
+function sql_connection_driver_permission()
+{
     $permission = [];
 
     return $permission;
@@ -46,13 +49,15 @@ function sql_connection_driver_permission() {
  * @param type $args
  * @return boolean
  */
-function sql_connection_driver__user_access($args) {
+function sql_connection_driver__user_access($args)
+{
     return true;
 }
 
-function sql_connection_driver__get_cached_entity_definitions($targetDriver){
+function sql_connection_driver__get_cached_entity_definitions($targetDriver)
+{
     $return = [];
-    if($targetDriver != 'sql'){
+    if ($targetDriver != 'sql') {
         $return = sql_connection_driver__get_entity_definitions();
     }
     
@@ -63,7 +68,8 @@ function sql_connection_driver__get_cached_entity_definitions($targetDriver){
  * Returns all the entity definitions implemented in Dynamics AX.
  * @return type
  */
-function sql_connection_driver__get_entity_definitions() {
+function sql_connection_driver__get_entity_definitions()
+{
     $return = [
         'customerinfo' => [
             'internal_name' => 'CustomerDictionary'
@@ -138,7 +144,7 @@ function sql_connection_driver__get_entity_definitions() {
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'system_entity'
                     ]
-                ] 
+                ]
                 , '_RemedyInfo' => [
                     'preferred_name' => 'RemedyInformation'
                     , 'type' => 'detail'
@@ -171,9 +177,9 @@ function sql_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'rootaccount'
                         , 'remote_driver' => 'dynamics_ax'
                     ]
-                ] 
+                ]
             ]
-        ]        
+        ]
         , 'system_entity' => [
             'internal_name' => 'SystemEntity'
             , 'datasource' => 'default'
@@ -214,7 +220,7 @@ function sql_connection_driver__get_entity_definitions() {
                     ]
                 ]
             ]
-        ]      
+        ]
         , 'system' => [
             'internal_name' => 'System'
             , 'datasource' => 'default'
@@ -248,12 +254,15 @@ function sql_connection_driver__get_entity_definitions() {
                     ]
                 ]
             ]
-        ]  
+        ]
     ];
 
     // Add other entities that have been cached to this driver.
-    $cached = module_invoke_all('_get_cached_entity_definitions', 'sql');    
-    $return = array_merge($return, is_null($cached)?[]:$cached);
+    $cached_all = module_invoke_all('_get_cached_entity_definitions', 'sql');
+    foreach ($cached_all as $cached) {
+        $g = is_null($cached)?[]:$cached;
+        $return = array_merge($return, $g);
+    }
 
     return $return;
 }

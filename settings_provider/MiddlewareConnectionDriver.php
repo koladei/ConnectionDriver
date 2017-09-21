@@ -412,7 +412,7 @@ abstract class MiddlewareConnectionDriver
             $otherOptions['$expand'] = '';
         }
 
-        $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj);
+        $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj, $otherOptions);
         if (property_exists($res, 'd') && $res->success == true) {
             $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             return $return;
@@ -482,7 +482,9 @@ abstract class MiddlewareConnectionDriver
         }
 
         // If this entity is cached to another driver
-        if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName())) {
+        $skipCache = isset($otherOptions['$skipCache'])?''.$otherOptions['$skipCache']:'0';
+        $skipCache = $skipCache == '1'?TRUE:FALSE;
+        if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && $skipCache == FALSE) {
             // Load the driver instead
             $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
             

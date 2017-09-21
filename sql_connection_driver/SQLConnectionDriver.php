@@ -83,7 +83,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 }
 
                 // Execute the Update request.
-                $sql = "UPDATE {$entityBrowser->getInternalName()} SET {$sets} WHERE {$idField->getInternalName()} = {$id}";
+                $sql = "UPDATE {$entityBrowser->getInternalName()} SET {$sets} WHERE {$idField->getInternalName()} = :{$idField->getInternalName()}";
                 $statement = $pdo->prepare($sql);
 
                 foreach($updatedFields as $updatedField) {                    
@@ -105,6 +105,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
 
                     $statement->bindValue(":{$updatedField->getInternalName()}", $val);
                 }
+                $statement->bindValue(":{$idField->getInternalName()}", $id);
 
                 // Execute the update
                 $statement->execute();
@@ -139,9 +140,15 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             $sets = '';
             $xets = '';
             $xetz = [];
+            $createId = isset($otherOptions['$createId'])?"{$otherOptions['$createId']}":'0';
+            $createId = $createId == '1'?TRUE:FALSE;
+
+            if($createId && !property_exists($obj, 'Id')){
+                throw new \Exception('The request states that the \'Id\' field should be set but does not provide it');
+            }
 
             // Remove the Id field if present            
-            if(property_exists($obj, 'Id')) {
+            else if (property_exists($obj, 'Id')) {
                 unset($obj->Id);
             }   
 
@@ -166,12 +173,17 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                     $sets[] = $updatedField->getInternalName();
                     $xetz[] = ":{$updatedField->getInternalName()}";
                 }
+                // if($createId){
+                //     $sets[] = $idField->getInternalName();
+                //     $xetz[] = ":{$idField->getInternalName()}";
+                // }
 
                 // Execute the Update request.
                 $sets = implode(',', $sets);
                 $xets = implode(',', $xetz);
 
                 $sql = "INSERT INTO {$entityBrowser->getInternalName()}({$sets}) VALUES({$xets})";
+                watchdog('CREATE', $sql);
 
                 $statement = $pdo->prepare($sql);
 
@@ -194,6 +206,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
 
                     $statement->bindValue(":{$updatedField->getInternalName()}", $val);
                 }
+                // $statement->bindValue(":{$idField->getInternalName()}", $id);
 
                 try {
                     // Execute the update

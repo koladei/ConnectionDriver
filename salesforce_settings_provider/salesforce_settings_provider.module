@@ -76,7 +76,14 @@ function salesforce_settings_provider__get_settings($settings = 'default')
  */
 function salesforce_settings_provider__get_cached_entity_definitions($targetDriver)
 {
-    return settings_provider__format_cached_definition('salesforce', $targetDriver, salesforce_settings_provider__get_entity_definitions);
+    // $callback = function(){
+    //     $args = func_get_args();
+    //     salesforce_settings_provider__get_entity_definitions(...$args);
+    // }
+    return settings_provider__format_cached_definition('salesforce', $targetDriver, function(){
+        $args = func_get_args();
+        return salesforce_settings_provider__get_entity_definitions(...$args);
+    });
 }
 
 /**
@@ -153,10 +160,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'SObjectType'
                     , 'type' => 'string'
                 ]
-                , 'sActive' => [
-                    'preferred_name' => 'IsActive'
-                    , 'type' => 'string'
-                ]
+                // , 'sActive' => [
+                //     'preferred_name' => 'IsActive'
+                //     , 'type' => 'string'
+                // ]
                 , 'SystemModstamp' => [
                     'preferred_name' => 'SystemModstamp'
                     , 'type' => 'datetime'

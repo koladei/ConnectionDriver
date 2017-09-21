@@ -40,7 +40,7 @@ function settings_provider_menu()
     );
 
     // Link to cache update cron
-    $items['settings_provider/update-cache'] = [
+    $items['settings-provider/update-cache'] = [
         'page callback' => 'settings_provider__update_cache'
         , 'file' => 'crons/cron.update-cache.inc'
         , 'page arguments' => ['internal']
@@ -148,7 +148,9 @@ function settings_provider_blocking_http_request($url, $settings = array())
 
 function settings_provider__format_cached_definition($from, $to, callable $entitiesSource)
 {
-    $return = [];
+    $key = "{$from}|{$to}";
+    $return = [$key => []];
+
     if ($to != $from) {
         $entities = $entitiesSource();
         foreach ($entities as $entity_name => $entity) {
@@ -156,6 +158,8 @@ function settings_provider__format_cached_definition($from, $to, callable $entit
                 //TODO: Ensure that values that were ommitted are populated.
                 $fields = &$entity['fields'];
                 $name = strtolower("{$from}__{$entity['internal_name']}");
+                $entity['original_internal_name'] = $entity['internal_name'];
+                $entity['original_display_name'] = $entity_name;
                 $entity['internal_name'] = $name;
                 unset($entity['cache']);
                 unset($entity['cache_to']);
@@ -168,9 +172,30 @@ function settings_provider__format_cached_definition($from, $to, callable $entit
                         }
                     }
                 }
-                $return[$name] = $entity;
+
+                $return[$key][$name] = $entity;
             }
         }
     }
+
     return $return;
+}
+
+
+function settings_provider_cron(){
+    global $base_url;
+
+    $tokenOption = [
+        CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
+        , CURLOPT_PROTOCOLS => CURLPROTO_HTTPS
+        , CURLOPT_SSL_VERIFYPEER => FALSE
+        , CURLOPT_SSL_VERIFYHOST => 0
+        , CURLOPT_FOLLOWLOCATION => TRUE
+        , CURLOPT_HTTPPROXYTUNNEL => TRUE
+        , CURLOPT_VERBOSE => TRUE
+    ];
+
+    mware_http_request("{$base_url}/settings-provider/update-cache", ['options' => $tokenOption, 'callback' => function($event){
+            
+    }]);
 }
