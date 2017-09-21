@@ -15,26 +15,28 @@ use com\mainone\middleware\EncoderDecoder;
  *
  * @author Kolade.Ige
  */
-class EntityDefinitionBrowser {
+class EntityDefinitionBrowser
+{
 
     private $parent;
     private $internalName;
     private $displayName;
-    private $soapMethods = NULL;
+    private $soapMethods = null;
     private $idField;
     private $fieldsByDisplayName = [];
     private $fieldsByInternalName = [];
     private $mandatoryFields = ['Id'];
-    private $renameStrategy = NULL;
-    private $fieldValueFetchStrategy = NULL;
-    private $mergeExpansionChunksStrategy = NULL;
-    private $expansionJoinStrategy = NULL;
+    private $renameStrategy = null;
+    private $fieldValueFetchStrategy = null;
+    private $mergeExpansionChunksStrategy = null;
+    private $expansionJoinStrategy = null;
     private $dataSource = 'default';
     private $cacheData = false;
     private $context = 'default';
-    private $cachingDriverName = NULL;
+    private $cachingDriverName = null;
 
-    public function __construct($internalName, array &$definition, MiddlewareConnectionDriver &$parent) {
+    public function __construct($internalName, array &$definition, MiddlewareConnectionDriver &$parent)
+    {
         $this->parent = $parent;
         $this->displayName = $internalName;
         $this->internalName = $definition['internal_name'];
@@ -43,11 +45,11 @@ class EntityDefinitionBrowser {
             $this->soapMethods = (object) $definition['soap_methods'];
         }
 
-        if (isset($definition['datasource'])){
+        if (isset($definition['datasource'])) {
             $this->dataSource = $definition['datasource'];
         }
 
-        if (isset($definition['context'])){
+        if (isset($definition['context'])) {
             $this->context = $definition['context'];
         }
         
@@ -55,7 +57,7 @@ class EntityDefinitionBrowser {
         //     $this->cacheData = $definition['cache'];
         // }
         
-        if (isset($definition['cache_to'])){
+        if (isset($definition['cache_to'])) {
             $this->cacheData = true;
             $this->cachingDriverName = $definition['cache_to'];
         }
@@ -64,57 +66,70 @@ class EntityDefinitionBrowser {
         return $this;
     }
 
-    public function getCachingDriverName(){
+    public function getCachingDriverName()
+    {
         return $this->cachingDriverName;
     }
 
-    public function getParent() {
+    public function getParent()
+    {
         return $this->parent;
     }
 
-    public function getDisplayName() {
+    public function getDisplayName()
+    {
         return $this->displayName;
     }
 
-    public function setDisplayName($name) {
+    public function setDisplayName($name)
+    {
         $this->displayName = $name;
         return $this;
     }
 
-    public function getInternalName() {
+    public function getInternalName()
+    {
         return $this->internalName;
     }
 
-    public function setInternalName($name) {
+    public function setInternalName($name)
+    {
         $this->internalName = $name;
         return $this;
     }
 
-    public function getMandatoryFieldNames() {
+    public function getMandatoryFieldNames()
+    {
         return $this->mandatoryFields;
     }
     
-    public function getSoapMethods(){
+    public function getSoapMethods()
+    {
         return $this->soapMethods;
     }
 
-    public function getDataSourceName(){
+    public function getDataSourceName()
+    {
         return $this->dataSource;
     }
     
-    public function shouldCacheData(){
+    public function shouldCacheData()
+    {
         return $this->cacheData;
     }
     
-    public function getCacheDriverName(){
+    public function getCacheDriverName()
+    {
         return $this->cacheDriverName;
     }
 
-    public function getContext(){
+    public function getContext()
+    {
         return $this->context;
     }
 
-    private function setFields(array $fields) {
+    private function setFields(array $fields)
+    {
 
         foreach ($fields as $internalName => $field) {
             $fieldDef = new EntityFieldDefinition($internalName, $field, $this);
@@ -136,17 +151,20 @@ class EntityDefinitionBrowser {
         return $this;
     }
 
-    public function setField(EntityFieldDefinition $fieldDef) {
-        $internalName = $fieldDef->getInternalName(FALSE);
+    public function setField(EntityFieldDefinition $fieldDef)
+    {
+        $internalName = $fieldDef->getInternalName(false);
         $this->fieldsByInternalName[$internalName] = $fieldDef;
         $this->fieldsByDisplayName[$fieldDef->getDisplayName()] = &$this->fieldsByInternalName[$internalName];
-        if (isset($field['mandatory']) && ($field['mandatory'] == 1 || $field['mandatory'] == TRUE)) {
+        if (isset($field['mandatory']) && ($field['mandatory'] == 1 || $field['mandatory'] == true)) {
             if ($fieldDef->isExpandable()) {
-                if (!in_array($fieldDef->getRelatedLocalFieldName(), $this->mandatoryFields))
+                if (!in_array($fieldDef->getRelatedLocalFieldName(), $this->mandatoryFields)) {
                     $this->mandatoryFields[] = $fieldDef->getRelatedLocalFieldName();
+                }
             } else {
-                if (!in_array($fieldDef->getDisplayName(), $this->mandatoryFields))
+                if (!in_array($fieldDef->getDisplayName(), $this->mandatoryFields)) {
                     $this->mandatoryFields[] = $fieldDef->getDisplayName();
+                }
             }
         }
     }
@@ -157,7 +175,8 @@ class EntityDefinitionBrowser {
      * @param array $fieldNames
      * @return array
      */
-    public function getFieldInternalNames(array $fieldNames) {
+    public function getFieldInternalNames(array $fieldNames)
+    {
         foreach ($fieldNames as &$fieldName) {
             if (isset($this->fieldsByDisplayName[$fieldName])) {
                 $fieldInfo = $this->fieldsByDisplayName[$fieldName];
@@ -180,7 +199,8 @@ class EntityDefinitionBrowser {
      * @param array $fieldNames
      * @return array
      */
-    public function getFieldsByInternalNames(array $fieldNames = NULL) {
+    public function getFieldsByInternalNames(array $fieldNames = null)
+    {
         $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByInternalName) : $fieldNames;
         $r = [];
 
@@ -202,7 +222,8 @@ class EntityDefinitionBrowser {
      * @param array $fieldNames
      * @return array
      */
-    public function getFieldsByDisplayNames(array $fieldNames = NULL) {
+    public function getFieldsByDisplayNames(array $fieldNames = null)
+    {
         $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByDisplayName) : $fieldNames;
         $r = [];
 
@@ -226,7 +247,8 @@ class EntityDefinitionBrowser {
      * @param array $fieldNames
      * @return array
      */
-    public function getFieldInternalToDisplayNames(array $fieldNames = NULL) {
+    public function getFieldInternalToDisplayNames(array $fieldNames = null)
+    {
         $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByInternalName) : $fieldNames;
         $r = [];
 
@@ -250,7 +272,8 @@ class EntityDefinitionBrowser {
      * @param array $fieldNames
      * @return array
      */
-    public function getFieldDisplayToInternalNames(array $fieldNames = NULL) {
+    public function getFieldDisplayToInternalNames(array $fieldNames = null)
+    {
         $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByDisplayName) : $fieldNames;
         $r = [];
 
@@ -269,16 +292,17 @@ class EntityDefinitionBrowser {
     /**
      * Returns an array of EntityFieldDefinition references based on the array of display names provided.
      * Ignores invalid fields.
-     * 
+     *
      * @param array $fieldNames
      * @return array
      */
-    public function getValidFieldsByDisplayName(array $fieldNames = NULL) {
+    public function getValidFieldsByDisplayName(array $fieldNames = null)
+    {
         $is_null = is_null($fieldNames);
         $fieldNames = $is_null ? array_keys($this->fieldsByDisplayName) : $fieldNames;
         $r = [];
 
-        if($is_null){
+        if ($is_null) {
             $r = array_values($this->fieldsByDisplayName);
         } else {
             foreach ($fieldNames as $fieldName) {
@@ -294,16 +318,17 @@ class EntityDefinitionBrowser {
     /**
      * Returns an array of EntityFieldDefinition references based on the array of display names provided.
      * Ignores invalid fields.
-     * 
+     *
      * @param array $fieldNames
      * @return array
      */
-    public function getValidFieldsByInternalName(array $fieldNames = NULL) {
+    public function getValidFieldsByInternalName(array $fieldNames = null)
+    {
         $is_null = is_null($fieldNames);
         $fieldNames = $is_null ? array_keys($this->fieldsByInternalName) : $fieldNames;
         $r = [];
 
-        if($is_null){
+        if ($is_null) {
             $r = array_values($this->fieldsByInternalName);
         } else {
             foreach ($fieldNames as $fieldName) {
@@ -321,7 +346,8 @@ class EntityDefinitionBrowser {
      *
      * @return EntityFieldDefinition
      */
-    public function getIdField() {
+    public function getIdField()
+    {
         return $this->idField;
     }
 
@@ -331,7 +357,8 @@ class EntityDefinitionBrowser {
      * @param string $name
      * @return EntityFieldDefinition
      */
-    public function getFieldByInternalName($name) {
+    public function getFieldByInternalName($name)
+    {
         if (isset($this->fieldsByInternalName[$name])) {
             return $this->fieldsByInternalName[$name];
         } else {
@@ -345,7 +372,8 @@ class EntityDefinitionBrowser {
      * @param [type] $name
      * @return void
      */
-    public function getFieldByDisplayName($name) {
+    public function getFieldByDisplayName($name)
+    {
         if (isset($this->fieldsByDisplayName[$name])) {
             return $this->fieldsByDisplayName[$name];
         } else {
@@ -359,7 +387,8 @@ class EntityDefinitionBrowser {
      * @param [type] $strategy
      * @return void
      */
-    public function setRenameStrategy($strategy) {
+    public function setRenameStrategy($strategy)
+    {
         $this->renameStrategy = $strategy;
     }
 
@@ -370,12 +399,13 @@ class EntityDefinitionBrowser {
      * @param [type] $fieldNames
      * @return void
      */
-    public function getFieldsOfTypeByDisplayName(array $typeNames, array $fieldNames = NULL){
+    public function getFieldsOfTypeByDisplayName(array $typeNames, array $fieldNames = null)
+    {
         $fields = $this->getValidFieldsByDisplayName($fieldNames);
         $matched = [];
 
-        foreach($fields as $field){
-            if(in_array($field->getDataType(), $typeNames)){
+        foreach ($fields as $field) {
+            if (in_array($field->getDataType(), $typeNames)) {
                 $matched[] = $field;
             }
         }
@@ -391,12 +421,13 @@ class EntityDefinitionBrowser {
      * @param [type] $fieldNames
      * @return void
      */
-    public function getFieldsOfTypeByInternalName(array $typeNames, array $fieldNames = NULL){
+    public function getFieldsOfTypeByInternalName(array $typeNames, array $fieldNames = null)
+    {
         $fields = $this->getValidFieldsByInternalName($fieldNames);
         $matched = [];
 
-        foreach($fields as $field){
-            if(in_array($field->getDataType(), $typeNames)){
+        foreach ($fields as $field) {
+            if (in_array($field->getDataType(), $typeNames)) {
                 $matched[] = $field;
             }
         }
@@ -405,23 +436,28 @@ class EntityDefinitionBrowser {
         return $matched;
     }
 
-    public function setFieldValueFetchStrategy($strategy) {
+    public function setFieldValueFetchStrategy($strategy)
+    {
         $this->fieldValueFetchStrategy = $strategy;
     }
 
-    public function setMergeExpansionChunksStrategy($strategy) {
+    public function setMergeExpansionChunksStrategy(callable $strategy)
+    {
         $this->mergeExpansionChunksStrategy = $strategy;
     }
 
-    public function setExpansionJoinStrategy($strategy) {
+    public function setExpansionJoinStrategy(callable $strategy)
+    {
         $this->expansionJoinStrategy = $strategy;
     }
 
-    public function setReverseRenameStrategy($strategy) {
+    public function setReverseRenameStrategy($strategy)
+    {
         $this->reverseRenameStrategy = $strategy;
     }
 
-    public function reverseRenameFields($record) {
+    public function reverseRenameFields($record)
+    {
         if (is_callable($this->reverseRenameStrategy)) {
             $rename = $this->reverseRenameStrategy;
             $scope = $this;
@@ -431,7 +467,8 @@ class EntityDefinitionBrowser {
         }
     }
 
-    public function renameFields($record, $selected_fields) {
+    public function renameFields($record, $selected_fields)
+    {
         if (is_callable($this->renameStrategy)) {
             $rename = $this->renameStrategy;
             return $rename(...func_get_args());
@@ -441,7 +478,7 @@ class EntityDefinitionBrowser {
             foreach ($selected_fields as $key => $displayName) {
                 if (property_exists($record, $key)) {
                     $r->{$displayName} = $record->{$key};
-                } else if (is_array($record) && isset($record[$key])){
+                } elseif (is_array($record) && isset($record[$key])) {
                     $r->{$displayName} = $record[$key];
                 }
             }
@@ -450,7 +487,8 @@ class EntityDefinitionBrowser {
         }
     }
 
-    public function fetchFieldValues($record, $selected_field) {
+    public function fetchFieldValues($record, $selected_field)
+    {
         if (is_callable($this->fieldValueFetchStrategy)) {
             $fetch = $this->fieldValueFetchStrategy;
             return $fetch(...func_get_args());
@@ -466,18 +504,26 @@ class EntityDefinitionBrowser {
         }
     }
 
-    public function mergeExpansionChunks($data, $chunkResult, EntityFieldDefinition $localFieldInfo, EntityFieldDefinition $fieldInfo) {
-        if (is_callable($this->mergeExpansionChunksStrategy)) {
-            $mergeExpansion = $this->mergeExpansionChunksStrategy;
+    public function mergeExpansionChunks($data, $chunkResult, EntityFieldDefinition $localFieldInfo, EntityFieldDefinition $fieldInfo)
+    {
+        // var_dump('ABBBBB', gettype($this->mergeExpansionChunksStrategy));
+        $mergeExpansion = $this->mergeExpansionChunksStrategy;
+        if (!is_null($mergeExpansion)) {
             return $mergeExpansion(...func_get_args());
         } else {
-            // $data = is_null($data) ? [] : $data;
-            // $data += $chunkResult;
+            // Watch this: Not clear why this is necessary but it helped caching
+            var_dump('Is null');
+            $data = is_null($data) ? [] : $data;
+            $data = array_merge($data, $chunkResult);
             return $data;
         }
     }
 
-    public function joinExpansionToParent($record, $fieldInfo, $vals) {
+    public function joinExpansionToParent($recordIndex, $record, $fieldInfo, $vals)
+    {
+        // if($fieldInfo->getDisplayName() == 'CI'){
+        //     echo 'here';
+        // }
         if (is_callable($this->expansionJoinStrategy)) {
             $join = $this->expansionJoinStrategy;
             return $join(...func_get_args());
@@ -485,5 +531,4 @@ class EntityDefinitionBrowser {
             return $record;
         }
     }
-
 }

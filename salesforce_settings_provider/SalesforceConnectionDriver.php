@@ -50,7 +50,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         return parent::renameRecordFields($record, $selected_fields);
     }
 
-    public function mergeRecordArray($data, $chunkResult, EntityFieldDefinition $localField, EntityFieldDefinition $remoteField = NULL) {
+    public function mergeRecordArray($data, $chunkResult, EntityFieldDefinition $localField, EntityFieldDefinition $remoteField = NULL) {        
         return parent::mergeRecordArray($data, $chunkResult, $localField, $remoteField);
     }
 
@@ -87,6 +87,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
             // Process the request
             $res = json_decode($feed->getContent());
+
             if (is_array($res)) {
                 throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else if (is_null($res)) {

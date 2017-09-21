@@ -326,7 +326,7 @@ QRY;
                 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 $stmt = $pdo->query($query_url);
                 $rs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+                
                 return array_values($rs);
             } catch (\Exception $e) {
 

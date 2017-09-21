@@ -11,23 +11,27 @@ use com\mainone\middleware\SalesforceConnectionDriver;
  * Implements hook_permission
  * @return array
  */
-function salesforce_settings_provider_permission() {
+function salesforce_settings_provider_permission()
+{
     $permission = [];
     return $permission;
 }
 
-function salesforce_settings_provider_connection_driver_salesforce_alter(&$container) {
+function salesforce_settings_provider_connection_driver_salesforce_alter(&$container)
+{
     $connection_settings = salesforce_settings_provider__get_settings();
-    $driver = new SalesforceConnectionDriver(function($x) {
+    $driver = new SalesforceConnectionDriver(function ($x) {
         return mware_connection_driver__get_driver($x);
-    }, function(){}, 'salesforce', $connection_settings);
+    }, function () {
+    }, 'salesforce', $connection_settings);
 
     $defs = salesforce_settings_provider__get_entity_definitions();
     $driver->setEntities($defs);
     $container['salesforce'] = $driver;
 }
 
-function salesforce_settings_provider__user_access($args) {
+function salesforce_settings_provider__user_access($args)
+{
     return true;
 }
 
@@ -35,11 +39,12 @@ function salesforce_settings_provider__user_access($args) {
  * Returns the connection settings with which to connect to salesforce.
  * @return \stdClass
  */
-function salesforce_settings_provider__get_settings($settings = 'default') {
+function salesforce_settings_provider__get_settings($settings = 'default')
+{
     $s = new stdClass();
-    $sT = $settings == 'default' ? variable_get('SALESFORCE_SETTINGS_USE_PRODUCTION', FALSE) : ($settings == 'production' ? TRUE : FALSE);
+    $sT = $settings == 'default' ? variable_get('SALESFORCE_SETTINGS_USE_PRODUCTION', false) : ($settings == 'production' ? true : false);
 
-    if ($sT == FALSE) {
+    if ($sT == false) {
         $s->URL = variable_get('SALESFORCE_SANDBOX_SETTINGS_ENDPOINT_URL');
         $s->Username = variable_get('SALESFORCE_SANDBOX_SETTINGS_USERNAME');
         $s->Password = variable_get('SALESFORCE_SANDBOX_SETTINGS_PASSWORD');
@@ -69,25 +74,9 @@ function salesforce_settings_provider__get_settings($settings = 'default') {
  * @param String $targetDriver the connection driver to use to retrieve the cache.
  * @return void
  */
-function salesforce_settings_provider__get_cached_entity_definitions($targetDriver){
-    $return = [];
-
-    if($targetDriver != 'salesforce'){
-        $entities = salesforce_settings_provider__get_entity_definitions();
-        foreach($entities as $entity_name => $entity){
-            if(isset($entity['cache_to']) && $entity['cache_to'] == $targetDriver){
-                //TODO: Ensure that values that were ommitted are populated.
-                $fields = &$entity['fields'];
-                $name = "salesforce__{$entity['internal_name']}";
-                $entity['internal_name'] = $name;
-                unset($entity['cache']);
-                unset($entity['cache_to']);
-                $return[$name] = $entity;
-            }
-        }
-    }
-
-    return $return;
+function salesforce_settings_provider__get_cached_entity_definitions($targetDriver)
+{
+    return settings_provider__format_cached_definition('salesforce', $targetDriver, salesforce_settings_provider__get_entity_definitions);
 }
 
 /**
@@ -97,7 +86,8 @@ function salesforce_settings_provider__get_cached_entity_definitions($targetDriv
  * @param string $component
  * @return array
  */
-function salesforce_settings_provider__get_entity_definitions() {
+function salesforce_settings_provider__get_entity_definitions()
+{
     return [
         'record_types' => [
             'internal_name' => 'RecordType'
@@ -170,7 +160,7 @@ function salesforce_settings_provider__get_entity_definitions() {
                 , 'SystemModstamp' => [
                     'preferred_name' => 'SystemModstamp'
                     , 'type' => 'datetime'
-                ]                
+                ]
             ]
         ]
         , 'cash_inflow' => [

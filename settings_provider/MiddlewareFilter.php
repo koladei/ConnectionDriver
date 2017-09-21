@@ -81,7 +81,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 } else if ($fieldInfo->getDataType() != 'int' && strlen($this->quoteValue()) < 1) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} requires that it's values be quoted. {$value}");
                 } else if (($fieldInfo->getDataType() != 'int' && strlen($this->quote) > 1) || ($fieldInfo->getDataType() != 'int' && ($this->quote != '"' && $this->quote != '\''))) {
-                    // var_dump($fieldInfo->getParent()->getDisplayName(), $fieldInfo->getDisplayName(), $value, $operator, $formater);
+                    var_dump($fieldInfo->getParent()->getDisplayName(), $fieldInfo->getDisplayName(), $value, $operator, $formater);
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} only supports qoutes of type ''' or '\"'.");
                 } else {
                     $this->quote = (strlen($this->quote) > 0) ? '\'' : '';

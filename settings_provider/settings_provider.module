@@ -6,24 +6,26 @@ include_once str_replace('/', DIRECTORY_SEPARATOR, $middleware_driver_path . '/M
 
 use com\mainone\middleware\MiddlewareConnectionDriver;
 
-spl_autoload_register(function ($class_name) use($middleware_driver_path) {
+spl_autoload_register(function ($class_name) use ($middleware_driver_path) {
     $last = strrpos('\\', $class_name);
     $class_name = $last > 0 ? substr($class_name, $last + 1) : $class_name;
     $file = $middleware_driver_path . "{$class_name}.php";
     return (file_exists($file) ? require_once $file : false);
 });
 
-function mware_connection_driver__get_driver($driver_name) {
+function mware_connection_driver__get_driver($driver_name)
+{
     $data = [];
     drupal_alter(['connection_driver', 'connection_driver_' . $driver_name], $data);
     
-    return isset($data[$driver_name])?$data[$driver_name]: FALSE;
+    return isset($data[$driver_name])?$data[$driver_name]: false;
 }
 
 /**
  * Implement hook_menu().
  */
-function settings_provider_menu() {
+function settings_provider_menu()
+{
     $items = array();
 
     $items['admin/config/administration/settings_provider'] = array(
@@ -37,6 +39,15 @@ function settings_provider_menu() {
         'type' => MENU_NORMAL_ITEM,
     );
 
+    // Link to cache update cron
+    $items['settings_provider/update-cache'] = [
+        'page callback' => 'settings_provider__update_cache'
+        , 'file' => 'crons/cron.update-cache.inc'
+        , 'page arguments' => ['internal']
+        , 'access arguments' => ['access content']
+        , 'type' => MENU_CALLBACK
+    ];
+
     return $items;
 }
 
@@ -44,7 +55,8 @@ function settings_provider_menu() {
  * Implements hook_permission
  * @return array
  */
-function settings_provider_permission() {
+function settings_provider_permission()
+{
     $permission = [
         'settings_provider administer settings' => [
             'title' => t('Administer settings'),
@@ -58,7 +70,8 @@ function settings_provider_permission() {
  * Implements hook_library
  * @return array
  */
-function settings_provider_library() {
+function settings_provider_library()
+{
     $libraries = array();
 
     return $libraries;
@@ -70,7 +83,8 @@ function settings_provider_library() {
  * @param type $api
  * @return type
  */
-function settings_provider_ctools_plugin_api($owner, $api) {
+function settings_provider_ctools_plugin_api($owner, $api)
+{
     if ($owner == 'services' && $api == 'services') {
         return array(
             'version' => 3,
@@ -85,7 +99,8 @@ function settings_provider_ctools_plugin_api($owner, $api) {
  * @param string $url
  * @param array $settings
  */
-function settings_provider_http_request($url, $settings = array()) {
+function settings_provider_http_request($url, $settings = array())
+{
 
     $request = new \cURL\Request($url);
     $request->getOptions()
@@ -111,7 +126,8 @@ function settings_provider_http_request($url, $settings = array()) {
  * @param string $url
  * @param array $settings
  */
-function settings_provider_blocking_http_request($url, $settings = array()) {
+function settings_provider_blocking_http_request($url, $settings = array())
+{
 
     $request = new \cURL\Request($url);
     $request->getOptions()
@@ -128,4 +144,33 @@ function settings_provider_blocking_http_request($url, $settings = array()) {
 
     $response = $request->send();
     return $response;
+}
+
+function settings_provider__format_cached_definition($from, $to, callable $entitiesSource)
+{
+    $return = [];
+    if ($to != $from) {
+        $entities = $entitiesSource();
+        foreach ($entities as $entity_name => $entity) {
+            if (isset($entity['cache_to']) && $entity['cache_to'] == $to) {
+                //TODO: Ensure that values that were ommitted are populated.
+                $fields = &$entity['fields'];
+                $name = strtolower("{$from}__{$entity['internal_name']}");
+                $entity['internal_name'] = $name;
+                unset($entity['cache']);
+                unset($entity['cache_to']);
+
+                // Ensure that all references to self a properly sorted out in lookup fields
+                foreach ($fields as &$field) {
+                    if (isset($field['relationship'])) {
+                        if (!isset($field['relationship']['remote_driver'])) {
+                            $field['relationship']['remote_driver'] = $from;
+                        }
+                    }
+                }
+                $return[$name] = $entity;
+            }
+        }
+    }
+    return $return;
 }
