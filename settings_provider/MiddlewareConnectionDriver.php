@@ -400,6 +400,7 @@ abstract class MiddlewareConnectionDriver
             }
         }
 
+        // Prepare the selected fields for the return
         if (!isset($otherOptions['$select'])) {
             $otherOptions['$select'] = EntityFieldDefinition::getDisplayNames($setFields);
         } else {
@@ -408,15 +409,21 @@ abstract class MiddlewareConnectionDriver
             $otherOptions['$select'] = array_unique($abccc);
         }
 
+        // Prepare the expanded fields for the returned value
         if (!isset($otherOptions['$expand'])) {
             $otherOptions['$expand'] = '';
         }
 
+        // Invoke the internal create method.
         $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj, $otherOptions);
+        
+        // Requery and return the created object.
         if (property_exists($res, 'd') && $res->success == true) {
             $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             return $return;
-        } else {
+        } 
+        // Otherwise, if something is wrong, retry
+        else {
             if ($retryCount < $this->maxRetries) {
                 return $this->createItem($entityBrowser, $object, $otherOptions);
             } else {
@@ -595,8 +602,8 @@ abstract class MiddlewareConnectionDriver
                 // $remoteEntityBrowser = $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()];
                 $remoteEntityBrowser = isset($remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()])? $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()]:null;
 
-                //TODO: Review this later. Problem is because of cached entities
-                if (!is_null($remoteEntityBrowser)) { //TODO:
+                // TODO: Review this later. Problem is because of cached entities
+                if (!is_null($remoteEntityBrowser)) {
                     $remoteField = $remoteEntityBrowser->getFieldByDisplayName($fieldInfo->getRelatedForeignFieldName());
 
                     // Get the selected subfields of this expanded field

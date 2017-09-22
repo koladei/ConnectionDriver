@@ -135,22 +135,23 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
         $source = $entityBrowser->getDataSourceName();
         
+        watchdog('+CREATE','CCCCC');
         // Get a connection token
         if($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken($source))){
             $sets = '';
             $xets = '';
             $xetz = [];
-            $createId = isset($otherOptions['$createId'])?"{$otherOptions['$createId']}":'0';
+            $createId = isset($otherOptions['$setId'])?"{$otherOptions['$setId']}":'0';
             $createId = $createId == '1'?TRUE:FALSE;
 
-            if($createId && !property_exists($obj, 'Id')){
+            if($createId == TRUE && !property_exists($obj, 'Id')){
                 throw new \Exception('The request states that the \'Id\' field should be set but does not provide it');
             }
 
             // Remove the Id field if present            
-            else if (property_exists($obj, 'Id')) {
+            else if ($createId == FALSE && property_exists($obj, 'Id')) {
                 unset($obj->Id);
-            }   
+            }
 
             // Convert the object to an array
             $obj = $entityBrowser->reverseRenameFields($obj); 
@@ -173,20 +174,15 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                     $sets[] = $updatedField->getInternalName();
                     $xetz[] = ":{$updatedField->getInternalName()}";
                 }
-                // if($createId){
-                //     $sets[] = $idField->getInternalName();
-                //     $xetz[] = ":{$idField->getInternalName()}";
-                // }
 
-                // Execute the Update request.
+                // Prepare the statement.
                 $sets = implode(',', $sets);
                 $xets = implode(',', $xetz);
 
-                $sql = "INSERT INTO {$entityBrowser->getInternalName()}({$sets}) VALUES({$xets})";
-                watchdog('CREATE', $sql);
-
+                $sql = str_replace("\\'", "''", "INSERT INTO {$entityBrowser->getInternalName()}({$sets}) VALUES({$xets})");
                 $statement = $pdo->prepare($sql);
 
+                // Bind values to the statement
                 foreach($updatedFields as $updatedField) {                    
                     $val = $obj["{$updatedField->getInternalName()}"];
                     
@@ -206,10 +202,9 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
 
                     $statement->bindValue(":{$updatedField->getInternalName()}", $val);
                 }
-                // $statement->bindValue(":{$idField->getInternalName()}", $id);
 
                 try {
-                    // Execute the update
+                    // Execute the statement
                     $retu = $statement->execute();
                     
                     $d = new \stdClass();
@@ -318,22 +313,23 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             $where = (strlen($filter) > 0 ? "  WHERE {$filter} " : '');         
             $sel = implode(',', $sel);       
 
-            $query_url = <<<"QRY"
-WITH DEDUPE AS (
-    SELECT {$select2}, ROW_NUMBER() OVER (PARTITION BY {$distinct} ORDER BY {$distinct}) AS OCCURENCE
-    FROM {$entityBrowser->getInternalName()}
-    {$where}
-)
+            $query_url = "
+                WITH DEDUPE AS (
+                    SELECT {$select2}, ROW_NUMBER() OVER (PARTITION BY {$distinct} ORDER BY {$distinct}) AS OCCURENCE
+                    FROM {$entityBrowser->getInternalName()}
+                    {$where}
+                )
 
-SELECT  {$select2}
-FROM    ( SELECT  ROW_NUMBER() OVER ( ORDER BY {$orderBy} ) AS RowNum, {$select2}
-          FROM DEDUPE {$occurence}
-        ) AS RowConstrainedResult
-WHERE   RowNum >= {$start}
-        AND RowNum < {$end}
-ORDER BY RowNum
-QRY;
+                SELECT  {$select2}
+                FROM    ( SELECT  ROW_NUMBER() OVER ( ORDER BY {$orderBy} ) AS RowNum, {$select2}
+                        FROM DEDUPE {$occurence}
+                        ) AS RowConstrainedResult
+                WHERE   RowNum >= {$start}
+                        AND RowNum < {$end}
+                ORDER BY RowNum
+            ";
 
+            $query_url = str_replace("\\'", "''", $query_url);
             try {
                 $pdo = new \PDO($connectionToken->DSN, $connectionToken->Username, $connectionToken->Password);
                 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -367,7 +363,12 @@ QRY;
         } catch (Exception $x) {
             return FALSE;
         }
-    }
+    }   
+
+    // public function fetchFieldValues($record, $selected_field)
+    // {
+    //     return parent::fetchFieldValues($record->{$selected_field}, ['(', ')', "'"], ['_y0028_','_y0029_', '_y0027_'], true);
+    // }
 }
 
 class SQLEntity extends MiddlewareEntity {

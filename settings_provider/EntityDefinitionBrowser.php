@@ -199,9 +199,9 @@ class EntityDefinitionBrowser
      * @param array $fieldNames
      * @return array
      */
-    public function getFieldsByInternalNames(array $fieldNames = null)
+    public function getFieldsByInternalNames(array $fieldNames = [])
     {
-        $fieldNames = is_null($fieldNames) ? array_keys($this->fieldsByInternalName) : $fieldNames;
+        $fieldNames = count($fieldNames) < 1? array_keys($this->fieldsByInternalName) : $fieldNames;
         $r = [];
 
         foreach ($fieldNames as $fieldName) {

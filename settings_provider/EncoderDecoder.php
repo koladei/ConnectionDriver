@@ -7,13 +7,20 @@ class EncoderDecoder{
         return str_replace(['\\(', '\\)', '\\\''], ['_y0028_','_y0029_', '_y0027_'], $value);
     }
 
-    public static function unescape($value){
-        return str_replace(['_y0028_','_y0029_', '_y0027_'], ['(', ')', '\\\''], $value);
+    public static function unescape($value, $niddle = [], $replacement = [], $enforce = FALSE){
+        if($enforce){
+            return str_replace($niddle, $replacement, $value);
+        } else {
+            return str_replace(array_merge(['_y0028_','_y0029_', '_y0027_'], $niddle), array_merge(['(', ')', "\'"], $replacement), $value);
+        }
     }
 
-    public static function escapeinner($value){
-        $return = str_replace(['(', ')', "'"], ['_y0028_','_y0029_', '_y0027_'], $value);
-        return $return;
+    public static function escapeinner($value, $niddle = [], $replacement = [], $enforce = FALSE){
+        if($enforce){
+            return str_replace($niddle, $replacement, $value);
+        } else {
+            return str_replace(array_merge(['(', ')', "'"], $niddle), array_merge(['_y0028_','_y0029_', '_y0027_'], $replacement), $value);
+        }
     }
 
     public static function encode($value){

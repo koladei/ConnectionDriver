@@ -93,7 +93,6 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         // Implement checking if field is meant to be a string or otherwise
         $backslash = '\\';
         if (is_array($this->value)) {
-            // $im = implode("{$this->quote},{$this->quote}", $this->value);
             $im = implode("_x0027_,_x0027_", $this->value);
             $im = str_replace("{$this->quote}", "{$backslash}{$this->quote}", $im);
             $im = str_replace("_x0027_", "{$this->quote}", $im);
@@ -104,8 +103,6 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         } else {
             $return = "_x0027_{$this->value}_x0027_";
             $return = str_replace("{$this->quote}", "{$backslash}{$this->quote}", $return);
-            // $return = str_replace("{$this->quote}", "_y0027_", $return);
-            // $return = str_replace("_x0027_", "{$this->quote}", $return);
             $return = "{$this->quote}{$this->value}{$this->quote}";
 
             return $return;
