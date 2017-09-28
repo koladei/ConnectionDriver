@@ -57,32 +57,6 @@ function ldap_connection_driver_library() {
     return $libraries;
 }
 
-/**
- * Returns the connection settings with which to connect to salesforce.
- * @return \stdClass
- */
-function ldap_connection_driver__get_settings($settings = 'default') {
-    $s = new stdClass();
-    $sT = $settings == 'default' ? variable_get('SALESFORCE_SETTINGS_USE_PRODUCTION', FALSE) : ($settings == 'production' ? TRUE : FALSE);
-
-    if ($sT == FALSE) {
-        $s->URL = variable_get('SALESFORCE_SANDBOX_SETTINGS_ENDPOINT_URL');
-        $s->Username = variable_get('SALESFORCE_SANDBOX_SETTINGS_USERNAME');
-        $s->Password = variable_get('SALESFORCE_SANDBOX_SETTINGS_PASSWORD');
-        $s->GrantType = variable_get('SALESFORCE_SANDBOX_SETTINGS_GRANT_TYPE');
-        $s->ClientID = variable_get('SALESFORCE_SANDBOX_SETTINGS_CLIENT_ID');
-        $s->ClientSecret = variable_get('SALESFORCE_SANDBOX_SETTINGS_CLIENT_SECRET');
-    } else {
-        $s->URL = variable_get('SALESFORCE_SETTINGS_ENDPOINT_URL');
-        $s->Username = variable_get('SALESFORCE_SETTINGS_USERNAME');
-        $s->Password = variable_get('SALESFORCE_SETTINGS_PASSWORD');
-        $s->GrantType = variable_get('SALESFORCE_SETTINGS_GRANT_TYPE');
-        $s->ClientID = variable_get('SALESFORCE_SETTINGS_CLIENT_ID');
-        $s->ClientSecret = variable_get('SALESFORCE_SETTINGS_CLIENT_SECRET');
-    }
-    return $s;
-}
-
 
 function  ldap_connection_driver__get_entity_definition($entity_name, $component = NULL){
     $entities = ldap_connection_driver__get_entity_definitions();
