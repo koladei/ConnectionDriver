@@ -62,7 +62,6 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
         $retryCount = 0;
 
         $response = new \stdClass();
-
         
         //Connect to a Sharepoint site
         $site = 'https://mainyard.mainone.net/docs';
