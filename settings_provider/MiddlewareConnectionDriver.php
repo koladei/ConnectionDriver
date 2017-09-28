@@ -229,7 +229,7 @@ abstract class MiddlewareConnectionDriver
         $otherOptions['retryCount'] = $retryCount + 1;
 
         try {
-            $result = $this->executeTargetedFunctionInternal($functionName, $data, $this->connectionToken, $otherOptions);
+            $result = $this->executeTargetedFunctionInternal($entityBrowser, $id, $functionName, $data, $this->connectionToken, $otherOptions);
             return $result;
         } catch (\Exception $exc) {
             if ($retryCount < $this->maxRetries) {

@@ -11,9 +11,10 @@ use com\mainone\middleware\EntityDefinitionBrowser;
  *
  * @author Kolade.Ige
  */
-class LDAPConnectionDriver extends MiddlewareConnectionDriver {
+class LDAPConnectionDriver extends MiddlewareConnectionDriver
+{
 
-    private $query = NULL;
+    private $query = null;
     private $host = 'ldapserver';
     private $protocol = 'ldaps';
     private $port = 636;
@@ -21,7 +22,8 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
     private $password = '';
     private $dn = '';
 
-    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier = __CLASS__, $host, $protocol, $port = 636, $username = '', $password = '', $dn = '') {
+    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier = __CLASS__, $host, $protocol, $port = 636, $username = '', $password = '', $dn = '')
+    {
         parent::__construct($driverLoader, $sourceLoader, $identifier);
 
         $this->host = $host;
@@ -34,25 +36,26 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         return $this;
     }
 
-    public function updateItemInternal($entityBrowser, &$connectionToken = NULL, $id, \stdClass $object, array $otherOptions = []) {
-        
+    public function updateItemInternal($entityBrowser, &$connectionToken = null, $id, \stdClass $object, array $otherOptions = [])
+    {
     }
 
-    public function createItemInternal($entityBrowser, &$connectionToken = NULL, \stdClass $object, array $otherOptions = []) {
-        
+    public function createItemInternal($entityBrowser, &$connectionToken = null, \stdClass $object, array $otherOptions = [])
+    {
     }
 
-    public function deleteItemInternal($entityBrowser, &$connectionToken = NULL, $id, array $otherOptions = []) {
-        
+    public function deleteItemInternal($entityBrowser, &$connectionToken = null, $id, array $otherOptions = [])
+    {
     }
 
-    public function getItemsInternal($entityBrowser, &$ldapbind = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
+    public function getItemsInternal($entityBrowser, &$ldapbind = null, array $select, $filter, $expands = [], $otherOptions = [])
+    {
 
         // Remove the field prefix
         $filter = str_replace('_xENTITYNAME_', '', $filter);
 
         // Try getting the phone number from active directory
-        $con = NULL;
+        $con = null;
         $dn = $this->dn;
 
         // obtain a connection binding.
@@ -71,14 +74,12 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
                             $fieldInfo = $entityBrowser->getFieldByInternalName($f);
                             unset($sel['count']);
                             foreach ($sel as &$sele) {
-
                                 if ($fieldInfo->getDisplayName() == 'Id') {
                                     $sele = strtolower($sele);
-                                } else
-                                if ($fieldInfo->isPhoto()) {
+                                } elseif ($fieldInfo->isPhoto()) {
                                     $en = base64_encode($sele);
                                     $sele = "data:image/png;base64,{$en}";
-                                } else if ($fieldInfo->isBlob()) {
+                                } elseif ($fieldInfo->isBlob()) {
                                     $sele = base64_encode($sele);
                                 }
                             }
@@ -96,11 +97,48 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         return [];
     }
 
-    public function getStringer() {
+    public function getStringer()
+    {
         return MiddlewareFilter::LDAP;
     }
 
-    private function bindTOLDAPServer(&$connection = NULL) {
+        
+    public function executeTargetedFunctionInternal($entityBrowser, $id, $functionName, array $data = [], &$connectionToken = null, array $otherOptions = [])
+    {
+        switch ($functionName) {
+            case 'verifypassword': {
+                // Remove the field prefix
+                $filter = str_replace('_xENTITYNAME_', '', $filter);
+        
+                // Try getting the phone number from active directory
+                $con = null;
+                $dn = $this->dn;
+                $dc = explode(',', str_replace('DC=', '', trim($dn)));
+
+                if(!isset($data['username'])){
+                    throw new \Exception('Username can not be blank');
+                }
+
+                if(!isset($data['password']) || strlen($data['password']) < 1){
+                    throw new \Exception('Password can not be blank');
+                }
+        
+                // obtain a connection binding.
+                $ldapbind = $this->bindTOLDAPServer($con, "{$dc[0]}\\{$data['username']}", $data['password']);
+                
+                if($ldapbind){
+                    return $this->getItemById('objects', $id, 'DN,EMail,DisplayName');
+                }
+                throw new \Exception('Username and/or password is not valid');
+            }
+            default:{
+                throw new \Exception("The function '{$functionName}' is not recognized.");
+            }
+        }
+    }
+
+    private function bindTOLDAPServer(&$connection = null, $username = NULL, $password = NULL)
+    {
         //connect to active directory and get the details of the user.
         putenv('LDAPTLS_REQCERT=never');
         $server = "{$this->protocol}://{$this->host}:{$this->port}"; //"ldaps://moghdc01.mainonecable.com:636";
@@ -108,8 +146,9 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         $connection = \ldap_connect($server);
         $binding = null;
 
-        $ldaprdn = $this->username;
-        $ldappass = $this->password;
+
+        $ldaprdn = is_null($username) ? $this->username : $username;
+        $ldappass = is_null($username) ? $this->password : $password;
 
         \ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
         \ldap_set_option($connection, LDAP_OPT_REFERRALS, 0);
@@ -124,9 +163,9 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver {
         return false;
     }
 
-    protected function getDefaultFilter() {
+    protected function getDefaultFilter()
+    {
 
         return 'ObjectClass eq \'*\'';
     }
-
 }
