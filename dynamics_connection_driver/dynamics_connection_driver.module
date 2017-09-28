@@ -367,27 +367,37 @@ function dynamics_connection_driver__get_entity_definitions() {
                     , 'type' => 'string',
                 ]
                 , '_INVOICE_INFORMATION' => [
-                        'preferred_name' => 'InvoiceInformation'
-                        , 'type' => 'detail'
-                        , 'lookup_entity' => 'cust_trans'
-                        , 'relationship' => [
-                            'local_field' => 'InvoiceNumber'
-                            , 'remote_field' => 'InvoiceId'
-                            , 'remote_type' => 'parent'
-                            , 'filter' => 'TransactionType eq 8'
-                        ]
-                    ]
-                , '_LINE_TRANSACTIONS' => [
-                        'preferred_name' => 'LineTransactions'
-                        , 'type' => 'detail'
-                        , 'relationship' => [
-                            'local_field' => 'Id'
-                            , 'remote_field' => 'TransactionId'
-                            , 'remote_type' => 'child'
-                            , 'remote_entity' => 'cust_invoice_line_transaction'
-                        ]
+                    'preferred_name' => 'InvoiceInformation'
+                    , 'type' => 'detail'
+                    , 'lookup_entity' => 'cust_trans'
+                    , 'relationship' => [
+                        'local_field' => 'InvoiceNumber'
+                        , 'remote_field' => 'InvoiceId'
+                        , 'remote_type' => 'parent'
+                        , 'filter' => 'TransactionType eq 8'
                     ]
                 ]
+                , '_LINE_TRANSACTIONS' => [
+                    'preferred_name' => 'LineTransactions'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'OffsetTransactionId'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cust_invoice_line_transaction'
+                    ]
+                ]                
+                , '_TAX_TRANSACTIONS' => [
+                    'preferred_name' => 'TaxTransactions'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'VoucherNumber'
+                        , 'remote_field' => 'VoucherNumber'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'tax_trans'
+                    ]
+                ]  
+            ]              
         ]
         , 'cust_invoice_table' => [
             'internal_name' => 'CustInvoiceTable'
@@ -621,7 +631,7 @@ function dynamics_connection_driver__get_entity_definitions() {
             ]
         ]
         , 'cust_invoice_line_transaction' => [
-            'internal_name' => 'CustInvoiceLineTransactions'
+            'internal_name' => 'CustInvoiceLineTrans'
             , 'fields' => [
                 'RECID' => [
                     'preferred_name' => 'Id'
@@ -636,7 +646,7 @@ function dynamics_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime',
                 ]
-                , 'INVOICELINE' => [
+                , 'INVOICELINEID' => [
                     'preferred_name' => 'InvoiceLine'
                     , 'type' => 'int'
                     , 'relationship' => [
@@ -647,18 +657,18 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'cust_invoice_line'
                     ],
                 ]
-                , 'TRANSACTION' => [
-                    'preferred_name' => 'Transaction'
+                , 'OFFSETTRANSACTIONID' => [
+                    'preferred_name' => 'OffsetTransaction'
                     , 'type' => 'int'
                     , 'relationship' => [
-                        'local_field' => 'Transaction'
-                        , 'preferred_local_key_name' => 'TransactionId'
+                        'local_field' => 'OffsetTransaction'
+                        , 'preferred_local_key_name' => 'OffsetTransactionId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cust_trans'
                     ]
                 ]
-                , 'PAYMENT' => [
+                , 'PAYMENTTRANSACTIONID' => [
                     'preferred_name' => 'PaymentTransaction'
                     , 'type' => 'int'
                     , 'relationship' => [
@@ -862,6 +872,49 @@ function dynamics_connection_driver__get_entity_definitions() {
                 ]
                 , 'INVENTSERIALID' => [
                     'preferred_name' => 'SerialId'
+                    , 'type' => 'string'
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+            ]
+        ]
+        , 'tax_trans' => [
+            'internal_name' => 'TaxTrans'
+            , 'description' => 'A table'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                ]
+                , 'DATAAREAID' => [
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string'
+                ]
+                , 'INVOICEID' => [
+                    'preferred_name' => 'InvoiceId'
+                    , 'type' => 'string'
+                ]
+                , 'CURRENCYCODE' => [
+                    'preferred_name' => 'CurrencyCode'
+                    , 'type' => 'string'
+                ]
+                , 'TAXAMOUNTCUR' => [
+                    'preferred_name' => 'Amount'
+                    , 'type' => 'int'
+                ]
+                , 'TAXBASEAMOUNTCUR' => [
+                    'preferred_name' => 'BaseAmount'
+                    , 'type' => 'int'
+                ]
+                , 'VOUCHER' => [
+                    'preferred_name' => 'VoucherNumber'
                     , 'type' => 'string'
                 ]
                 , 'MODIFIEDDATETIME' => [
