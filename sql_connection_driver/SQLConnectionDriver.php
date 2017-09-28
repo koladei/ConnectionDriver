@@ -135,7 +135,6 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
         $source = $entityBrowser->getDataSourceName();
         
-        watchdog('+CREATE','CCCCC');
         // Get a connection token
         if($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken($source))){
             $sets = '';
