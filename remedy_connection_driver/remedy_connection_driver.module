@@ -277,6 +277,10 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Description'
                     , 'type' => 'string'
                 ]
+                , 'Detailed_Description' => [
+                    'preferred_name' => 'DetailedDescription'
+                    , 'type' => 'string'
+                ]
                 , 'Work_Log_Type' => [
                     'preferred_name' => 'Type'
                     , 'type' => 'string'
