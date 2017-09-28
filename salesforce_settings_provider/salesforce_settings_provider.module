@@ -76,10 +76,6 @@ function salesforce_settings_provider__get_settings($settings = 'default')
  */
 function salesforce_settings_provider__get_cached_entity_definitions($targetDriver)
 {
-    // $callback = function(){
-    //     $args = func_get_args();
-    //     salesforce_settings_provider__get_entity_definitions(...$args);
-    // }
     return settings_provider__format_cached_definition('salesforce', $targetDriver, function(){
         $args = func_get_args();
         return salesforce_settings_provider__get_entity_definitions(...$args);
@@ -99,6 +95,7 @@ function salesforce_settings_provider__get_entity_definitions()
         'record_types' => [
             'internal_name' => 'RecordType'
             , 'cache_to' => 'sql'
+            , 'cache_freq' => 360
             , 'fields' => [
                 'Id' => [
                     'preferred_name' => 'Id'
@@ -160,10 +157,6 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'SObjectType'
                     , 'type' => 'string'
                 ]
-                // , 'sActive' => [
-                //     'preferred_name' => 'IsActive'
-                //     , 'type' => 'string'
-                // ]
                 , 'SystemModstamp' => [
                     'preferred_name' => 'SystemModstamp'
                     , 'type' => 'datetime'
@@ -319,6 +312,7 @@ function salesforce_settings_provider__get_entity_definitions()
         , 'customer_product' => [
             'internal_name' => 'Customer_Products__c'
             , 'cache_to' => 'sql'
+            , 'cache_freq' => 5
             , 'fields' => [
                 'Id' => [
                     'preferred_name' => 'Id'
