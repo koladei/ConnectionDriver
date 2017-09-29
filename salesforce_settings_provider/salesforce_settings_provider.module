@@ -166,7 +166,7 @@ function salesforce_settings_provider__get_entity_definitions()
         , 'cash_inflow' => [
             'internal_name' => 'Cash_Inflow__c'
             , 'cache_to' => 'sql'
-            , 'cache_freq' => 60
+            // , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name'
@@ -1089,7 +1089,7 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Title'
                     , 'type' => 'string'
                 ]
-                , 'Account' => [
+                , 'AccountId' => [
                     'preferred_name' => 'Account'
                     , 'type' => 'string'
                     , 'relationship' => [
@@ -1110,16 +1110,6 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'contact'
                     ]
-                ]
-                , '_Accounts' => [
-                    'preferred_name' => 'Account'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'Id'
-                        , 'remote_field' => 'Sector'
-                        , 'remote_type' => 'child'
-                        , 'remote_entity' => 'account'
-                    ],
                 ]
             ]
         ]

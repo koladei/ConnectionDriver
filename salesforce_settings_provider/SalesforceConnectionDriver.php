@@ -256,11 +256,19 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         // Get the requstToken
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
 
+            $top = $otherOptions['$top'];
+            $skip = $otherOptions['$skip'];
+            $pageNumber = $otherOptions['$pageNumber'];
+            $pageSize = $otherOptions['$pageSize'];
+            $orderBy = $otherOptions['$orderBy'];
+            $all = isset($otherOptions['$all']) && ''.$otherOptions['$all'] = '1'?TRUE:FALSE;
+
+            // Determin the record to start from based on the $pageSize and $pageNumber;
+            $start = ($pageSize * ($pageNumber - 1)) + $skip;
+
             // Prepare the limit
-            $limit = ' LIMIT 200';
-            if (isset($otherOptions['$top'])) {
-                $limit = " LIMIT {$otherOptions['$top']}";
-            }
+            $limit = " LIMIT {$pageSize}";
+            
 
             // Prepare the POST request
             $options = array(
@@ -279,30 +287,50 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 // $tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
             }
 
-            // $filter = trim($filter, '[]');
-            // $filter = str_replace('[[', '(', str_replace(']]', ')', $filter));
+            $result = [];
+            $lastResult = [];
+            $counter = 0;
+            do {
+                if($start > 2000){
+                    $start = 2000;
+                }
 
-            // Generate the SOQL query to send in the POST request
-            $query_url =  'SELECT ' . implode(',', $select)
-                . " FROM {$entityBrowser->getInternalName()}"
-                . (strlen($filter) > 0 ? "  WHERE {$filter} " : '')
-                . $limit;
+                // Prepare the limit
+                $offset = " OFFSET {$start}";
 
-            // Execute the POST request.
-            $new_url = $connectionToken->instance_url . '/services/data/v35.0/query?' . drupal_http_build_query(['q' => $query_url]);
-            
-            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+                if($all){                    
+                    $limit = " LIMIT 1000000000";
+                }
 
-            // Process the request
-            $content =$feed->getContent();
+                // Generate the SOQL query to send in the POST request
+                $query_url =  'SELECT ' . implode(',', $select)
+                    . " FROM {$entityBrowser->getInternalName()}"
+                    . (strlen($filter) > 0 ? "  WHERE {$filter} " : '')
+                    . ' ORDER BY Id'
+                    . $limit
+                    . $offset;
 
-            $res = json_decode($content);
+                // Execute the POST request.
+                $new_url = $connectionToken->instance_url . '/services/data/v39.0/query?' . drupal_http_build_query(['q' => $query_url]);
+                
+                $feed = mware_blocking_http_request($new_url, ['options' => $options]);
 
-            if (is_object($res) && property_exists($res, 'records')) {
-                return $res->records;
-            } else {
-                throw new \Exception("An empty response was received from Salesforce. Please retry later. {$query_url}\n{$content}");
-            }
+                // Process the request
+                $content =$feed->getContent();
+
+                $res = json_decode($content);
+
+                if (is_object($res) && property_exists($res, 'records')) {
+                    $lastResult = $res->records;
+                    $result = array_merge($result, $lastResult);
+                } else {
+                    throw new \Exception("An empty response was received from Salesforce. Please retry later. {$query_url}\n{$content}");
+                }
+
+                $start = $start + count($lastResult);
+            } while($all && $start <= 2000);
+
+            return $result;
         } else {
             throw new \Exception('Unable to connect to Salesforce');
         }
