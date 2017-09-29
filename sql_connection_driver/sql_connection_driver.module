@@ -178,6 +178,17 @@ function sql_connection_driver__get_entity_definitions()
                         , 'remote_driver' => 'dynamics_ax'
                     ]
                 ]
+                , '_Contacts' => [
+                    'preferred_name' => 'Contacts'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'SystemKey'
+                        , 'remote_field' => 'Account'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'contact'
+                        , 'remote_driver' => 'salesforce'
+                    ],
+                ]
             ]
         ]
         , 'system_entity' => [
