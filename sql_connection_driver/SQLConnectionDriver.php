@@ -87,10 +87,10 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 $statement = $pdo->prepare($sql);
 
                 foreach($updatedFields as $updatedField) {                    
-                    $val = $obj["{$updatedField->getDisplayName()}"];
+                    $val = isset($obj["{$updatedField->getDisplayName()}"])?$obj["{$updatedField->getDisplayName()}"]:NULL;
                     
                     if(is_null($val)){
-                        $val = 'NULL';
+                        $val = NULL;
                     } 
                     
                     else if($updatedField->isDate()) {
@@ -183,13 +183,13 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
 
                 // Bind values to the statement
                 foreach($updatedFields as $updatedField) {                    
-                    $val = $obj["{$updatedField->getInternalName()}"];
+                    $val = isset($obj["{$updatedField->getInternalName()}"])?$obj["{$updatedField->getInternalName()}"]:NULL;
                     
                     if(is_null($val)){
-                        $val = 'NULL';
+                        $val = NULL;
                     } 
                     
-                    else if($updatedField->isDate()) {
+                    elseif($updatedField->isDate()) {
                         $val = $updatedField->getValue($val)->format('Y-m-d');
                         $val = "{$val}";
                     } 
