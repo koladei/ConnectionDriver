@@ -255,6 +255,45 @@ function sql_connection_driver__get_entity_definitions()
                 ]
             ]
         ]
+        , 'syncherrorlog' => [
+            'internal_name' => 'SynchErrorLog'
+            , 'datasource' => 'default'
+            , 'fields' => [
+                'ID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Details' => [
+                    'preferred_name' => 'Details'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'FileName' => [
+                    'preferred_name' => 'FileName'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'LineNumber' => [
+                    'preferred_name' => 'LineNumber'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Modified' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'Created' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+            ]
+        ]
     ];
 
     // Add other entities that have been cached to this driver.
