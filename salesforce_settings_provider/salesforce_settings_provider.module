@@ -590,6 +590,8 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'account' => [
             'internal_name' => 'Account'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 5
             , 'fields' => [
                 'Industry' => [
                     'preferred_name' => 'Industry'
@@ -850,6 +852,8 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'salesforce_user' => [
             'internal_name' => 'User'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 7200
             , 'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name'
