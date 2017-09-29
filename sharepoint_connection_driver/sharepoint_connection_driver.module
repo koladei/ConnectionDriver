@@ -135,15 +135,11 @@ function sharepoint_connection_driver__get_entity_definitions() {
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
-                , 'DeveloperName' => [
-                    'preferred_name' => 'DeveloperName'
-                    , 'type' => 'string'
-                ]
-                , 'CreatedDate' => [
+                , 'Created' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
-                , 'CreatedById' => [
+                , 'CreatedBy' => [
                     'preferred_name' => 'CreatedBy'
                     , 'type' => 'string'
                     , 'relationship' => [
@@ -154,11 +150,11 @@ function sharepoint_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'sharepoint_user'
                     ]
                 ]
-                , 'LastModifiedDate' => [
+                , 'Modified' => [
                     'preferred_name' => 'Modified'
                     , 'type' => 'datetime'
                 ]
-                , 'LastModifiedById' => [
+                , 'ModifiedBy' => [
                     'preferred_name' => 'ModifiedBy'
                     , 'type' => 'string'
                     , 'relationship' => [
@@ -168,31 +164,7 @@ function sharepoint_connection_driver__get_entity_definitions() {
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'sharepoint_user'
                     ]
-                ]
-                , 'NamespacePrefix' => [
-                    'preferred_name' => 'NamespacePrefix'
-                    , 'type' => 'string'
-                ]
-                , 'BusinessProcessId' => [
-                    'preferred_name' => 'BusinessProcessId'
-                    , 'type' => 'string'
-                ]
-                , 'Description' => [
-                    'preferred_name' => 'Description'
-                    , 'type' => 'string'
-                ]
-                , 'SobjectType' => [
-                    'preferred_name' => 'SObjectType'
-                    , 'type' => 'string'
-                ]
-                , 'sActive' => [
-                    'preferred_name' => 'IsActive'
-                    , 'type' => 'string'
-                ]
-                , 'SystemModstamp' => [
-                    'preferred_name' => 'SystemModstamp'
-                    , 'type' => 'datetime'
-                ]                
+                ]                              
             ]
         ]
     ];
