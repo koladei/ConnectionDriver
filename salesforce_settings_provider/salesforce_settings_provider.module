@@ -712,7 +712,17 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'cash_inflow'
                     ],
-                ],
+                ]
+                , '_Contacts' => [
+                    'preferred_name' => 'Contacts'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'Account'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'contact'
+                    ],
+                ]
             ]
         ]
         , 'opportunity' => [
@@ -907,7 +917,9 @@ function salesforce_settings_provider__get_entity_definitions()
             ],
         ]
         , 'sales_target' => [
-            'internal_name' => 'SalesTarget'
+            'internal_name' => 'SalesTarget__c'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 7200
             , 'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name'
@@ -921,8 +933,8 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
-                , 'Year' => [
-                    'preferred_name' => 'Year__c'
+                , 'Year__c' => [
+                    'preferred_name' => 'Year'
                     , 'type' => 'int'
                 ]
                 , 'Q1_Target__c' => [
@@ -961,6 +973,8 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'sales_sector' => [
             'internal_name' => 'Sales_Sector__c'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 7200
             , 'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name'
@@ -987,6 +1001,85 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , '_Accounts' => [
                     'preferred_name' => 'Accounts'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'Sector'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'account'
+                    ],
+                ]
+            ]
+        ]
+        , 'contact' => [
+            'internal_name' => 'Contact'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 7200
+            , 'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Email' => [
+                    'preferred_name' => 'Email'
+                    , 'type' => 'string'
+                ]
+                , 'Salutation' => [
+                    'preferred_name' => 'Salutation'
+                    , 'type' => 'string'
+                ]
+                , 'MobilePhone' => [
+                    'preferred_name' => 'MobilePhone'
+                    , 'type' => 'string'
+                ]
+                , 'Phone' => [
+                    'preferred_name' => 'Phone'
+                    , 'type' => 'string'
+                ]
+                , 'OtherPhone' => [
+                    'preferred_name' => 'OtherPhone'
+                    , 'type' => 'string'
+                ]
+                , 'Type__c' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                ]
+                , 'Title' => [
+                    'preferred_name' => 'Title'
+                    , 'type' => 'string'
+                ]
+                , 'Account' => [
+                    'preferred_name' => 'Account'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Account'
+                        , 'preferred_local_key_name' => 'AccountId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                    ]
+                ]
+                , 'ReportsTo' => [
+                    'preferred_name' => 'ReportsTo'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ReportsTo'
+                        , 'preferred_local_key_name' => 'ReportsToId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'contact'
+                    ]
+                ]
+                , '_Accounts' => [
+                    'preferred_name' => 'Account'
                     , 'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'Id'
