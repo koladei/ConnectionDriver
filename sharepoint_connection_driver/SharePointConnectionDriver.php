@@ -379,9 +379,6 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
     }
 
     private function getFormDigestValue($site = 'localhost', $username = null, $password = null, &$header = [], $cookiefile = '/dev/null') {
-        
-        
-        
         $connection = new \Sharepoint\Connection('mainyard.mainone.net', $username, $password, 443, TRUE);
         $connection->debug = TRUE;
         $response = $connection->post('https://mainyard.mainone.net/docs/_api/contextinfo', '');
@@ -393,8 +390,6 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
         $options = [
             CURLOPT_HTTPHEADER => [
                 'Accept: application/json; odata=verbose',
-                // 'Content-Type: application/json',
-                // 'Content-Length: 0'
             ],
             CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
             CURLOPT_SSL_VERIFYPEER => 0,
@@ -405,35 +400,12 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
             CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)',
             CURLOPT_HTTPAUTH => CURLAUTH_NTLM,            
             CURLOPT_USERPWD => "{$username}:{$password}",
-            // CURLOPT_COOKIESESSION => TRUE,
-            // CURLOPT_COOKIEFILE => $cookiefile,
-            // CURLOPT_COOKIEJAR => $cookiefile,
             CURLOPT_POSTFIELDS => '',
             CURLOPT_POST => TRUE
         ];
 
         $a = function($curl, $header_line) use(&$options){
-            // $ax = explode(':', $header_line, 2);
-            echo $header_line;
-
-            // switch(strtolower($ax[0])){
-            //     case 'sprequestguid':
-            //     case 'request-id':{
-            //         foreach($options[CURLOPT_HTTPHEADER] as &$header){
-            //             if(substr(trim(strtolower($header)), 0, strlen($ax[0])) == $ax[0]){
-            //                 $header = $header_line;
-            //             } else {
-            //                 $options[CURLOPT_HTTPHEADER][] = $header_line;
-            //             }
-            //             break;
-            //         }                    
-            //     }
-            //     case 'www-authenticate':{
-            //         if(substr(trim($header_line), 0, 24) == 'www-authenticate: bearer'){
-            //             $header = $header_line;
-            //         }
-            //     }
-            // }
+            
         };
            
         $options[CURLOPT_HEADERFUNCTION] = $a;
