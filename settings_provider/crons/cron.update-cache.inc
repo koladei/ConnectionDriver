@@ -39,17 +39,31 @@ function settings_provider__update_cache()
                     $selectFields = implode(', ', $selectFields);
 
                     $filter = "Created ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}' or Modified ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}'";
-                    $newbies = $source->getItems(
-                        $entity['original_display_name'], 
-                        $selectFields, 
-                        $filter, 
-                        '', 
-                        [
-                            '$top' => 5000,
-                            '$skipCache' => 1
-                        ]
-                    );
-                    
+                    $newbies = [];
+                    try {
+                        $newbies = $source->getItems(
+                            $entity['original_display_name'], 
+                            $selectFields, 
+                            $filter, 
+                            '', 
+                            [
+                                '$top' => 5000,
+                                '$skipCache' => 1
+                            ]
+                        );
+                    } catch(\Exception $ce){
+                        // Log this synchronization error.
+                        $info = new \stdClass();
+                        $info->Name = 'GET DATA ERROR';
+                        $info->EntityName = $entity['original_display_name'];
+                        $info->Details = $ce->getTraceAsString() . ' :: '. $ce->getMessage();
+                        $info->LineNumber = $ce->getLine();
+                        $info->FileName = $ce->getFile();
+                        $info->Created = $now->format('Y-m-d\TH:i:s');
+                        $info->Modified = $now->format('Y-m-d\TH:i:s');
+                        $sql->createItem('syncherrorlog', $info);
+                    }
+
                     $synched = 0;
                     foreach ($newbies as $newbie) {
                         try {
@@ -108,7 +122,7 @@ function settings_provider__update_cache()
                         }
                     }
 
-                    if($synched == count($newbies)){
+                    if($synched == count($newbies) && $synched > 0){
                         variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $now->format('Y-m-d\TH:i:s'));
                     }
                 }
