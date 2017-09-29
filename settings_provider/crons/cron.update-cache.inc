@@ -47,7 +47,7 @@ function settings_provider__update_cache()
                             $filter, 
                             '', 
                             [
-                                '$top' => 5000,
+                                '$all' => 1,
                                 '$skipCache' => 1
                             ]
                         );
