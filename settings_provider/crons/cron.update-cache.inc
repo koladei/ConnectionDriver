@@ -66,9 +66,10 @@ function settings_provider__update_cache()
                                     // Log this synchronization error.
                                     $info = new \stdClass();
                                     $info->Name = 'CREATING CACHE ITEM';
-                                    $info->Details = $ce->getMessage();
-                                    $info->LineNumber = "{__LINE__}";
-                                    $info->FileName = "{__DIR__} {__FILE__}";
+                                    $info->EntityName = $entity['original_display_name'];
+                                    $info->Details = $ce->getTraceAsString() . ' :: '. $ce->getMessage();
+                                    $info->LineNumber = $ce->getLine();
+                                    $info->FileName = $ce->getFile();
                                     $info->Created = $now->format('Y-m-d\TH:i:s');
                                     $info->Modified = $now->format('Y-m-d\TH:i:s');
                                     $sql->createItem('syncherrorlog', $info);
@@ -84,9 +85,10 @@ function settings_provider__update_cache()
                                     // Log this synchronization error.
                                     $info = new \stdClass();
                                     $info->Name = 'UPDATING CACHE ITEM';
-                                    $info->Details = $ce->getMessage();
-                                    $info->LineNumber = "{__LINE__}";
-                                    $info->FileName = "{__DIR__} {__FILE__}";
+                                    $info->EntityName = $entity['original_display_name'];
+                                    $info->Details = $ce->getTraceAsString() . ' :: '. $ce->getMessage();
+                                    $info->LineNumber = $ce->getLine();
+                                    $info->FileName = $ce->getFile();
                                     $info->Created = $now->format('Y-m-d\TH:i:s');
                                     $info->Modified = $now->format('Y-m-d\TH:i:s');
                                     $sql->createItem('syncherrorlog', $info);
@@ -96,9 +98,10 @@ function settings_provider__update_cache()
                             // Log this synchronization error.
                             $info = new \stdClass();
                             $info->Name = 'GENERAL ITEM SYNCH ERROR';
-                            $info->Details = $ce->getMessage();
-                            $info->LineNumber = "{__LINE__}";
-                            $info->FileName = "{__DIR__} {__FILE__}";
+                            $info->EntityName = $entity['original_display_name'];
+                            $info->Details = $ce->getTraceAsString() . ' :: '. $ce->getMessage();
+                            $info->LineNumber = $ce->getLine();
+                            $info->FileName = $ce->getFile();
                             $info->Created = $now->format('Y-m-d\TH:i:s');
                             $info->Modified = $now->format('Y-m-d\TH:i:s');
                             $sql->createItem('syncherrorlog', $info);
@@ -112,6 +115,4 @@ function settings_provider__update_cache()
             }
         }
     }
-
-    // Update each entity record.
 }

@@ -267,22 +267,22 @@ function sql_connection_driver__get_entity_definitions()
                 , 'Name' => [
                     'preferred_name' => 'Name'
                     , 'type' => 'string'
-                    , 'mandatory' => 1
+                ]
+                , 'EntityName' => [
+                    'preferred_name' => 'EntityName'
+                    , 'type' => 'string'
                 ]
                 , 'Details' => [
                     'preferred_name' => 'Details'
                     , 'type' => 'string'
-                    , 'mandatory' => 1
                 ]
                 , 'FileName' => [
                     'preferred_name' => 'FileName'
                     , 'type' => 'string'
-                    , 'mandatory' => 1
                 ]
                 , 'LineNumber' => [
                     'preferred_name' => 'LineNumber'
                     , 'type' => 'string'
-                    , 'mandatory' => 1
                 ]
                 , 'Modified' => [
                     'preferred_name' => 'Modified'
