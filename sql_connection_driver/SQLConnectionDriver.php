@@ -283,6 +283,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             $pageNumber = $otherOptions['$pageNumber'];
             $pageSize = $otherOptions['$pageSize'];
             $orderBy = $otherOptions['$orderBy'];
+            $all = isset($otherOptions['$all']) && ''.$otherOptions['$all'] = '1'?TRUE:FALSE;
 
             // Remove distinct fields from select
             $distinct = $otherOptions['$distinct'];
@@ -310,8 +311,8 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
 
             // Generate the SQL query to send in the POST request   
             $where = (strlen($filter) > 0 ? "  WHERE {$filter} " : '');         
-            $sel = implode(',', $sel);       
-
+            $sel = implode(',', $sel);
+            
             $query_url = "
                 WITH DEDUPE AS (
                     SELECT {$select2}, ROW_NUMBER() OVER (PARTITION BY {$distinct} ORDER BY {$distinct}) AS OCCURENCE
@@ -327,6 +328,10 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                         AND RowNum < {$end}
                 ORDER BY RowNum
             ";
+
+            if($all){
+                $query_url = "SELECT {$select2} FROM {$entityBrowser->getInternalName()} {$where} ORDER BY {$orderBy}";
+            }
 
             $query_url = str_replace("\\'", "''", $query_url);
             try {
