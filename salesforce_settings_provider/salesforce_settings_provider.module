@@ -165,6 +165,8 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'cash_inflow' => [
             'internal_name' => 'Cash_Inflow__c'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name'
@@ -306,13 +308,13 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'payable_commission'
                     ],
-                ],
+                ]
             ]
         ]
         , 'customer_product' => [
             'internal_name' => 'Customer_Products__c'
             , 'cache_to' => 'sql'
-            , 'cache_freq' => 5
+            , 'cache_freq' => 60
             , 'fields' => [
                 'Id' => [
                     'preferred_name' => 'Id'
@@ -483,6 +485,8 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'payable_commission' => [
             'internal_name' => 'Payable_Commission__c'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name'
@@ -591,7 +595,7 @@ function salesforce_settings_provider__get_entity_definitions()
         , 'account' => [
             'internal_name' => 'Account'
             , 'cache_to' => 'sql'
-            , 'cache_freq' => 5
+            , 'cache_freq' => 60
             , 'fields' => [
                 'Industry' => [
                     'preferred_name' => 'Industry'
@@ -727,6 +731,8 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'opportunity' => [
             'internal_name' => 'Opportunity'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name'
@@ -740,10 +746,6 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'CreatedDate' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
-                ]
-                , 'Auxiliary_Circuit_ID__c' => [
-                    'preferred_name' => 'AuxiliaryCircuitID'
-                    , 'type' => 'string'
                 ]
                 , 'Id' => [
                     'preferred_name' => 'Id'
@@ -801,6 +803,26 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Feasibility_Outcome__c' => [
                     'preferred_name' => 'FeasibilityOutcome'
                     , 'type' => 'string'
+                ]
+                , 'MRC__c' => [
+                    'preferred_name' => 'MRC'
+                    , 'type' => 'int'
+                ]
+                , 'NRC__c' => [
+                    'preferred_name' => 'NRC'
+                    , 'type' => 'int'
+                ]
+                , 'RecordTypeId' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Type'
+                        , 'preferred_local_key_name' => 'TypeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'record_types'
+                        , 'remote_driver' => 'salesforce'
+                    ]
                 ]
                 , 'OwnerId' => [
                     'preferred_name' => 'Owner'
@@ -917,11 +939,16 @@ function salesforce_settings_provider__get_entity_definitions()
             ],
         ]
         , 'sales_target' => [
-            'internal_name' => 'SalesTarget__c'
+            'internal_name' => 'Sales_Target__c'
             , 'cache_to' => 'sql'
             , 'cache_freq' => 7200
             , 'fields' => [
-                'Name' => [
+                'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Name' => [
                     'preferred_name' => 'Name'
                     , 'type' => 'string'
                 ]
@@ -976,7 +1003,12 @@ function salesforce_settings_provider__get_entity_definitions()
             , 'cache_to' => 'sql'
             , 'cache_freq' => 7200
             , 'fields' => [
-                'Name' => [
+                'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Name' => [
                     'preferred_name' => 'Name'
                     , 'type' => 'string'
                 ]
@@ -1016,7 +1048,12 @@ function salesforce_settings_provider__get_entity_definitions()
             , 'cache_to' => 'sql'
             , 'cache_freq' => 7200
             , 'fields' => [
-                'Name' => [
+                'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Name' => [
                     'preferred_name' => 'Name'
                     , 'type' => 'string'
                 ]
@@ -1044,10 +1081,6 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Phone'
                     , 'type' => 'string'
                 ]
-                , 'OtherPhone' => [
-                    'preferred_name' => 'OtherPhone'
-                    , 'type' => 'string'
-                ]
                 , 'Type__c' => [
                     'preferred_name' => 'Type'
                     , 'type' => 'string'
@@ -1067,7 +1100,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'account'
                     ]
                 ]
-                , 'ReportsTo' => [
+                , 'JigsawContactId' => [
                     'preferred_name' => 'ReportsTo'
                     , 'type' => 'string'
                     , 'relationship' => [
