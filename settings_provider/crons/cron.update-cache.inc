@@ -19,7 +19,6 @@ function settings_provider__update_cache()
                 $selectFields = [];
 
                 // Check the cache frequecy of this entity and act accordingly.                
-                variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '2000-09-28T00:00:00');
                 $now = (new \DateTime());
                 $lastSynched    = \DateTime::createFromFormat('Y-m-d\TH:i:s', variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00'));
                 $nextRun        = \DateTime::createFromFormat('Y-m-d\TH:i:s', variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00'));
