@@ -626,6 +626,14 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Status'
                     , 'type' => 'string',
                 ]
+                , 'Number_Of_Active_Products__c' => [
+                    'preferred_name' => 'NumberOfActiveProducts'
+                    , 'type' => 'string',
+                ]
+                , 'Number_Of_Products__c' => [
+                    'preferred_name' => 'NumberOfProducts'
+                    , 'type' => 'string',
+                ]
                 , 'Email_address__c' => [
                     'preferred_name' => 'Email'
                     , 'type' => 'string',
@@ -861,6 +869,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Username' => [
                     'preferred_name' => 'Username'
+                    , 'type' => 'string'
+                ]
+                , 'MobilePhone' => [
+                    'preferred_name' => 'Phone'
                     , 'type' => 'string'
                 ]
                 , 'Id' => [
