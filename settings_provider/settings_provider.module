@@ -196,8 +196,9 @@ function settings_provider_cron(){
     ];
 
     if(variable_get('MWARE_ROOT_CONNECTION_DRIVER__SYNCH_CACHE', FALSE)){
+        variable_set('MWARE_ROOT_CONNECTION_DRIVER__SYNCH_CACHE', FALSE);
         mware_http_request("{$base_url}/settings-provider/update-cache", ['options' => $tokenOption, 'callback' => function($event){
-                
+            variable_set('MWARE_ROOT_CONNECTION_DRIVER__SYNCH_CACHE', TRUE);
         }]);
     }
 }
