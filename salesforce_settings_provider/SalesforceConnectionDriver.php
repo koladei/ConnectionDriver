@@ -291,9 +291,9 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             $lastResult = [];
             $counter = 0;
             // do {
-            //     if($start > 2000){
-            //         $start = 2000;
-            //     }
+                if($start > 2000){
+                    $start = 2000;
+                }
 
                 // Prepare the limit
                 $offset = " OFFSET {$start}";
