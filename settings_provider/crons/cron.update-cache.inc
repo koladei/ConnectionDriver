@@ -51,6 +51,7 @@ function settings_provider__update_cache()
                                 '$skipCache' => 1
                             ]
                         );
+                        // variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $now->format('Y-m-d\TH:i:s'));
                     } catch(\Exception $ce){
                         // Log this synchronization error.
                         $info = new \stdClass();
@@ -122,7 +123,7 @@ function settings_provider__update_cache()
                         }
                     }
 
-                    if($synched == count($newbies) && $synched > 0){
+                    if($synched == count($newbies)){
                         variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $now->format('Y-m-d\TH:i:s'));
                     }
                 }
