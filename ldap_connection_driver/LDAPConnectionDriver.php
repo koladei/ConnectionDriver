@@ -106,10 +106,7 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver
     public function executeTargetedFunctionInternal($entityBrowser, $id, $functionName, array $data = [], &$connectionToken = null, array $otherOptions = [])
     {
         switch ($functionName) {
-            case 'verifypassword': {
-                // Remove the field prefix
-                $filter = str_replace('_xENTITYNAME_', '', $filter);
-        
+            case 'verifypassword': {        
                 // Try getting the phone number from active directory
                 $con = null;
                 $dn = $this->dn;
