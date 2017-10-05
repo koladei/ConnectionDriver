@@ -19,8 +19,8 @@ function ldap_connection_driver_connection_driver_ldap_alter(&$container) {
         return mware_connection_driver__get_driver($x);
     }, function(){}, 'ldap', $host, $protocol, $port, $username, $password, $dn);
 
-    $defs = ldap_connection_driver__get_entity_definitions();
-    $driver->setEntities($defs);
+    $defs = ldap_connection_driver__get_entity_definitions_local();
+    $driver->setEntities(($defs));
     
     $container['ldap'] = $driver;
 }
@@ -59,12 +59,16 @@ function ldap_connection_driver_library() {
 
 
 function  ldap_connection_driver__get_entity_definition($entity_name, $component = NULL){
-    $entities = ldap_connection_driver__get_entity_definitions();
+    $entities = ldap_connection_driver__get_entity_definitions_local();
     if ($component) {
         return isset($entities[$entity_name]) && isset($entities[$entity_name][$component]) ? $entities[$entity_name][$component] : NULL;
     } else {
         return isset($entities[$entity_name]) ? $entities[$entity_name] : NULL;
     }
+}
+
+function ldap_connection_driver__get_entity_definitions_local(){
+    return ldap_connection_driver__get_entity_definitions(...func_get_args())['ldap'];
 }
 
 
@@ -76,7 +80,7 @@ function  ldap_connection_driver__get_entity_definition($entity_name, $component
  * @return array
  */
 function ldap_connection_driver__get_entity_definitions() {
-   return [
+   return ['ldap'=>[
         'objects' => [
             'internal_name' => 'objects',
             'fields' => [
@@ -165,6 +169,6 @@ function ldap_connection_driver__get_entity_definitions() {
                     , 'mandatory' => 1
                 ]
             ]
-        ],
-    ];
+        ]
+    ]];
 }

@@ -23,7 +23,7 @@ function sharepoint_connection_driver_connection_driver_sharepoint_alter(&$conta
         return mware_connection_driver__get_driver($x);
     }, function(){}, 'sharepoint', $connection_settings);
 
-    $defs = sharepoint_connection_driver__get_entity_definitions();
+    $defs = sharepoint_connection_driver__get_entity_definitions_local();
     $driver->setEntities($defs);
     $container['sharepoint'] = $driver;
 }
@@ -113,6 +113,10 @@ function sharepoint_connection_driver__get_cached_entity_definitions2(){
     return $return;
 }
 
+function sharepoint_connection_driver__get_entity_definitions_local(){
+    return sharepoint_connection_driver__get_entity_definitions(...func_get_args())['sharepoint'];
+}
+
 /**
  * Returns the full definition of an entity or the definition of the specified component.
  * Components include: fields, internal_name
@@ -121,7 +125,7 @@ function sharepoint_connection_driver__get_cached_entity_definitions2(){
  * @return array
  */
 function sharepoint_connection_driver__get_entity_definitions() {
-    return [
+    return ['sharepoint'=>[
         'performancereport' => [
             'internal_name' => 'IT Shared Documents'
             , 'fields' => [
@@ -167,5 +171,6 @@ function sharepoint_connection_driver__get_entity_definitions() {
                 ]                              
             ]
         ]
+    ]
     ];
 }

@@ -13,8 +13,8 @@ function dynamics_connection_driver_connection_driver_dynamics_alter(&$container
         return $return;
     }, function(){}, 'dynamics', variable_get('DYNAMICS_AX_SETTINGS_ENDPOINT_URL'));
 
-    $defs = dynamics_connection_driver__get_entity_definitions();
-    $driver->setEntities($defs);
+    $defs = dynamics_connection_driver__get_entity_definitions_local();
+    $driver->setEntities(($defs));
     $container['dynamics'] = $driver;
 }
 
@@ -37,12 +37,16 @@ function dynamics_connection_driver__user_access($args) {
     return true;
 }
 
+function dynamics_connection_driver__get_entity_definitions_local() {
+    return dynamics_connection_driver__get_entity_definitions(...func_get_args())['dynamics'];
+}
+
 /**
  * Returns all the entity definitions implemented in Dynamics AX.
  * @return type
  */
 function dynamics_connection_driver__get_entity_definitions() {
-    $return = [
+    $return = ['dynamics'=> [
         'cust_table' => [
             'internal_name' => 'CustTable'
             , 'fields' => [
@@ -927,9 +931,9 @@ function dynamics_connection_driver__get_entity_definitions() {
                 ]
             ]
         ]
-    ];
+    ]];
 
-    $return['account'] = $return['rootaccount'];
+    $return['account'] = $return['dynamics']['rootaccount'];
 
     return $return;
 }

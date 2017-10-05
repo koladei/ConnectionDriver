@@ -16,7 +16,7 @@ function sql_connection_driver_connection_driver_sql_alter(&$container)
         return sql_connection_driver__get_settings($source_name);
     }, 'sql');
 
-    $defs = sql_connection_driver__get_entity_definitions();
+    $defs = sql_connection_driver__get_entity_definitions_local();
     $driver->setEntities($defs);
     $container['sql'] = $driver;
 }
@@ -64,6 +64,10 @@ function sql_connection_driver__get_cached_entity_definitions($targetDriver)
     return $return;
 }
 
+function sql_connection_driver__get_entity_definitions_local(){
+    return sql_connection_driver__get_entity_definitions(...func_get_args())['sql'];
+}
+
 /**
  * Returns all the entity definitions implemented in Dynamics AX.
  * @return type
@@ -71,237 +75,239 @@ function sql_connection_driver__get_cached_entity_definitions($targetDriver)
 function sql_connection_driver__get_entity_definitions()
 {
     $return = [
-        'customerinfo' => [
-            'internal_name' => 'CustomerDictionary'
-            , 'datasource' => 'default'
-            , 'fields' => [
-                'ID' => [
-                    'preferred_name' => 'Id'
-                    , 'type' => 'int'
-                    , 'mandatory' => 1,
-                ]
-                , 'GCID' => [
-                    'preferred_name' => 'GCID'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1
-                    , 'relationship' => [
-                        'local_field' => 'GCID'
-                        , 'preferred_local_key_name' => 'GCID'
-                        , 'remote_field' => 'GCID'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'account'
-                        , 'remote_driver' => 'salesforce'
+        'sql'=>[
+            'customerinfo' => [
+                'internal_name' => 'CustomerDictionary'
+                , 'datasource' => 'default'
+                , 'fields' => [
+                    'ID' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1,
                     ]
-                ]
-                , '_Siblings' => [
-                    'preferred_name' => 'Siblings'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'GCID'
-                        , 'remote_field' => 'GCID'
-                        , 'remote_type' => 'child'
-                        , 'remote_entity' => 'customerinfo'
-                        , 'filter' => 'SystemId ne 3'
+                    , 'GCID' => [
+                        'preferred_name' => 'GCID'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1
+                        , 'relationship' => [
+                            'local_field' => 'GCID'
+                            , 'preferred_local_key_name' => 'GCID'
+                            , 'remote_field' => 'GCID'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'account'
+                            , 'remote_driver' => 'salesforce'
+                        ]
                     ]
-                ]
-                , 'Name' => [
-                    'preferred_name' => 'Name'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1
-                ]
-                , 'DateModified' => [
-                    'preferred_name' => 'Modified'
-                    , 'type' => 'datetime'
-                ]
-                , 'DateCreated' => [
-                    'preferred_name' => 'Created'
-                    , 'type' => 'datetime'
-                ]
-                , 'LocalId' => [
-                    'preferred_name' => 'SystemKey'
-                    , 'type' => 'string'
-                ]
-                , 'System' => [
-                    'preferred_name' => 'System'
-                    , 'type' => 'int'
-                    , 'mandatory' => 1
-                    , 'relationship' => [
-                        'local_field' => 'System'
-                        , 'preferred_local_key_name' => 'SystemId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'system'
+                    , '_Siblings' => [
+                        'preferred_name' => 'Siblings'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'GCID'
+                            , 'remote_field' => 'GCID'
+                            , 'remote_type' => 'child'
+                            , 'remote_entity' => 'customerinfo'
+                            , 'filter' => 'SystemId ne 3'
+                        ]
                     ]
-                ]
-                , 'Entity' => [
-                    'preferred_name' => 'Entity'
-                    , 'type' => 'int'
-                    , 'mandatory' => 1
-                    , 'relationship' => [
-                        'local_field' => 'Entity'
-                        , 'preferred_local_key_name' => 'EntityId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'system_entity'
+                    , 'Name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1
                     ]
-                ]
-                , '_RemedyInfo' => [
-                    'preferred_name' => 'RemedyInformation'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'SystemKey'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'account'
-                        , 'remote_driver' => 'bmc_remedy'
+                    , 'DateModified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
                     ]
-                ]
-                , '_AdvancedInfo' => [
-                    'preferred_name' => 'AdvancedInformation'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'GCID'
-                        , 'remote_field' => 'GCID'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'account'
-                        , 'remote_driver' => 'salesforce'
+                    , 'DateCreated' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
                     ]
-                ]
-                , '_FinancialRootAccountInfo' => [
-                    'preferred_name' => 'FinancialRootAccountInformation'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'GCID'
-                        , 'remote_field' => 'Customer'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'rootaccount'
-                        , 'remote_driver' => 'dynamics_ax'
+                    , 'LocalId' => [
+                        'preferred_name' => 'SystemKey'
+                        , 'type' => 'string'
                     ]
-                ]
-                , '_Contacts' => [
-                    'preferred_name' => 'Contacts'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'SystemKey'
-                        , 'remote_field' => 'Account'
-                        , 'remote_type' => 'child'
-                        , 'remote_entity' => 'contact'
-                        , 'remote_driver' => 'salesforce'
-                    ],
-                ]
-            ]
-        ]
-        , 'system_entity' => [
-            'internal_name' => 'SystemEntity'
-            , 'datasource' => 'default'
-            , 'fields' => [
-                'ID' => [
-                    'preferred_name' => 'Id'
-                    , 'type' => 'int'
-                    , 'mandatory' => 1,
-                ]
-                , 'Name' => [
-                    'preferred_name' => 'Name'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1
-                ]
-                , 'MiddlewareDriver' => [
-                    'preferred_name' => 'MiddlewareDriver'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1
-                ]
-                , 'Modified' => [
-                    'preferred_name' => 'Modified'
-                    , 'type' => 'datetime'
-                ]
-                , 'Created' => [
-                    'preferred_name' => 'Created'
-                    , 'type' => 'datetime'
-                ]
-                , 'SystemId' => [
-                    'preferred_name' => 'System'
-                    , 'type' => 'int'
-                    , 'mandatory' => 1
-                    , 'relationship' => [
-                        'local_field' => 'System'
-                        , 'preferred_local_key_name' => 'SystemId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'system'
+                    , 'System' => [
+                        'preferred_name' => 'System'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1
+                        , 'relationship' => [
+                            'local_field' => 'System'
+                            , 'preferred_local_key_name' => 'SystemId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'system'
+                        ]
+                    ]
+                    , 'Entity' => [
+                        'preferred_name' => 'Entity'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1
+                        , 'relationship' => [
+                            'local_field' => 'Entity'
+                            , 'preferred_local_key_name' => 'EntityId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'system_entity'
+                        ]
+                    ]
+                    , '_RemedyInfo' => [
+                        'preferred_name' => 'RemedyInformation'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'SystemKey'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'account'
+                            , 'remote_driver' => 'bmc_remedy'
+                        ]
+                    ]
+                    , '_AdvancedInfo' => [
+                        'preferred_name' => 'AdvancedInformation'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'GCID'
+                            , 'remote_field' => 'GCID'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'account'
+                            , 'remote_driver' => 'salesforce'
+                        ]
+                    ]
+                    , '_FinancialRootAccountInfo' => [
+                        'preferred_name' => 'FinancialRootAccountInformation'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'GCID'
+                            , 'remote_field' => 'Customer'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'rootaccount'
+                            , 'remote_driver' => 'dynamics_ax'
+                        ]
+                    ]
+                    , '_Contacts' => [
+                        'preferred_name' => 'Contacts'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'SystemKey'
+                            , 'remote_field' => 'Account'
+                            , 'remote_type' => 'child'
+                            , 'remote_entity' => 'contact'
+                            , 'remote_driver' => 'salesforce'
+                        ],
                     ]
                 ]
             ]
-        ]
-        , 'system' => [
-            'internal_name' => 'System'
-            , 'datasource' => 'default'
-            , 'fields' => [
-                'ID' => [
-                    'preferred_name' => 'Id'
-                    , 'type' => 'int'
-                    , 'mandatory' => 1,
-                ]
-                , 'Name' => [
-                    'preferred_name' => 'Name'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1
-                ]
-                , 'Modified' => [
-                    'preferred_name' => 'Modified'
-                    , 'type' => 'datetime'
-                ]
-                , 'Created' => [
-                    'preferred_name' => 'Created'
-                    , 'type' => 'datetime'
-                ]
-                , '_Entities' => [
-                    'preferred_name' => 'Entities'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'Id'
-                        , 'remote_field' => 'SystemId'
-                        , 'remote_type' => 'child'
-                        , 'remote_entity' => 'system_entity'
+            , 'system_entity' => [
+                'internal_name' => 'SystemEntity'
+                , 'datasource' => 'default'
+                , 'fields' => [
+                    'ID' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'Name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1
+                    ]
+                    , 'MiddlewareDriver' => [
+                        'preferred_name' => 'MiddlewareDriver'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1
+                    ]
+                    , 'Modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'SystemId' => [
+                        'preferred_name' => 'System'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1
+                        , 'relationship' => [
+                            'local_field' => 'System'
+                            , 'preferred_local_key_name' => 'SystemId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'system'
+                        ]
                     ]
                 ]
             ]
-        ]
-        , 'syncherrorlog' => [
-            'internal_name' => 'SynchErrorLog'
-            , 'datasource' => 'default'
-            , 'fields' => [
-                'ID' => [
-                    'preferred_name' => 'Id'
-                    , 'type' => 'int'
-                    , 'mandatory' => 1,
+            , 'system' => [
+                'internal_name' => 'System'
+                , 'datasource' => 'default'
+                , 'fields' => [
+                    'ID' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'Name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1
+                    ]
+                    , 'Modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , '_Entities' => [
+                        'preferred_name' => 'Entities'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'Id'
+                            , 'remote_field' => 'SystemId'
+                            , 'remote_type' => 'child'
+                            , 'remote_entity' => 'system_entity'
+                        ]
+                    ]
                 ]
-                , 'Name' => [
-                    'preferred_name' => 'Name'
-                    , 'type' => 'string'
-                ]
-                , 'EntityName' => [
-                    'preferred_name' => 'EntityName'
-                    , 'type' => 'string'
-                ]
-                , 'Details' => [
-                    'preferred_name' => 'Details'
-                    , 'type' => 'string'
-                ]
-                , 'FileName' => [
-                    'preferred_name' => 'FileName'
-                    , 'type' => 'string'
-                ]
-                , 'LineNumber' => [
-                    'preferred_name' => 'LineNumber'
-                    , 'type' => 'string'
-                ]
-                , 'Modified' => [
-                    'preferred_name' => 'Modified'
-                    , 'type' => 'datetime'
-                ]
-                , 'Created' => [
-                    'preferred_name' => 'Created'
-                    , 'type' => 'datetime'
+            ]
+            , 'syncherrorlog' => [
+                'internal_name' => 'SynchErrorLog'
+                , 'datasource' => 'default'
+                , 'fields' => [
+                    'ID' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'Name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                    ]
+                    , 'EntityName' => [
+                        'preferred_name' => 'EntityName'
+                        , 'type' => 'string'
+                    ]
+                    , 'Details' => [
+                        'preferred_name' => 'Details'
+                        , 'type' => 'string'
+                    ]
+                    , 'FileName' => [
+                        'preferred_name' => 'FileName'
+                        , 'type' => 'string'
+                    ]
+                    , 'LineNumber' => [
+                        'preferred_name' => 'LineNumber'
+                        , 'type' => 'string'
+                    ]
+                    , 'Modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
                 ]
             ]
         ]
@@ -311,7 +317,8 @@ function sql_connection_driver__get_entity_definitions()
     $cached_all = module_invoke_all('_get_cached_entity_definitions', 'sql');
     foreach ($cached_all as $cached) {
         $g = is_null($cached)?[]:$cached;
-        $return = array_merge($return, $g);
+        // var_dump($g);
+        $return['sql'] = array_merge($return['sql'], $g);
     }
 
     return $return;

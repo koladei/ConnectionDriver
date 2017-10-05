@@ -25,7 +25,7 @@ function remedy_connection_driver_connection_driver_bmc_remedy_alter(&$container
         return mware_connection_driver__get_driver($x);
     }, function(){}, 'bmc_remedy', $connection_settings);
 
-    $defs = remedy_connection_driver__get_entity_definitions();
+    $defs = remedy_connection_driver__get_entity_definitions_local();
     $driver->setEntities($defs);
     $container['bmc_remedy'] = $driver;
 }
@@ -71,12 +71,18 @@ function remedy_connection_driver__user_access($args) {
     return true;
 }
 
+
+
+function remedy_connection_driver__get_entity_definitions_local(){
+    return remedy_connection_driver__get_entity_definitions(...func_get_args())['bmc_remedy'];
+}
+
 /**
  * Returns all the entity definitions implemented in Dynamics AX.
  * @return type
  */
 function remedy_connection_driver__get_entity_definitions() {
-    return [
+    return ['bmc_remedy'=>[
         'incidentweb' => [
             'internal_name' => 'MainOne:ShowIncidentsWebService'
             , 'soap_methods' => [
@@ -830,5 +836,6 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
             ]
         ]
+    ]
     ];
 }

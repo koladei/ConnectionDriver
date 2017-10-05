@@ -25,8 +25,8 @@ function salesforce_settings_provider_connection_driver_salesforce_alter(&$conta
     }, function () {
     }, 'salesforce', $connection_settings);
 
-    $defs = salesforce_settings_provider__get_entity_definitions();
-    $driver->setEntities($defs);
+    $defs = salesforce_settings_provider__get_entity_definitions_local();
+    $driver->setEntities(($defs));
     $container['salesforce'] = $driver;
 }
 
@@ -78,8 +78,13 @@ function salesforce_settings_provider__get_cached_entity_definitions($targetDriv
 {
     return settings_provider__format_cached_definition('salesforce', $targetDriver, function(){
         $args = func_get_args();
-        return salesforce_settings_provider__get_entity_definitions(...$args);
+        $return = salesforce_settings_provider__get_entity_definitions_local(...$args);
+        return $return;
     });
+}
+
+function salesforce_settings_provider__get_entity_definitions_local(){
+    return salesforce_settings_provider__get_entity_definitions(...func_get_args())['salesforce'];
 }
 
 /**
@@ -91,7 +96,7 @@ function salesforce_settings_provider__get_cached_entity_definitions($targetDriv
  */
 function salesforce_settings_provider__get_entity_definitions()
 {
-    return [
+    return ['salesforce'=>[
         'record_types' => [
             'internal_name' => 'RecordType'
             , 'cache_to' => 'sql'
@@ -165,8 +170,8 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'cash_inflow' => [
             'internal_name' => 'Cash_Inflow__c'
-            , 'cache_to' => 'sql'
-            // , 'cache_freq' => 60
+            // , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
                     'preferred_name' => 'Name'
@@ -485,7 +490,7 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'payable_commission' => [
             'internal_name' => 'Payable_Commission__c'
-            , 'cache_to' => 'sql'
+            // , 'cache_to' => 'sql'
             , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
@@ -731,7 +736,7 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'opportunity' => [
             'internal_name' => 'Opportunity'
-            , 'cache_to' => 'sql'
+            // , 'cache_to' => 'sql'
             , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
@@ -1113,5 +1118,5 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
             ]
         ]
-    ];
+    ]];
 }
