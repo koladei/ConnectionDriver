@@ -18,17 +18,32 @@ function settings_provider__update_cache()
                 // Get the field names to select
                 $selectFields = [];
 
-                // Check the cache frequecy of this entity and act accordingly.                
+                // Check the cache frequecy of this entity and act accordingly.    
+                $defaultSyncData = [
+                    'time' => '1998-01-01T00:00:00',
+                    'continue_from' => '1998-01-01T00:00:00',
+                    'failure_count' => 0
+                ]; 
+
+                $lastSyncInfo = variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $defaultSyncData);
+                // For backward version upgrade.
+                if(is_string($lastSyncInfo)){
+                    $lastSyncInfo = $defaultSyncData;
+                    variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $lastSyncInfo);
+                }
+                $lastSyncInfo = array_merge($defaultSyncData, $lastSyncInfo);
+
                 $now = (new \DateTime());
-                $lastSynched    = \DateTime::createFromFormat('Y-m-d\TH:i:s', variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00'));
-                $nextRun        = \DateTime::createFromFormat('Y-m-d\TH:i:s', variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00'));
+                $lastSynched    = \DateTime::createFromFormat('Y-m-d\TH:i:s', $lastSyncInfo['time']);
+                $nextRun        = \DateTime::createFromFormat('Y-m-d\TH:i:s', $lastSyncInfo['time']);
                 $freq = isset($entity['cache_freq']) ? $entity['cache_freq'] : 30; //In minutes
                 $freqInterval = new \DateInterval("PT{$freq}M");
 
                 $nextRun->add($freqInterval);
                 $interval = $now > $nextRun;
+                $badLastRun = ($defaultSyncData['time'] != $defaultSyncData['continue_from'])?TRUE:FALSE;
                                 
-                if ($interval) {
+                if ($interval || ($badLastRun && $defaultSyncData['failure_count'] < 10)) {
                     
                     foreach ($entity['fields'] as $field) {
                         if($field['type'] != 'detail'){
@@ -40,6 +55,7 @@ function settings_provider__update_cache()
 
                     $filter = "Created ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}' or Modified ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}'";
                     $newbies = [];
+                    $generalErrorOccured = FALSE;
                     try {
                         $newbies = $source->getItems(
                             $entity['original_display_name'], 
@@ -51,8 +67,9 @@ function settings_provider__update_cache()
                                 '$skipCache' => 1
                             ]
                         );
-                        // variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $now->format('Y-m-d\TH:i:s'));
                     } catch(\Exception $ce){
+                        $generalErrorOccured = TRUE;
+
                         // Log this synchronization error.
                         $info = new \stdClass();
                         $info->Name = 'GET DATA ERROR';
@@ -123,8 +140,13 @@ function settings_provider__update_cache()
                         }
                     }
 
-                    if($synched == count($newbies)){
-                        variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $now->format('Y-m-d\TH:i:s'));
+                    // $lastSyncInfo['continue_from'] = $lastSyncInfo['time'];
+                    $lastSyncInfo['time'] = $now->format('Y-m-d\TH:i:s');
+                    if($synched == count($newbies) && $generalErrorOccured != TRUE) {
+                        $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s');
+                        variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $lastSyncInfo);
+                    } else {
+                        variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $lastSyncInfo);
                     }
                 }
             }

@@ -33,7 +33,7 @@ function settings_provider_admin() {
     
     $form['data_object_settings'] = [
         '#type' => 'fieldset',
-        '#weight' => -1,
+        '#weight' => -2,
         '#group' => 'general_settings',
         '#title' => t('Data object settings'),
         '#description' => t('Define settings for cached data objects'),
@@ -64,40 +64,64 @@ function settings_provider_admin() {
         ];
 
         foreach ($cached as $entity) {
+            $def = variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}");
             $form['data_object_settings']["{$entity['original_display_name']}_LastSync__{$sourceDestination}"] = [
                 '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
-                '#type' => 'textfield',
+                '#type' => 'fieldset',
                 '#description' => t('When to begin synching'),
-                '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00')
+                // '#prefix' => '<div>'.strtoupper("<b>{$from}:</b> {$entity['original_display_name']}").': ',
+                // '#suffix' => '</div>',
+                '#description' => t("Last run at: {$def['time']}"),
+                // '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", ['continue_from' => '1998-01-01T00:00:00']),
+                '#tree' => TRUE
             ];
+
+            if(is_array($def) && isset($def['continue_from'])){
+                $form['data_object_settings']["{$entity['original_display_name']}_LastSync__{$sourceDestination}"]['continue_from'] = [
+                    '#title' => t('Synch data from'),
+                    '#type' => 'textfield',
+                    '#description' => t('When to begin synching'),
+                    '#default_value' => $def['continue_from']                     
+                ]; 
+                $form['data_object_settings']["{$entity['original_display_name']}_LastSync__{$sourceDestination}"]['save'] = [
+                    '#title' => t('Synch data from'),
+                    '#type' => 'submit',
+                    '#value' => t('update'),
+                ];
+                $form['data_object_settings']["{$entity['original_display_name']}_LastSync__{$sourceDestination}"]['time'] = [
+                    '#title' => t('Synch data from'),
+                    '#type' => 'hidden',
+                    '#value' => $def['continue_from'],
+                ];                
+            }
             
-            $form['data_objects'][$sourceDestination][0]["LastSync"] = [
-                '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
-                '#type' => 'textfield',
-                '#description' => t('When to begin synching'),
-                '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00')
-            ];
+            // $form['data_objects'][$sourceDestination][0]["LastSync"] = [
+            //     '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
+            //     '#type' => 'textfield',
+            //     '#description' => t('When to begin synching'),
+            //     '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00')
+            // ];
             
-            $form['data_objects'][$sourceDestination][0]["NextSync"] = [
-                '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
-                '#type' => 'textfield',
-                '#description' => t('When to begin synching'),
-                '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00')
-            ];
+            // $form['data_objects'][$sourceDestination][0]["NextSync"] = [
+            //     '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
+            //     '#type' => 'textfield',
+            //     '#description' => t('When to begin synching'),
+            //     '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00')
+            // ];
             
-            $form['data_objects'][$sourceDestination][1]["LastSync"] = [
-                '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
-                '#type' => 'textfield',
-                '#description' => t('When to begin synching'),
-                '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00')
-            ];
+            // $form['data_objects'][$sourceDestination][1]["LastSync"] = [
+            //     '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
+            //     '#type' => 'textfield',
+            //     '#description' => t('When to begin synching'),
+            //     '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00')
+            // ];
             
-            $form['data_objects'][$sourceDestination][1]["NextSync"] = [
-                '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
-                '#type' => 'textfield',
-                '#description' => t('When to begin synching'),
-                '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00')
-            ];
+            // $form['data_objects'][$sourceDestination][1]["NextSync"] = [
+            //     '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
+            //     '#type' => 'textfield',
+            //     '#description' => t('When to begin synching'),
+            //     '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", '1998-01-01T00:00:00')
+            // ];
         }
     }
 
