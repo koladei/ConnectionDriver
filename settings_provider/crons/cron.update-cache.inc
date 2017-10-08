@@ -141,11 +141,37 @@ function settings_provider__update_cache()
                     }
 
                     // $lastSyncInfo['continue_from'] = $lastSyncInfo['time'];
-                    $lastSyncInfo['time'] = $now->format('Y-m-d\TH:i:s');
+
+                    // If everything went on smoothly.
                     if($synched == count($newbies) && $generalErrorOccured != TRUE) {
                         $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s');
+                        $lastSyncInfo['failureCount'] = 0; // reset the error counter.
+                        $lastSyncInfo['time'] = $now->format('Y-m-d\TH:i:s');
                         variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $lastSyncInfo);
-                    } else {
+                    } 
+
+                    // Otherwise
+                    else {
+                        $lastSyncInfo['failureCount'] = $lastSyncInfo['failureCount'] + 1;
+                        $lastSyncInfo['time'] = $lastSynched->format('Y-m-d\TH:i:s'); // So that this block can be rerun asap.
+                        
+                        // After 10 errored tries, move forward but log the problem.
+                        if($lastSyncInfo['failureCount'] > 10){
+                            $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s');
+                            $lastSyncInfo['time'] = $now->format('Y-m-d\TH:i:s');
+                            $lastSyncInfo['failureCount'] = 0;
+
+                            // Log the error.
+                            $info = new \stdClass();
+                            $info->Name = 'MULTIPLE CACHE FAILURES';
+                            $info->EntityName = $entity['original_display_name'];
+                            $info->Details = "After {$lastSyncInfo['failureCount']} unsuccessful tries, the system is moving on.";
+                            $info->LineNumber = ''.__LINE__;
+                            $info->FileName = __FILE__;
+                            $info->Created = $now->format('Y-m-d\TH:i:s');
+                            $info->Modified = $now->format('Y-m-d\TH:i:s');
+                            $sql->createItem('syncherrorlog', $info);
+                        }
                         variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $lastSyncInfo);
                     }
                 }
