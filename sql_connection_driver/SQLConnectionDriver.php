@@ -142,6 +142,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             $xetz = [];
             $createId = isset($otherOptions['$setId'])?"{$otherOptions['$setId']}":'0';
             $createId = $createId == '1'?TRUE:FALSE;
+            $id = \property_exists($obj, 'Id')?$obj->Id:NULL;
 
             if($createId == TRUE && !property_exists($obj, 'Id')){
                 throw new \Exception('The request states that the \'Id\' field should be set but does not provide it');
@@ -207,7 +208,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                     $retu = $statement->execute();
                     
                     $d = new \stdClass();
-                    $d->d = $pdo->lastInsertId();
+                    $d->d = ($createId == TRUE) ? $id : $pdo->lastInsertId();
                     $d->success = TRUE;
                     return $d;
                 }  catch (\Exception $e) {
