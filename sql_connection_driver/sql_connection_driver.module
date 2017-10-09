@@ -75,7 +75,7 @@ function sql_connection_driver__get_entity_definitions_local(){
 function sql_connection_driver__get_entity_definitions()
 {
     $return = [
-        'sql'=>[
+        'sql'=> [
             'customerinfo' => [
                 'internal_name' => 'CustomerDictionary'
                 , 'datasource' => 'default'
@@ -317,7 +317,12 @@ function sql_connection_driver__get_entity_definitions()
     $cached_all = module_invoke_all('_get_cached_entity_definitions', 'sql');
     foreach ($cached_all as $cached) {
         $g = is_null($cached)?[]:$cached;
-        // var_dump($g);
+        $return['sql'] = array_merge($return['sql'], $g);
+    }
+
+    $all_delegated = module_invoke_all('_get_delegated_entity_definitions', 'sql');
+    foreach ($all_delegated as $delegated) {
+        $g = is_null($delegated)?[]:$delegated;
         $return['sql'] = array_merge($return['sql'], $g);
     }
 
