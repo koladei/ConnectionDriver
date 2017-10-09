@@ -599,7 +599,7 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'account' => [
             'internal_name' => 'Account'
-            , 'cache_to' => 'sql'
+            // , 'cache_to' => 'sql'
             , 'cache_freq' => 60
             , 'fields' => [
                 'Industry' => [
@@ -1050,7 +1050,7 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'contact' => [
             'internal_name' => 'Contact'
-            , 'cache_to' => 'sql'
+            // , 'cache_to' => 'sql'
             , 'cache_freq' => 7200
             , 'fields' => [
                 'Id' => [

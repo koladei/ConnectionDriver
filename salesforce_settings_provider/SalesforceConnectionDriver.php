@@ -54,7 +54,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         return parent::mergeRecordArray($data, $chunkResult, $localField, $remoteField);
     }
 
-    public function executeFunctionInternal($entityBrowser, $functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
+    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
         
         // Get a connection token
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
@@ -84,7 +84,6 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             $new_url = "{$connectionToken->instance_url}/services/data/v35.0/actions/custom/flow/{$functionName}";
             $feed = mware_blocking_http_request($new_url, ['options' => $options]);
             
-
             // Process the request
             $res = json_decode($feed->getContent());
 

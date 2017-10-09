@@ -56,7 +56,7 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
         return parent::mergeRecordArray($data, $chunkResult, $localField, $remoteField);
     }
     
-    public function executeFunctionInternal($entityBrowser, $functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
+    public function executeEntityFunctionInternal($entityBrowser, $functionName, array $objects = [], &$connectionToken = NULL, array $otherOptions = []) {
         
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
         $retryCount = 0;
@@ -138,42 +138,6 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
         }
 
         return $response;
-    }
-    
-    public function executeTargetedFunctionInternal($entityBrowser, $id, $functionName, array $data = [], &$connectionToken = NULL, array $otherOptions = []) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
-        
-        switch($functionName){
-            case 'fileupload': {        
-                //Connect to a Sharepoint site
-                $site = 'mainyard.mainone.net';
-                $url = str_replace(' ', '%20', "https://{$site}/docs/_api/web/lists/getbytitle('Access Requests')/fields?");
-                $username = 'mainonecable\spsetup_13';
-                $password = 'P@55word321';
-                $options = array(
-                    CURLOPT_HTTPHEADER => array(
-                        'Accept: application/json; odata=verbose',
-                        'Content-Type: application/json'
-                    ),
-                    CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
-                    CURLOPT_SSL_VERIFYPEER => 0,
-                    CURLOPT_SSL_VERIFYHOST => 0,
-                    CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
-                    CURLOPT_RETURNTRANSFER => 1,
-                    // CURLOPT_POSTFIELDS => $obj,
-                    CURLOPT_HTTPAUTH => CURLAUTH_NTLM,            
-                    CURLOPT_USERPWD => "$username:$password"
-                );
-
-                $feed = mware_blocking_http_request($url, ['options' => $options]);
-
-                var_dump( $feed->getContent());
-                return [];
-            } 
-            default:{
-                throw new \Exception("The function '{$functionName}' is not recognized.");
-            }
-        }
     }
 
     /**
