@@ -181,6 +181,41 @@ function settings_provider__format_cached_definition($from, $to, callable $entit
     return $return;
 }
 
+function settings_provider__format_delegated_definition($from, $to, callable $entitiesSource)
+{
+    $key = "{$from}|{$to}";
+    $return = [$key => []];
+
+    if ($to != $from) {
+        $entities = $entitiesSource();
+        foreach ($entities as $entity_name => $entity) {
+            if (isset($entity['delegate_to']) && $entity['delegate_to'] == $to) {
+                //TODO: Ensure that values that were ommitted are populated.
+                $fields = &$entity['fields'];
+                $name = strtolower("{$from}__{$entity['internal_name']}");
+                $entity['original_internal_name'] = $entity['internal_name'];
+                $entity['original_display_name'] = $entity_name;
+                $entity['internal_name'] = $name;
+                unset($entity['cache']);
+                unset($entity['cache_to']);
+
+                // Ensure that all references to self a properly sorted out in lookup fields
+                foreach ($fields as &$field) {
+                    if (isset($field['relationship'])) {
+                        if (!isset($field['relationship']['remote_driver'])) {
+                            $field['relationship']['remote_driver'] = $from;
+                        }
+                    }
+                }
+
+                $return[$key][$name] = $entity;
+            }
+        }
+    }
+
+    return $return;
+}
+
 
 function settings_provider_cron(){
     global $base_url;

@@ -45,13 +45,18 @@ abstract class MiddlewareConnectionDriver
     public function deleteItemInternal($entityBrowser, &$connectionToken = null, $id, array $otherOptions = []){
         throw new \Exception('Not yet implemented');
     }
+    
+    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = null, array $otherOptions = [])
+    {
+        throw new \Exception('Not yet implemented');
+    }
 
-    public function executeFunctionInternal($entityBrowser, $functionName, array $objects = [], &$connectionToken = null, array $otherOptions = [])
+    public function executeEntityFunctionInternal($entityBrowser, $functionName, array $objects = [], &$connectionToken = null, array $otherOptions = [])
     {
         throw new \Exception('Not yet implemented');
     }
     
-    public function executeTargetedFunctionInternal($entityBrowser, $id, $functionName, array $data = [], &$connectionToken = null, array $otherOptions = [])
+    public function executeEntityItemFunctionInternal($entityBrowser, $id, $functionName, array $data = [], &$connectionToken = null, array $otherOptions = [])
     {
         throw new \Exception('Not yet implemented');
     }
@@ -203,29 +208,24 @@ abstract class MiddlewareConnectionDriver
      * @param array $otherOptions
      * @return \stdClass representing the result of the function call.
      */
-    public function executeFunction($entityBrowser, $functionName, array $data = [], array $otherOptions = [])
-    {
-        $entityBrowser = $this->getEntityBrowser($entityBrowser);
-        if (is_null($entityBrowser)) {
-            throw new \Exception('Invalid entity could not be found.');
-        }
-        
+    public function executeFunction($functionName, array $data = [], array $otherOptions = [])
+    {        
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:-1;
         $otherOptions['retryCount'] = $retryCount + 1;
 
         try {
-            $result = $this->executeFunctionInternal($entityBrowser, $functionName, $data, $this->connectionToken, $otherOptions);
+            $result = $this->executeFunctionInternal($functionName, $data, $this->connectionToken, $otherOptions);
             return $result;
         } catch (\Exception $exc) {
             if ($retryCount < $this->maxRetries) {
-                return $this->executeFunction($entityBrowser, $functionName, $data, $otherOptions);
+                return $this->executeFunction($functionName, $data, $otherOptions);
             } else {
                 throw $exc;
             }
         }
     }
-
-    public function executeTargetedFunction($entityBrowser, $id, $functionName, array $data = [], array $otherOptions = [])
+    
+    public function executeEntityFunction($entityBrowser, $functionName, array $data = [], array $otherOptions = [])
     {
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
         if (is_null($entityBrowser)) {
@@ -236,11 +236,33 @@ abstract class MiddlewareConnectionDriver
         $otherOptions['retryCount'] = $retryCount + 1;
 
         try {
-            $result = $this->executeTargetedFunctionInternal($entityBrowser, $id, $functionName, $data, $this->connectionToken, $otherOptions);
+            $result = $this->executeEntityFunctionInternal($entityBrowser, $functionName, $data, $this->connectionToken, $otherOptions);
             return $result;
         } catch (\Exception $exc) {
             if ($retryCount < $this->maxRetries) {
-                return $this->executeTargetedFunctionInternal($entityBrowser, $id, $functionName, $data, $otherOptions);
+                return $this->executeEntityFunctionInternal($entityBrowser, $functionName, $data, $otherOptions);
+            } else {
+                throw $exc;
+            }
+        }
+    }
+    
+    public function executeEntityItemFunction($entityBrowser, $id, $functionName, array $data = [], array $otherOptions = [])
+    {
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        if (is_null($entityBrowser)) {
+            throw new \Exception('Invalid entity could not be found.');
+        }
+
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:-1;
+        $otherOptions['retryCount'] = $retryCount + 1;
+
+        try {
+            $result = $this->executeEntityItemFunctionInternal($entityBrowser, $id, $functionName, $data, $this->connectionToken, $otherOptions);
+            return $result;
+        } catch (\Exception $exc) {
+            if ($retryCount < $this->maxRetries) {
+                return $this->executeEntityItemFunctionInternal($entityBrowser, $id, $functionName, $data, $otherOptions);
             } else {
                 throw $exc;
             }
@@ -307,8 +329,8 @@ abstract class MiddlewareConnectionDriver
     public function getItemsByFieldValues($entityBrowser, EntityFieldDefinition $entityField, array $values, $select, $expands = '', &$otherOptions = [])
     {
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
-        if (is_null($entityBrowser)) {
-            throw new \Exception('Invalid entity could not be found.');
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
         }
 
         // implode the values based on the type of the field
@@ -338,9 +360,21 @@ abstract class MiddlewareConnectionDriver
 
     public function updateItem($entityBrowser, $id, \stdClass $object, array $otherOptions = [])
     {
-        $entityBrowser = $this->getEntityBrowser($entityBrowser);
-        if (is_null($entityBrowser)) {
-            throw new \Exception('Invalid entity could not be found.');
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);        
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }
+        
+        // Handle storage delegation
+        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
+            // Load the driver instead
+            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $return = $delegateDriver->updateItem(...$args);
+            return $return;
         }
 
         $entityBrowser = $this->setStrategies($entityBrowser);
@@ -357,6 +391,14 @@ abstract class MiddlewareConnectionDriver
             if (!is_object($object->{$setField->getDisplayName()}) && !is_array($object->{$setField->getDisplayName()})) {
                 $obj->{$setField->getDisplayName()} = $object->{$setField->getDisplayName()};
             }
+        }
+        
+        if($entityBrowser->shouldManageTimestamps()){
+            $now = new \DateTime();
+            if(property_exists($obj, 'Created')){
+                unset($obj->Created);
+            }
+            $obj->Modified = $now->format('Y-m-d\TH:i:s');
         }
 
         if (!isset($otherOptions['$select'])) {
@@ -386,12 +428,25 @@ abstract class MiddlewareConnectionDriver
 
     public function createItem($entityBrowser, \stdClass $object, array $otherOptions = [])
     {
-
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
-        if (is_null($entityBrowser)) {
-            throw new \Exception('Invalid entity could not be found.');
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
         }
-        
+
+        // Handle storage delegation
+        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
+
+            // Load the driver instead
+            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $args[2]['$setId'] = '1';
+            $return = $delegateDriver->createItem(...$args);
+            return $return;
+        }
+                
         $entityBrowser = $this->setStrategies($entityBrowser);
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
         $otherOptions['retryCount'] = $retryCount + 1;
@@ -405,6 +460,12 @@ abstract class MiddlewareConnectionDriver
             if (!is_object($object->{$setField->getDisplayName()}) && !is_array($object->{$setField->getDisplayName()})) {
                 $obj->{$setField->getDisplayName()} = $object->{$setField->getDisplayName()};
             }
+        }
+
+        if($entityBrowser->shouldManageTimestamps()){
+            $now = new \DateTime();
+            $obj->Created = $now->format('Y-m-d\TH:i:s');
+            $obj->Modified = $now->format('Y-m-d\TH:i:s');
         }
 
         // Prepare the selected fields for the return
@@ -440,11 +501,22 @@ abstract class MiddlewareConnectionDriver
     }
 
     public function deleteItem($entityBrowser, $id, array $otherOptions = [], &$deleteCount = 0)
-    {
-        
+    {        
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
-        if (is_null($entityBrowser)) {
-            throw new \Exception('Invalid entity could not be found.');
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }
+
+        // Handle storage delegation
+        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
+            // Load the driver instead
+            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $return = $delegateDriver->deleteItem(...$args);
+            return $return;
         }
         
         $entityBrowser = $this->setStrategies($entityBrowser);
@@ -506,6 +578,18 @@ abstract class MiddlewareConnectionDriver
             $args = func_get_args();
             $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
             $return = $cacheDriver->getItems(...$args);
+            return $return;
+        }
+        
+        // If this entity's storage is delegated to another driver.
+        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
+            // Load the driver instead
+            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $return = $delegateDriver->getItems(...$args);
             return $return;
         }
 

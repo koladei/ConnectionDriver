@@ -34,6 +34,9 @@ class EntityDefinitionBrowser
     private $cacheData = false;
     private $context = 'default';
     private $cachingDriverName = null;
+    private $delegateStorage = FALSE; // TRUE means that the driver underwhich this connection driver is stored is not the final store.
+    private $delegateDriverName = NULL;
+    private $manageTimestamps = FALSE;
 
     public function __construct($internalName, array &$definition, MiddlewareConnectionDriver &$parent)
     {
@@ -49,21 +52,30 @@ class EntityDefinitionBrowser
             $this->dataSource = $definition['datasource'];
         }
 
+        if(isset($definition['manage_timestamps'])){
+            $this->manageTimestamps = $definition['manage_timestamps'];
+        }
+
         if (isset($definition['context'])) {
             $this->context = $definition['context'];
         }
-        
-        // if (isset($definition['cache'])){
-        //     $this->cacheData = $definition['cache'];
-        // }
-        
+                
         if (isset($definition['cache_to'])) {
             $this->cacheData = true;
             $this->cachingDriverName = $definition['cache_to'];
         }
+        
+        if (isset($definition['delegate_to'])) {
+            $this->delegateStorage = true;
+            $this->delegateDriverName = $definition['delegate_to'];
+        }
 
         $this->setFields($definition['fields']);
         return $this;
+    }
+
+    public function shouldManageTimestamps(){
+        return $this->manageTimestamps;
     }
 
     public function getCachingDriverName()
@@ -118,9 +130,19 @@ class EntityDefinitionBrowser
         return $this->cacheData;
     }
     
+    public function delegatesStorage()
+    {
+        return $this->delegateStorage;
+    }
+    
     public function getCacheDriverName()
     {
         return $this->cacheDriverName;
+    }
+    
+    public function getDelegateDriverName()
+    {
+        return $this->delegateDriverName;
     }
 
     public function getContext()
