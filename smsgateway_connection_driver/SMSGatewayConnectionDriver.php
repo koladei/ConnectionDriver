@@ -102,6 +102,8 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
                 $msg->SentBy = 'appdev';
                 $msg->BatchId = $batchId;
                 $msg->Status = 'SENDING';
+                $msg->StatusComment = 'Waiting to be sent.';
+                $msg->SMSCount = 0;
                 $msg->SentThrough = $connectionToken->providerName;
                 $x = $this->createItem('smslog', $msg, [
                     '$setId' => '1'
@@ -128,17 +130,25 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
             // Process the request
             $res = json_decode($feed->getContent());
 
-            var_dump($res);
-
             if ($res->status == 'success') {
                 // Update the status of each message
                 foreach ($res->data->messages as $message) {
                     $msg = new \stdClass();
                     $msg->SMSCount = $message->smsCount;
                     $msg->Status = $message->status->groupName;
+                    $msg->StatusDescription = $message->status->description;
                     $msg->RemoteId = $message->messageId;
 
                     $this->updateItem('smslog', "{$res->data->bulkId}-{$message->to}", $msg, []);
+                }
+
+                foreach ($res->data->invalidNumbers as $invalid){
+                    $msg = new \stdClass();
+                    $msg->SMSCount = 0;
+                    $msg->Status = 'FAILED';
+                    $msg->StatusDescription = 'Invalid number';
+
+                    $this->updateItem('smslog', "{$res->data->bulkId}-{$invalid}", $msg, []);
                 }
             }
 

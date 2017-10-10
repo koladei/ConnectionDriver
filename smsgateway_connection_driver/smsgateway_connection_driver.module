@@ -67,7 +67,7 @@ function smsgateway_connection_driver_cron(){
             variable_set('SMSGATEWAY_UPDATEINFO', $smsgatewayupdateInfo);
         }]);
     } else {
-        
+
     }
     
     // TODO: IMPLEMENT A CONCURRENCY CHECK CONTROL FEATURE SO THAT MORETHAN 1 INSTANCE OF THIS WORKFLOW IS NOT STARTED.
@@ -205,6 +205,10 @@ function smsgateway_connection_driver__get_entity_definitions()
                     ]
                     , 'status' => [
                         'preferred_name' => 'Status'
+                        , 'type' => 'string'
+                    ]
+                    , 'statuscomment' => [
+                        'preferred_name' => 'StatusDescription'
                         , 'type' => 'string'
                     ]
                     , 'sentthrough' => [
