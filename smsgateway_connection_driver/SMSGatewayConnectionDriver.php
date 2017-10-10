@@ -72,6 +72,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
             if (count($recipients) < 1) {
                 throw new \Exception("Parameter 'recipients' must contain at least 1 valid number");
             }
+            $recipients = array_unique($recipients);
             
             // validate the message
             if (!isset($objects['message']) || strlen($objects['message']) < 1) {
@@ -102,7 +103,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
                 $msg->SentBy = 'appdev';
                 $msg->BatchId = $batchId;
                 $msg->Status = 'SENDING';
-                $msg->StatusComment = 'Waiting to be sent.';
+                $msg->StatusDescription = 'Waiting to be sent.';
                 $msg->SMSCount = 0;
                 $msg->SentThrough = $connectionToken->providerName;
                 $x = $this->createItem('smslog', $msg, [
@@ -138,15 +139,23 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
                     $msg->Status = $message->status->groupName;
                     $msg->StatusDescription = $message->status->description;
                     $msg->RemoteId = $message->messageId;
+                    $number = $message->to;
+                    if(!in_array($number, $recipients)){
+                        $number = substr($number, 3);
+                    }
 
-                    $this->updateItem('smslog', "{$res->data->bulkId}-{$message->to}", $msg, []);
+                    $this->updateItem('smslog', "{$res->data->bulkId}-{$number}", $msg, []);
                 }
 
                 foreach ($res->data->invalidNumbers as $invalid){
+                    if(!in_array($invalid, $recipients)){
+                        $invalid = substr($invalid, 3);
+                    }
                     $msg = new \stdClass();
                     $msg->SMSCount = 0;
                     $msg->Status = 'FAILED';
                     $msg->StatusDescription = 'Invalid number';
+                    $msg->Id = "{$res->data->bulkId}-{$invalid}";
 
                     $this->updateItem('smslog', "{$res->data->bulkId}-{$invalid}", $msg, []);
                 }
