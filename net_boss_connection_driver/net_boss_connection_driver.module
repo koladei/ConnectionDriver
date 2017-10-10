@@ -16,7 +16,7 @@ function net_boss_connection_driver_connection_driver_netboss_alter(&$container)
         return net_boss_connection_driver__get_settings($source_name);
     }, 'netboss');
 
-    $defs = net_boss_connection_driver__get_entity_definitions();
+    $defs = net_boss_connection_driver__get_entity_definitions_local();
     $driver->setEntities($defs);
     $container['netboss'] = $driver;
 }
@@ -53,15 +53,24 @@ function net_boss_connection_driver__user_access($args)
 {
     return true;
 }
-
-function net_boss_connection_driver__get_cached_entity_definitions($targetDriver)
+/**
+ * 
+ * Returns entity definitions that have been marked as cacheable to the specified entity.
+ *
+ * @param String $targetDriver the connection driver to use to retrieve the cache.
+ * @return void
+ */
+function snet_boss_connection_driver__get_cached_entity_definitions($targetDriver)
 {
-    $return = [];
-    if ($targetDriver != 'netboss') {
-        $return = net_boss_connection_driver__get_entity_definitions();
-    }
-    
-    return $return;
+    return settings_provider__format_cached_definition('netboss', $targetDriver, function(){
+        $args = func_get_args();
+        $return = net_boss_connection_driver__get_entity_definitions_local(...$args);
+        return $return;
+    });
+}
+
+function net_boss_connection_driver__get_entity_definitions_local(){
+    return net_boss_connection_driver__get_entity_definitions(...func_get_args())['netboss'];
 }
 
 /**
@@ -80,81 +89,16 @@ function net_boss_connection_driver__get_entity_definitions()
                     , 'type' => 'int'
                     , 'mandatory' => 1,
                 ]
-                , 'GCID' => [
-                    'preferred_name' => 'GCID'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1
-                    , 'relationship' => [
-                        'local_field' => 'GCID'
-                        , 'preferred_local_key_name' => 'GCID'
-                        , 'remote_field' => 'GCID'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'account'
-                        , 'remote_driver' => 'salesforce'
-                    ]
-                ]
-                , '_Siblings' => [
-                    'preferred_name' => 'Siblings'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'GCID'
-                        , 'remote_field' => 'GCID'
-                        , 'remote_type' => 'child'
-                        , 'remote_entity' => 'customerinfo'
-                        , 'filter' => 'SystemId ne 3'
-                    ]
-                ]
-                , 'Name' => [
-                    'preferred_name' => 'Name'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1
-                ]
-                , 'DateModified' => [
-                    'preferred_name' => 'Modified'
-                    , 'type' => 'datetime'
-                ]
-                , 'DateCreated' => [
-                    'preferred_name' => 'Created'
-                    , 'type' => 'datetime'
-                ]
-                , 'LocalId' => [
-                    'preferred_name' => 'SystemKey'
-                    , 'type' => 'string'
-                ]
-                , 'System' => [
-                    'preferred_name' => 'System'
-                    , 'type' => 'int'
-                    , 'mandatory' => 1
-                    , 'relationship' => [
-                        'local_field' => 'System'
-                        , 'preferred_local_key_name' => 'SystemId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'system'
-                    ]
-                ]
-                , 'Entity' => [
-                    'preferred_name' => 'Entity'
-                    , 'type' => 'int'
-                    , 'mandatory' => 1
-                    , 'relationship' => [
-                        'local_field' => 'Entity'
-                        , 'preferred_local_key_name' => 'EntityId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'system_entity'
-                    ]
-                ]
             ]
         ]  ]      
     ];
 
     // Add other entities that have been cached to this driver.
-    $cached_all = module_invoke_all('_get_cached_entity_definitions', 'netboss');
-    foreach ($cached_all as $cached) {
-        $g = is_null($cached)?[]:$cached;
-        $return = array_merge($return, $g);
-    }
+    // $cached_all = module_invoke_all('_get_cached_entity_definitions', 'netboss');
+    // foreach ($cached_all as $cached) {
+    //     $g = is_null($cached)?[]:$cached;
+    //     $return = array_merge($return, $g);
+    // }
 
     return $return;
 }
