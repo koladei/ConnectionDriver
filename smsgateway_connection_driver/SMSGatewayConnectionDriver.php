@@ -1,227 +1,241 @@
 <?php
 
-module_load_include('module', 'settings_provider');
-$module_path = drupal_get_path('module', 'smsgateway_connection_driver');
-include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
-include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/SMSGatewayConnectionDriver.php');
+namespace com\mainone\middleware;
 
-use com\mainone\middleware\SMSGatewayConnectionDriver;
-
-/**
- * Implement hook_menu().
- */
-function smsgateway_connection_driver_menu()
-{
-    $items = [];
-
-    // Link to cache update cron
-    $items['smsgateway/update-sms-status'] = [
-        'page callback' => 'settings_provider__update_sms_status'
-        , 'file' => 'crons/cron.update-sms-status.inc'
-        , 'page arguments' => ['internal']
-        , 'access arguments' => ['access content']
-        , 'type' => MENU_CALLBACK
-    ];
-
-    return $items;
-}
+use com\mainone\middleware\MiddlewareConnectionDriver;
+use com\mainone\middleware\MiddlewareFilter;
+use com\mainone\middleware\EntityDefinitionBrowser;
+use \PDO;
 
 /**
- * Implements hook_cron
+ * Description of SMSGatewayConnectionDriver
  *
- * @return void
+ * @author Kolade.Ige
  */
-function smsgateway_connection_driver_cron(){
+class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
+{
 
-    // Get the current date and time
-    $now = new \DateTime();
+    /**
+     * Instantiates and returns an instance of a SMSGatewayConnectionDriver
+     *
+     * @param callable $driverLoader A callable reference that can be used to retrieve data that can be found in other connnection driver instances.
+     * @param callable $sourceLoader A callable reference that can be used to load data from various named connections within the current driver.
+     */
+    public function __construct(callable $driverLoader, callable $sourceLoader, $identifier = __CLASS__)
+    {
+        parent::__construct($driverLoader, $sourceLoader, $identifier);
+    }
 
-    // Get the last and next run time of the workflow
-    $smsgatewayupdateInfo = variable_get('SMSGATEWAY_UPDATEINFO', [
-        'lastrun' => '1998-01-01T00:00:00'
-        , 'frequency' => 30
-        , 'inprogresssince' => '1996-01-01T00:00:00'
-        , 'concurrencyinterval' => 30
-    ]);
-    $lastRun = \DateTime::createFromFormat('Y-m-d\TH:i:s', $smsgatewayupdateInfo['lastrun']);
-    $frequency = new \DateInterval("PT{$smsgatewayupdateInfo['frequency']}M");
-    $nextRun = \DateTime::createFromFormat('Y-m-d\TH:i:s', $smsgatewayupdateInfo['lastrun']);
-    $nextRun->add($frequency);
-        
-    // Invoke the workflow if it is due to run.
-    if($now > $nextRun) {        
-        global $base_url;
-    
-        $tokenOption = [
-            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
-            , CURLOPT_PROTOCOLS => CURLPROTO_HTTPS
-            , CURLOPT_SSL_VERIFYPEER => FALSE
-            , CURLOPT_SSL_VERIFYHOST => 0
-            , CURLOPT_FOLLOWLOCATION => TRUE
-            , CURLOPT_HTTPPROXYTUNNEL => TRUE
-            , CURLOPT_VERBOSE => TRUE
-        ];
+    public function executeFunctionInternal($functionName, array $objects = [], &$connectionToken = null, array $otherOptions = [])
+    {
+        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            global $base_url;
+            $return = new \stdClass();
+            $authorization = \base64_encode("{$connectionToken->username}:{$connectionToken->password}");
+            // $sql = self::loadDriver($connectionToken->messageLogDriverName);
+            
+            // return $this->getItems('smslog', 'Id,Delivered,Status,SentBy/[DisplayName]', "BatchId eq 'MIDDLEWARE-DEV.MAINONE.NET-20171009153449'", 'SentBy');
 
-        mware_http_request("{$base_url}/smsgateway/update-sms-status", ['options' => $tokenOption, 'callback' => function($event) use ($now, $smsgatewayupdateInfo){
-            $smsgatewayupdateInfo['lastrun'] = $now->format('Y-m-d\TH:i:s');
-            variable_set('SMSGATEWAY_UPDATEINFO', $smsgatewayupdateInfo);
-        }]);
+            switch ($functionName) {
+
+                case 'sendsms': {
+                    return $this->deliverSMS($objects, $connectionToken, $otherOptions);
+                }
+                case 'updatedeliverystatus':{
+                    return $this->updateDeliveryStatus($objects, $connectionToken, $otherOptions);
+                }
+                case 'getdeliverystatus':{
+                    return $this->getDeliveryStatus($objects, $connectionToken, $otherOptions);
+                }
+                default:{
+                    throw new \Exception("Sorry! the function '{$functionName}' is not supported yet.");
+                }
+            }
+        } else {
+            throw new \Exception('There was a problem getting the connection token');
+        }
     }
     
-    // TODO: IMPLEMENT A CONCURRENCY CHECK CONTROL FEATURE SO THAT MORETHAN 1 INSTANCE OF THIS WORKFLOW IS NOT STARTED.
-}
+    function deliverSMS($objects, $connectionToken = NULL, $otherOptions = []){
+        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            global $base_url;
+            $return = new \stdClass();
+            $authorization = \base64_encode("{$connectionToken->username}:{$connectionToken->password}");
 
-function smsgateway_connection_driver_connection_driver_smsgateway_alter(&$container)
-{
-    $driver = new SMSGatewayConnectionDriver(function ($x) {
-        $return = mware_connection_driver__get_driver($x);
-        return $return;
-    }, function ($source_name) {
-        return smsgateway_connection_driver__get_settings($source_name);
-    }, 'smsgateway');
+            // Require the recipients
+            if (!isset($objects['recipients'])) {
+                throw new \Exception("Parameter 'recipients' is required.");
+            }
 
-    $defs = smsgateway_connection_driver__get_entity_definitions_local();
-    $driver->setEntities($defs);
-    $container['smsgateway'] = $driver;
-}
+            // Validate the recipients
+            $recipients = is_string($objects['recipients'])?preg_split('/[\s*,\s*]*,+[\s*,\s*]*/', $objects['recipients']):(is_array($objects['recipients'])?$objects['recipients']:[]);
+            if (count($recipients) < 1) {
+                throw new \Exception("Parameter 'recipients' must contain at least 1 valid number");
+            }
+            
+            // validate the message
+            if (!isset($objects['message']) || strlen($objects['message']) < 1) {
+                throw new \Exception("Parameter 'message' is required and cannot be empty.");
+            }
+            
+            // Validate the sender id
+            if (isset($objects['senderid']) && strlen($objects['senderid']) > 11) {
+                throw new \Exception("Parameter 'senderid' cannot be longer than 11 characters");
+            }
+            $senderid = isset($objects['senderid'])?$objects['senderid']:$connectionToken->defaultSenderId;
+            $batchId = strtoupper(trim(substr($base_url, 6), '/').'-'.(new \DateTime())->format('YmdHis'));
+            
+            $obj = new \stdClass();
+            $obj->from = $senderid;
+            $obj->to = $recipients;
+            $obj->text = $objects['message'];
+            $obj->bulkId = $batchId;
 
-function smsgateway_connection_driver__get_settings($key)
-{
-    $settings = new \stdClass();
-
-    $settings->DSN = variable_get("SQL_SETTINGS_DSN_{$key}");
-    $settings->Username = variable_get("SQL_SETTINGS_USERNAME_{$key}");
-    $settings->Password = variable_get("SQL_SETTINGS_PASSWORD_{$key}");
-    $settings->DatabaseType = variable_get("SQL_SETTINGS_DBTYPE_{$key}");
-
-    return $settings;
-}
-
-/**
- * Implements hook_permission
- * @return array
- */
-function smsgateway_connection_driver_permission()
-{
-    $permission = [];
-
-    return $permission;
-}
-
-/**
- * Confirms if a user should be allowed to access something.
- * @param type $args
- * @return boolean
- */
-function smsgateway_connection_driver__user_access($args)
-{
-    return true;
-}
-
-/**
- *
- * Returns entity definitions that have been marked as cacheable to the specified entity.
- *
- * @param String $targetDriver the connection driver to use to retrieve the cache.
- * @return void
- */
-function smsgateway_connection_driver__get_delegated_entity_definitions($targetDriver)
-{
-    return settings_provider__format_delegated_definition('smsgateway', $targetDriver, function () {
-        $args = func_get_args();
-        $return = smsgateway_connection_driver__get_entity_definitions_local(...$args);
-        return $return;
-    });
-}
-
-function smsgateway_connection_driver__get_entity_definitions_local()
-{
-    return smsgateway_connection_driver__get_entity_definitions(...func_get_args())['smsgateway'];
-}
-
-/**
- * Returns all the entity definitions implemented in Dynamics AX.
- * @return type
- */
-function smsgateway_connection_driver__get_entity_definitions()
-{
-    $return = [
-        'smsgateway'=> [
-            'smslog' => [
-                'internal_name' => 'SMSDeliveryLog'
-                , 'delegate_to' => 'sql'
-                , 'manage_timestamps' => TRUE
-                , 'fields' => [
-                    'id' => [
-                        'preferred_name' => 'Id'
-                        , 'type' => 'string'
-                        , 'mandatory' => 1,
-                    ]
-                    , 'batchid' => [
-                        'preferred_name' => 'BatchId'
-                        , 'type' => 'string'
-                    ]
-                    , 'created' => [
-                        'preferred_name' => 'Created'
-                        , 'type' => 'datetime'
-                    ]
-                    , 'modified' => [
-                        'preferred_name' => 'Modified'
-                        , 'type' => 'datetime'
-                    ]
-                    , 'delivered' => [
-                        'preferred_name' => 'Delivered'
-                        , 'type' => 'datetime'
-                    ]
-                    , 'lastchecked' => [
-                        'preferred_name' => 'LastChecked'
-                        , 'type' => 'datetime'
-                    ]
-                    , 'message' => [
-                        'preferred_name' => 'Body'
-                        , 'type' => 'string'
-                    ]
-                    , 'recipient' => [
-                        'preferred_name' => 'Recipient'
-                        , 'type' => 'string'
-                    ]
-                    , 'sentas' => [
-                        'preferred_name' => 'From'
-                        , 'type' => 'string'
-                    ]
-                    , 'sentby' => [
-                        'preferred_name' => 'SentBy'
-                        , 'type' => 'string'
-                        , 'relationship' => [
-                            'local_field' => 'SentBy'
-                            , 'preferred_local_key_name' => 'SentById'
-                            , 'remote_field' => 'Id'
-                            , 'remote_type' => 'parent'
-                            , 'remote_entity' => 'objects'
-                            , 'remote_driver' => 'ldap'
-                        ]
-                    ]
-                    , 'status' => [
-                        'preferred_name' => 'Status'
-                        , 'type' => 'string'
-                    ]
-                    , 'sentthrough' => [
-                        'preferred_name' => 'SentThrough'
-                        , 'type' => 'string'
-                    ]
-                    , 'smscount' => [
-                        'preferred_name' => 'SMSCount'
-                        , 'type' => 'int'
-                    ]
-                    , 'remoteid' => [
-                        'preferred_name' => 'RemoteId'
-                        , 'type' => 'string'
-                    ]
+            foreach ($recipients as $recipient) {
+                // Log the SMS to the database.
+                $msg = new \stdClass();
+                $msg->BatchId = $bulkId;
+                $msg->Id = "{$batchId}-{$recipient}";
+                $msg->Body = $objects['message'];
+                $msg->Recipient = $recipient;
+                $msg->From = $senderid;
+                $msg->SentBy = 'appdev';
+                $msg->BatchId = $batchId;
+                $msg->Status = 'PENDING';
+                $msg->SentThrough = $connectionToken->providerName;
+                $x = $this->createItem('smslog', $msg, [
+                    '$setId' => '1'
+                ]);
+            }
+        
+            // Try sending the SMS.
+            $options = [
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Basic ' . $authorization
+                    , 'Content-Type: application/json'
+                    , 'Accept: application/json'
                 ]
-            ]
-        ]
-    ];
+                , CURLOPT_PROTOCOLS => CURLPROTO_HTTPS
+                , CURLOPT_SSL_VERIFYPEER => 0
+                , CURLOPT_SSL_VERIFYHOST => 0
+                , CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
+                , CURLOPT_POSTFIELDS => json_encode($obj)
+            ];
 
-    return $return;
+            // Execute the POST request.
+            $feed = mware_blocking_http_request($connectionToken->url, ['options' => $options]);
+        
+            // Process the request
+            $res = json_decode($feed->getContent());
+
+            if ($res->status == 'success') {
+                // Update the status of each message
+                foreach ($res->data->messages as $message) {
+                    $msg = new \stdClass();
+                    $msg->SMSCount = $message->smsCount;
+                    $msg->Status = $message->status->groupName;
+                    $msg->RemoteId = $message->messageId;
+
+                    $this->updateItem('smslog', "{$res->data->bulkId}-{$message->to}", $msg, []);
+                }
+            }
+
+            // Return the status of the SMS.                    
+            return [
+                'batchId' => $batchId
+            ];
+        } else {
+            throw new \Exception('There was a problem getting the connection token');
+        }
+    }
+    
+    function updateDeliveryStatus($objects = [], $connectionToken = NULL, $otherOptions = []){
+        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            $now = new \DateTime();
+            $authorization = \base64_encode("{$connectionToken->username}:{$connectionToken->password}");
+
+            // Get all the messages that are pending by their batch id
+            $batchIds = [];
+            $pendingMessages = $this->getItems('smslog', 'BatchId', "Status eq 'PENDING'", '');     
+            foreach($pendingMessages as $pendingMessage){
+                if(!in_array($pendingMessage->BatchId, $batchIds)){
+                    $batchIds[] = $pendingMessage->BatchId;
+                }
+            }
+        
+            // Try sending the SMS.
+            $options = [
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Basic ' . $authorization
+                    , 'Content-Type: application/json'
+                    , 'Accept: application/json'
+                ]
+                , CURLOPT_PROTOCOLS => CURLPROTO_HTTPS
+                , CURLOPT_SSL_VERIFYPEER => 0
+                , CURLOPT_SSL_VERIFYHOST => 0
+                , CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
+            ];
+
+            // Get the status of each batch
+            foreach($batchIds as $batchId){
+                try {
+                    // Execute the POST request.
+                    $feed = mware_blocking_http_request("{$connectionToken->reportUrl}?bulkId.eq={$batchId}", ['options' => $options]);
+                
+                    // Process the request
+                    $res = json_decode($feed->getContent());
+
+                    if ($res->status == 'success') {
+                        try {
+                            // Update the status of each message
+                            foreach ($res->data->rows as $message) {
+                                $msg = new \stdClass();
+                                $msg->SMSCount = $message->smsCount;
+                                $msg->Status = $message->statusGroup;
+                                $msg->RemoteId = $message->msgid;
+                                $msg->LastChecked = $now->format('Y-m-d\TH:i:s');
+                                if($message->statusGroup == 'DELIVERED'){
+                                    $msg->Delivered = \DateTime::createFromFormat('Y-m-d\TH:i:s', \substr($message->dateSent, 0, 19));
+                                }
+                                $this->updateItem('smslog', "{$batchId}-{$message->recipient}", $msg, []);
+                            }
+                        } catch (\Exception $e){}
+                    }
+                } catch (\Exception $e) {
+                    watchdog('SMSGATEWAY', "There was a problem connecting to the service: {$e->getMessage()}", [], WATCHDOG_WARNING);
+                }
+            }
+        } else {
+            throw new \Exception('There was a problem getting the connection token');
+        }
+    }
+    
+    function getDeliveryStatus($objects, $connectionToken = NULL, $otherOptions = []){
+        // Require the recipients
+        if (!isset($objects['batchid'])) {
+            throw new \Exception("Parameter 'batchid' is required.");
+        }
+
+        // $this->updateDeliveryStatus();
+        return $this->getItems('smslog', 'Id,Delivered,Status,SentThrough,SentBy/[DisplayName]', "BatchId eq '{$objects['batchid']}'", 'SentBy', []);
+    }
+
+    public function getStringer()
+    {
+        return MiddlewareFilter::SQL;
+    }
+
+    public function getConnectionToken()
+    {
+        $obj = new \stdClass;
+        $obj->username = 'licensemanager@mainone.net';
+        $obj->password = 'Welcome@123';
+        $obj->sendUrl = 'https://api.ozinta.com/v3/sms/simple';
+        $obj->reportUrl = 'https://api.ozinta.com/v3/reports';
+        $obj->defaultSenderId = 'MAINONE';
+        $obj->providerName = 'smstorrent';
+        $obj->messageLogDriverName = 'sql';
+
+        return $obj;
+    }
 }
-

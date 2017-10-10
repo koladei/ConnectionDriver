@@ -66,6 +66,8 @@ function smsgateway_connection_driver_cron(){
             $smsgatewayupdateInfo['lastrun'] = $now->format('Y-m-d\TH:i:s');
             variable_set('SMSGATEWAY_UPDATEINFO', $smsgatewayupdateInfo);
         }]);
+    } else {
+        
     }
     
     // TODO: IMPLEMENT A CONCURRENCY CHECK CONTROL FEATURE SO THAT MORETHAN 1 INSTANCE OF THIS WORKFLOW IS NOT STARTED.
