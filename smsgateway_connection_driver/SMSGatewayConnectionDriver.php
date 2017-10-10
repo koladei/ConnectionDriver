@@ -185,7 +185,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
                     // Process the request
                     $res = json_decode($feed->getContent());
 
-                    if ($res->status == 'success') {
+                    if (!is_null($res) && \property_exists($res, 'status') && $res->status == 'success') {
                         try {
                             // Update the status of each message
                             foreach ($res->data->rows as $message) {
