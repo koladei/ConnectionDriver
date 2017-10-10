@@ -101,7 +101,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
                 $msg->From = $senderid;
                 $msg->SentBy = 'appdev';
                 $msg->BatchId = $batchId;
-                $msg->Status = 'PENDING';
+                $msg->Status = 'SENDING';
                 $msg->SentThrough = $connectionToken->providerName;
                 $x = $this->createItem('smslog', $msg, [
                     '$setId' => '1'
@@ -123,10 +123,12 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
             ];
 
             // Execute the POST request.
-            $feed = mware_blocking_http_request($connectionToken->url, ['options' => $options]);
+            $feed = mware_blocking_http_request($connectionToken->sendUrl, ['options' => $options]);
         
             // Process the request
             $res = json_decode($feed->getContent());
+
+            var_dump($res);
 
             if ($res->status == 'success') {
                 // Update the status of each message
