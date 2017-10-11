@@ -163,7 +163,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
 
             // Return the status of the SMS.                    
             return [
-                'batchId' => $batchId
+                ['batch_id' => $batchId, 'provider_name' => 'SMS Torrent']
             ];
         } else {
             throw new \Exception('There was a problem getting the connection token');
@@ -238,7 +238,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
         }
 
         // $this->updateDeliveryStatus();
-        return $this->getItems('smslog', 'Id,Delivered,Status,SentThrough,SentBy/[DisplayName]', "BatchId eq '{$objects['batchid']}'", 'SentBy', []);
+        return $this->getItems('smslog', 'Id,Delivered,Recipient,Status,SentThrough,SentBy/[DisplayName]', "BatchId eq '{$objects['batchid']}'", 'SentBy', []);
     }
 
     public function getStringer()
