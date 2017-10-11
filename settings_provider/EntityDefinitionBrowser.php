@@ -37,6 +37,10 @@ class EntityDefinitionBrowser
     private $delegateStorage = FALSE; // TRUE means that the driver underwhich this connection driver is stored is not the final store.
     private $delegateDriverName = NULL;
     private $manageTimestamps = FALSE;
+    private $redirectReadTo = FALSE;
+    private $redirectCreateTo = FALSE;
+    private $redirectDeleteTo = FALSE;
+    private $redirectUpdateTo = FALSE;
 
     public function __construct($internalName, array &$definition, MiddlewareConnectionDriver &$parent)
     {
@@ -51,9 +55,51 @@ class EntityDefinitionBrowser
         if (isset($definition['datasource'])) {
             $this->dataSource = $definition['datasource'];
         }
-
+        
         if(isset($definition['manage_timestamps'])){
             $this->manageTimestamps = $definition['manage_timestamps'];
+        }
+        
+        // Collect information about method redirection
+        if(isset($definition['redirects'])){
+            if(isset($definition['redirects']['read'])){
+                $this->redirectReadTo = (object)$definition['redirects']['read'];
+
+                // if the driver is missing, default to this entity's driver
+                if(!(\property_exists($this->redirectReadTo, 'driver')) || is_null($this->redirectReadTo->driver)){
+                    $this->redirectReadTo->driver = $this->getParent()->getIdentifier();
+                }
+            }
+            
+            if(isset($definition['redirects']['create'])){
+                $this->redirectCreateTo = (object)$definition['redirects']['create'];
+                
+                // if the driver is missing, default to this entity's driver
+                if(!(\property_exists($this->redirectCreateTo, 'driver')) || is_null($this->redirectCreateTo->driver)){
+                    $this->redirectCreateTo->driver = $this->getParent()->getIdentifier();
+                }
+            }
+
+            
+            if(isset($definition['redirects']['update'])){
+                $this->redirectUpdateTo = (object)$definition['redirects']['update'];                
+
+                // if the driver is missing, default to this entity's driver
+                if(!(\property_exists($this->redirectUpdateTo, 'driver')) || is_null($this->redirectUpdateTo->driver)){
+                    $this->redirectUpdateTo->driver = $this->getParent()->getIdentifier();
+                }
+            }
+
+            
+            if(isset($definition['redirects']['delete'])){
+                $this->redirectDeleteTo = (object)$definition['redirects']['delete'];
+                
+
+                // if the driver is missing, default to this entity's driver
+                if(!(\property_exists($this->redirectDeleteTo, 'driver')) || is_null($this->redirectDeleteTo->driver)){
+                    $this->redirectDeleteTo->driver = $this->getParent()->getIdentifier();
+                }
+            }
         }
 
         if (isset($definition['context'])) {
@@ -73,16 +119,117 @@ class EntityDefinitionBrowser
         $this->setFields($definition['fields']);
         return $this;
     }
+    
+    /**
+     * Checks if this entity definition mirrors another entity's read operation
+     *
+     * @return void
+     */
+    public function shouldRedirectRead(){
+        if($this->redirectReadTo != FALSE){
+            return TRUE;
+        }
+        return FALSE;
+    }
 
+    /**
+     * Returns information about the entity browser and driver to read from
+     *
+     * @return void
+     */
+    public function getReadProviderInfo(){
+        return $this->redirectReadTo;
+    }
+    
+    
+    /**
+     * Checks if this entity definition mirrors another entity's create operation
+     *
+     * @return void
+     */
+    public function shouldRedirectCreate(){
+        if($this->redirectCreateTo != FALSE){
+            return TRUE;
+        }
+        return FALSE;
+    }
+    
+    /**
+     * Returns information about the entity browser and driver to create to
+     *
+     * @return void
+     */
+    public function getCreateProviderInfo(){
+        return $this->redirectCreateTo;
+    }
+        
+    /**
+     * Checks if this entity definition mirrors another entity's update operation
+     *
+     * @return void
+     */
+    public function shouldRedirectUpdate(){
+        if($this->redirectUpdateTo != FALSE){
+            return TRUE;
+        }
+        return FALSE;
+    }
+    
+
+    /**
+     * Returns information about the entity browser and driver to write updates to
+     *
+     * @return void
+     */
+    public function getUpdateProviderInfo(){
+        return $this->redirectUpdateTo;
+    }
+    
+    /**
+     * Checks if this entity definition mirrors another entity's delete operation
+     *
+     * @return void
+     */
+    public function shouldRedirectDelete(){
+        if($this->redirectDeleteTo != FALSE){
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    /**
+     * Returns information about the entity browser and driver to read from
+     *
+     * @return void
+     */
+    public function getDeleteProviderInfo(){
+        return $this->redirectDeleteTo;
+    }
+
+    /**
+     * Checks whether timestamps like created and modified dates should be managed by the driver hosting this entity.
+     *
+     * @return void
+     */
     public function shouldManageTimestamps(){
         return $this->manageTimestamps;
     }
 
+    /**
+     * Returns the name of the driver that the information of this entity is cached to.
+     *
+     * @return void
+     */
     public function getCachingDriverName()
     {
         return $this->cachingDriverName;
     }
 
+    /**
+     * Returns the MiddlewareConnectionDriver that instantiated this entity.
+     *
+     * @return void
+     */
     public function getParent()
     {
         return $this->parent;

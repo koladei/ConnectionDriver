@@ -88,6 +88,11 @@ function remedy_connection_driver__get_entity_definitions() {
             , 'soap_methods' => [
                 'query' => 'New_GetList_Operation_1'
             ]
+            , 'redirects' => [
+                'create' => [
+                    'entity' => 'incidentweb-create'
+                ]
+            ]
             , 'fields' => [
                 'Incident_Number' => [
                     'preferred_name' => 'Id'
@@ -141,6 +146,171 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Status' => [
                     'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Customer_Login_ID' => [
+                    'preferred_name' => 'Customer'
+                    , 'type' => 'string'
+                ]
+                , 'First_Name' => [
+                    'preferred_name' => 'FirstName'
+                    , 'type' => 'string'
+                ]
+                , 'Last_Name' => [
+                    'preferred_name' => 'LastName'
+                    , 'type' => 'string'
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
+                ]
+                , 'Localization' => [
+                    'preferred_name' => 'Localization'
+                    , 'type' => 'string'
+                ]
+                , 'CummulativeClientHoldInMinutes' => [
+                    'preferred_name' => 'HoldTime'
+                    , 'type' => 'int'
+                ]
+                , 'IncidentImpact' => [
+                    'preferred_name' => 'IncidentImpact'
+                    , 'type' => 'string'
+                ]
+                , 'NOCDownTimeMinutes__c' => [
+                    'preferred_name' => 'Downtime'
+                    , 'type' => 'int'
+                ]
+                , 'Service_CI_Type__c' => [
+                    'preferred_name' => 'ServiceCIType'
+                    , 'type' => 'string'
+                ]
+                , 'FaultType' => [
+                    'preferred_name' => 'FaultType'
+                    , 'type' => 'string'
+                ]
+                , 'RootCause' => [
+                    'preferred_name' => 'RootCause'
+                    , 'type' => 'string'
+                ]
+                , 'IncidentStartTime' => [
+                    'preferred_name' => 'StartTime'
+                    , 'type' => 'datetime'
+                ]
+                , 'IncidentResolutionTime' => [
+                    'preferred_name' => 'ResolutionTime'
+                    , 'type' => 'datetime'
+                ]
+                , 'Last_Modified_Date' => [
+                    'preferred_name' => 'Modified'
+                    , 'preferred_query_name' => 'Last Modified Date'
+                    , 'type' => 'datetime'
+                ]
+                , 'Assignee_Login_ID' => [
+                    'preferred_name' => 'AssignedTo'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AssignedTo'
+                        , 'preferred_local_key_name' => 'AssigneeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                        , 'filter' => 'ObjectClass eq \'person\''
+                    ]
+                ]
+                , '_WorkLog' => [
+                    'preferred_name' => 'WorkLog'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'Incident'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'incidentworklog'
+                    ]
+                ]
+                , '_Service' => [
+                    'preferred_name' => 'Service'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'CircuitID'
+                        , 'remote_field' => 'Name'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'service'
+                    ]
+                ]
+            ]
+        ]
+        , 'incidentweb-create' => [
+            'internal_name' => 'HPD_IncidentInterface_Create_WS'
+            , 'soap_methods' => [
+                'create' => 'HelpDesk_Submit_Service'
+            ]
+            , 'redirects' => [
+                'read' => [
+                    'entity' => 'incidentweb'
+                ]
+            ]
+            , 'fields' => [
+                'Incident_Number' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Submitter' => [
+                    'preferred_name' => 'SubmittedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'SubmittedBy'
+                        , 'preferred_local_key_name' => 'SubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ]
+                ]
+                , 'HPD_CI' => [
+                    'preferred_name' => 'CI'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CI'
+                        , 'preferred_local_key_name' => 'CircuitID'
+                        , 'remote_field' => 'Name'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product'
+                        , 'remote_driver' => 'salesforce'
+                    ],
+                ]
+                , 'Submit_Date' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Operational_Categorization_Tier_1' => [
+                    'preferred_name' => 'OperationalCategorizationTier1'
+                    , 'preferred_query_name' => 'Categorization Tier 1'
+                    , 'type' => 'string'
+                ]
+                , 'Closure_Product_Category_Tier1' => [
+                    'preferred_name' => 'ClosureCategorizationTier1'
+                    , 'type' => 'string'
+                ]
+                , 'Closure_Product_Category_Tier2' => [
+                    'preferred_name' => 'ClosureCategorizationTier2'
+                    , 'type' => 'string'
+                ]
+                , 'Closure_Product_Category_Tier3' => [
+                    'preferred_name' => 'ClosureCategorizationTier3'
+                    , 'type' => 'string'
+                ]
+                , 'Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Action' => [
+                    'preferred_name' => 'Action'
+                    , 'type' => 'string'
+                ]
+                , 'Summary' => [
+                    'preferred_name' => 'Summary'
                     , 'type' => 'string'
                 ]
                 , 'Customer_Login_ID' => [

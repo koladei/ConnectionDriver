@@ -357,198 +357,7 @@ abstract class MiddlewareConnectionDriver
         $result = $this->getItems($entityBrowser, $select, "{$additionalFilter}{$entityField->getDisplayName()} IN({$implosion})", $expands, $otherOptions);
         return $result;
     }
-
-    public function updateItem($entityBrowser, $id, \stdClass $object, array $otherOptions = [])
-    {
-        $entityBrowser = $this->getEntityBrowser($entityBrowser);        
-        if (is_string($entityBrowser) || is_null($entityBrowser)) {
-            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
-        }
-        
-        // Handle storage delegation
-        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
-            // Load the driver instead
-            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
-            
-            // Return the results from the cache driver.
-            $args = func_get_args();
-            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
-            $return = $delegateDriver->updateItem(...$args);
-            return $return;
-        }
-
-        $entityBrowser = $this->setStrategies($entityBrowser);
-
-        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
-        $otherOptions['retryCount'] = $retryCount + 1;
-
-        // Strip-out invalid fields
-        $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
-
-        $obj = new \stdClass();
-        foreach ($setFields as $setField) {
-            // avoid objects
-            if (!is_object($object->{$setField->getDisplayName()}) && !is_array($object->{$setField->getDisplayName()})) {
-                $obj->{$setField->getDisplayName()} = $object->{$setField->getDisplayName()};
-            }
-        }
-        
-        if($entityBrowser->shouldManageTimestamps()){
-            $now = new \DateTime();
-            if(property_exists($obj, 'Created')){
-                unset($obj->Created);
-            }
-            $obj->Modified = $now->format('Y-m-d\TH:i:s');
-        }
-
-        if (!isset($otherOptions['$select'])) {
-            $otherOptions['$select'] = EntityFieldDefinition::getDisplayNames($setFields);
-        } else {
-            $abccd = is_string($otherOptions['$select']) ? explode(',', $otherOptions['$select']) : (is_array($otherOptions['$select']) ? $otherOptions['$select'] : []);
-            $abccc = array_merge($abccd, EntityFieldDefinition::getDisplayNames($setFields));
-            $otherOptions['$select'] = array_unique($abccc);
-        }
-
-        if (!isset($otherOptions['$expand'])) {
-            $otherOptions['$expand'] = '';
-        }
-
-        try {
-            if ($this->updateItemInternal($entityBrowser, $this->connectionToken, $id, $obj, $otherOptions)) {
-                return $this->getItemById($entityBrowser, $id, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
-            }
-        } catch (\Exception $exc) {
-            if ($retryCount < $this->maxRetries) {
-                return $this->updateItem($entityBrowser, $id, $object, $otherOptions);
-            } else {
-                throw $exc;
-            }
-        }
-    }
-
-    public function createItem($entityBrowser, \stdClass $object, array $otherOptions = [])
-    {
-        $entityBrowser = $this->getEntityBrowser($entityBrowser);
-        if (is_string($entityBrowser) || is_null($entityBrowser)) {
-            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
-        }
-
-        // Handle storage delegation
-        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
-
-            // Load the driver instead
-            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
-            
-            // Return the results from the cache driver.
-            $args = func_get_args();
-            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
-            $args[2]['$setId'] = '1';
-            $return = $delegateDriver->createItem(...$args);
-            return $return;
-        }
-                
-        $entityBrowser = $this->setStrategies($entityBrowser);
-        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
-        $otherOptions['retryCount'] = $retryCount + 1;
-
-        // Strip-out invalid fields
-        $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
-
-        $obj = new \stdClass();
-        foreach ($setFields as $setField) {
-            // avoid objects
-            if (!is_object($object->{$setField->getDisplayName()}) && !is_array($object->{$setField->getDisplayName()})) {
-                $obj->{$setField->getDisplayName()} = $object->{$setField->getDisplayName()};
-            }
-        }
-
-        if($entityBrowser->shouldManageTimestamps()){
-            $now = new \DateTime();
-            $obj->Created = $now->format('Y-m-d\TH:i:s');
-            $obj->Modified = $now->format('Y-m-d\TH:i:s');
-        }
-
-        // Prepare the selected fields for the return
-        if (!isset($otherOptions['$select'])) {
-            $otherOptions['$select'] = EntityFieldDefinition::getDisplayNames($setFields);
-        } else {
-            $abccd = is_string($otherOptions['$select']) ? explode(',', $otherOptions['$select']) : (is_array($otherOptions['$select']) ? $otherOptions['$select'] : []);
-            $abccc = array_merge($abccd, EntityFieldDefinition::getDisplayNames($setFields));
-            $otherOptions['$select'] = array_unique($abccc);
-        }
-
-        // Prepare the expanded fields for the returned value
-        if (!isset($otherOptions['$expand'])) {
-            $otherOptions['$expand'] = '';
-        }
-
-        // Invoke the internal create method.
-        $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj, $otherOptions);
-        
-        // Requery and return the created object.
-        if (property_exists($res, 'd') && $res->success == true) {
-            $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
-            return $return;
-        } 
-        // Otherwise, if something is wrong, retry
-        else {
-            if ($retryCount < $this->maxRetries) {
-                return $this->createItem($entityBrowser, $object, $otherOptions);
-            } else {
-                throw new \Exception("Unable to create a new record in {$entityBrowser->getDisplayName()} of ".__CLASS__);
-            }
-        }
-    }
-
-    public function deleteItem($entityBrowser, $id, array $otherOptions = [], &$deleteCount = 0)
-    {        
-        $entityBrowser = $this->getEntityBrowser($entityBrowser);
-        if (is_string($entityBrowser) || is_null($entityBrowser)) {
-            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
-        }
-
-        // Handle storage delegation
-        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
-            // Load the driver instead
-            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
-            
-            // Return the results from the cache driver.
-            $args = func_get_args();
-            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
-            $return = $delegateDriver->deleteItem(...$args);
-            return $return;
-        }
-        
-        $entityBrowser = $this->setStrategies($entityBrowser);
-        
-        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']: 0;
-        $otherOptions['retryCount'] = $retryCount + 1;
-
-        try {
-            $deleteResult = $this->deleteItemInternal($entityBrowser, $this->connectionToken, $id, $otherOptions);
-            $select = isset($otherOptions['$select'])?$otherOptions['$select']:['Id','Created','Modified'];
-            $filter = isset($otherOptions['$filter'])?$otherOptions['$filter']:'';
-            $expand = isset($otherOptions['$expand'])?$otherOptions['$expand']:'';
-
-            $deleteCount = $deleteResult->d;
-            try {
-                $return = $this->getItems($entityBrowser, $select, $filter, $expand);
-                $deleteResult = $return;
-                $deleteResult->deleteCount = $deleteCount;
-            } catch (\Exception $ex) {
-                $deleteResult = [];
-            }
-         
-            return $deleteResult;
-        } catch (\Exception $exc) {
-            if ($retryCount < $this->maxRetries) {
-                return $this->deleteItem($entityBrowser, $id, $otherOptions);
-            } else {
-                throw $exc;
-            }
-        }
-    }
-
+    
     /**
      * Returns an array of entity items.
      *
@@ -565,6 +374,21 @@ abstract class MiddlewareConnectionDriver
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
         if (is_string($entityBrowser) || is_null($entityBrowser)) {
             throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }       
+
+        // Handle method redirection
+        if($entityBrowser->shouldRedirectRead()){
+            $providerInfo = $entityBrowser->getReadProviderInfo();
+            $driver = $this;
+            if($providerInfo->driver != $this->getIdentifier()){
+                $driver = $this->loadDriver($providerInfo->driver);
+            }
+            
+            // Execute the update provider's update method.
+            $args = func_get_args();
+            $args[0] = $providerInfo->entity;
+            $return = $driver->getItems(...$args);
+            return $return;
         }
 
         // If this entity is cached to another driver
@@ -815,6 +639,240 @@ abstract class MiddlewareConnectionDriver
         }
         
         return $result;
+    }
+
+    public function updateItem($entityBrowser, $id, \stdClass $object, array $otherOptions = [])
+    {
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);        
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }
+
+        // Handle method redirection
+        if($entityBrowser->shouldRedirectUpdate()){
+            $providerInfo = $entityBrowser->getUpdateProviderInfo();
+            $driver = $this;
+            if($providerInfo->driver != $this->getIdentifier()){
+                $driver = $this->loadDriver($providerInfo->driver);
+            }
+            
+            // Execute the update provider's update method.
+            $args = func_get_args();
+            $args[0] = $providerInfo->entity;
+            $return = $driver->updateItem(...$args);
+            return $return;
+        }
+        
+        // Handle storage delegation
+        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
+            // Load the driver instead
+            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $return = $delegateDriver->updateItem(...$args);
+            return $return;
+        }
+
+        $entityBrowser = $this->setStrategies($entityBrowser);
+
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
+        $otherOptions['retryCount'] = $retryCount + 1;
+
+        // Strip-out invalid fields
+        $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
+
+        $obj = new \stdClass();
+        foreach ($setFields as $setField) {
+            // avoid objects
+            if (!is_object($object->{$setField->getDisplayName()}) && !is_array($object->{$setField->getDisplayName()})) {
+                $obj->{$setField->getDisplayName()} = $object->{$setField->getDisplayName()};
+            }
+        }
+        
+        if($entityBrowser->shouldManageTimestamps()){
+            $now = new \DateTime();
+            if(property_exists($obj, 'Created')){
+                unset($obj->Created);
+            }
+            $obj->Modified = $now->format('Y-m-d\TH:i:s');
+        }
+
+        if (!isset($otherOptions['$select'])) {
+            $otherOptions['$select'] = EntityFieldDefinition::getDisplayNames($setFields);
+        } else {
+            $abccd = is_string($otherOptions['$select']) ? explode(',', $otherOptions['$select']) : (is_array($otherOptions['$select']) ? $otherOptions['$select'] : []);
+            $abccc = array_merge($abccd, EntityFieldDefinition::getDisplayNames($setFields));
+            $otherOptions['$select'] = array_unique($abccc);
+        }
+
+        if (!isset($otherOptions['$expand'])) {
+            $otherOptions['$expand'] = '';
+        }
+
+        try {
+            if ($this->updateItemInternal($entityBrowser, $this->connectionToken, $id, $obj, $otherOptions)) {
+                return $this->getItemById($entityBrowser, $id, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+            }
+        } catch (\Exception $exc) {
+            if ($retryCount < $this->maxRetries) {
+                return $this->updateItem($entityBrowser, $id, $object, $otherOptions);
+            } else {
+                throw $exc;
+            }
+        }
+    }
+
+    public function createItem($entityBrowser, \stdClass $object, array $otherOptions = [])
+    {
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }        
+
+        // Handle method redirection
+        if($entityBrowser->shouldRedirectCreate()){
+            $providerInfo = $entityBrowser->getCreateProviderInfo();
+            $driver = $this;
+            if($providerInfo->driver != $this->getIdentifier()) {
+                $driver = $this->loadDriver($providerInfo->driver);
+            }
+            // Execute the provider's create method.
+            $args = func_get_args();
+            $args[0] = $providerInfo->entity;
+            $return = $driver->createItem(...$args);
+            return $return;
+        }
+
+        // Handle storage delegation
+        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
+
+            // Load the driver instead
+            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $args[2]['$setId'] = '1';
+            $return = $delegateDriver->createItem(...$args);
+            return $return;
+        }
+                
+        $entityBrowser = $this->setStrategies($entityBrowser);
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
+        $otherOptions['retryCount'] = $retryCount + 1;
+
+        // Strip-out invalid fields
+        $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
+
+        $obj = new \stdClass();
+        foreach ($setFields as $setField) {
+            // avoid objects
+            if (!is_object($object->{$setField->getDisplayName()}) && !is_array($object->{$setField->getDisplayName()})) {
+                $obj->{$setField->getDisplayName()} = $object->{$setField->getDisplayName()};
+            }
+        }
+
+        if($entityBrowser->shouldManageTimestamps()){
+            $now = new \DateTime();
+            $obj->Created = $now->format('Y-m-d\TH:i:s');
+            $obj->Modified = $now->format('Y-m-d\TH:i:s');
+        }
+
+        // Prepare the selected fields for the return
+        if (!isset($otherOptions['$select'])) {
+            $otherOptions['$select'] = EntityFieldDefinition::getDisplayNames($setFields);
+        } else {
+            $abccd = is_string($otherOptions['$select']) ? explode(',', $otherOptions['$select']) : (is_array($otherOptions['$select']) ? $otherOptions['$select'] : []);
+            $abccc = array_merge($abccd, EntityFieldDefinition::getDisplayNames($setFields));
+            $otherOptions['$select'] = array_unique($abccc);
+        }
+
+        // Prepare the expanded fields for the returned value
+        if (!isset($otherOptions['$expand'])) {
+            $otherOptions['$expand'] = '';
+        }
+
+        // Invoke the internal create method.
+        $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj, $otherOptions);
+        
+        // Requery and return the created object.
+        if (property_exists($res, 'd') && $res->success == true) {
+            $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+            return $return;
+        } 
+        // Otherwise, if something is wrong, retry
+        else {
+            if ($retryCount < $this->maxRetries) {
+                return $this->createItem($entityBrowser, $object, $otherOptions);
+            } else {
+                throw new \Exception("Unable to create a new record in {$entityBrowser->getDisplayName()} of ".__CLASS__);
+            }
+        }
+    }
+
+    public function deleteItem($entityBrowser, $id, array $otherOptions = [], &$deleteCount = 0)
+    {        
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }
+        
+        // Handle method redirection
+        if($entityBrowser->shouldRedirectDelete()){
+            $providerInfo = $entityBrowser->getDeleteProviderInfo();
+            $driver = $this;
+            if($providerInfo->driver != $this->getIdentifier()){
+                $driver = $this->loadDriver($providerInfo->driver);
+            }
+            // Execute the update provider's update method.
+            $args = func_get_args();
+            $args[0] = $providerInfo->entity;
+            $return = $driver->deleteItem(...$args);
+            return $return;
+        }
+
+        // Handle storage delegation
+        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
+            // Load the driver instead
+            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $return = $delegateDriver->deleteItem(...$args);
+            return $return;
+        }
+        
+        $entityBrowser = $this->setStrategies($entityBrowser);
+        
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']: 0;
+        $otherOptions['retryCount'] = $retryCount + 1;
+
+        try {
+            $deleteResult = $this->deleteItemInternal($entityBrowser, $this->connectionToken, $id, $otherOptions);
+            $select = isset($otherOptions['$select'])?$otherOptions['$select']:['Id','Created','Modified'];
+            $filter = isset($otherOptions['$filter'])?$otherOptions['$filter']:'';
+            $expand = isset($otherOptions['$expand'])?$otherOptions['$expand']:'';
+
+            $deleteCount = $deleteResult->d;
+            try {
+                $return = $this->getItems($entityBrowser, $select, $filter, $expand);
+                $deleteResult = $return;
+                $deleteResult->deleteCount = $deleteCount;
+            } catch (\Exception $ex) {
+                $deleteResult = [];
+            }
+         
+            return $deleteResult;
+        } catch (\Exception $exc) {
+            if ($retryCount < $this->maxRetries) {
+                return $this->deleteItem($entityBrowser, $id, $otherOptions);
+            } else {
+                throw $exc;
+            }
+        }
     }
 
     public function fetchFieldValues($record, $selected_field)

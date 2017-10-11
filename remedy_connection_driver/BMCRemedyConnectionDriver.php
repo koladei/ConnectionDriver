@@ -84,8 +84,9 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 try {
                     //get the result
                     $d = $client->{$methods->create}($object);
+                    $idField = $entityBrowser->getIdField();
                     $ld = new \stdClass();
-                    $ld->d = $d->Request_ID;
+                    $ld->d = $d->{$idField->getInternalName()};
                     $ld->success = TRUE;
                     return $ld;            
                 } catch (\SoapFault $sf) {
@@ -145,6 +146,8 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 if(isset($otherOptions['$all'])) {
                     $getListInputMap->maxLimit = '';
                 }
+
+                echo $filter;
                 
                 //execute the query
                 try {
