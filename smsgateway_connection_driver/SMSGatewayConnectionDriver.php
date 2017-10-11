@@ -163,7 +163,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
 
             // Return the status of the SMS.                    
             return [
-                ['batch_id' => $batchId, 'provider_name' => 'SMS Torrent']
+                ['batch_id' => $batchId, 'provider_name' => 'SMS Torrent', 'number_of_recipients' => count($recipients)]
             ];
         } else {
             throw new \Exception('There was a problem getting the connection token');
