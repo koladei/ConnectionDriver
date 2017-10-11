@@ -83,8 +83,9 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
             if (isset($objects['senderid']) && strlen($objects['senderid']) > 11) {
                 throw new \Exception("Parameter 'senderid' cannot be longer than 11 characters");
             }
+            // $time = time();
             $senderid = isset($objects['senderid'])?$objects['senderid']:$connectionToken->defaultSenderId;
-            $batchId = strtoupper(trim(substr($base_url, 6), '/').'-'.(new \DateTime())->format('YmdHis'));
+            $batchId = strtoupper(trim(substr($base_url, 6), '/').'-'.time());
             
             $obj = new \stdClass();
             $obj->from = $senderid;
