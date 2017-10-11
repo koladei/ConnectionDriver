@@ -239,7 +239,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
         }
 
         // $this->updateDeliveryStatus();
-        return $this->getItems('smslog', 'Id,Delivered,Recipient,Status,Provider/[Name],SentAs,SentBy/[DisplayName]', "BatchId eq '{$objects['batchid']}'", 'SentBy', []);
+        return $this->getItems('smslog', 'Id,Delivered,Recipient,Status,Provider/[Name],SentAs,SentBy/[DisplayName]', "BatchId eq '{$objects['batchid']}'", 'SentBy,Provider', []);
     }
 
     public function getStringer()
