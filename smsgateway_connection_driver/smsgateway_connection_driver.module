@@ -188,7 +188,7 @@ function smsgateway_connection_driver__get_entity_definitions()
                         , 'type' => 'string'
                     ]
                     , 'sentas' => [
-                        'preferred_name' => 'From'
+                        'preferred_name' => 'SentAs'
                         , 'type' => 'string'
                     ]
                     , 'sentby' => [
@@ -212,8 +212,16 @@ function smsgateway_connection_driver__get_entity_definitions()
                         , 'type' => 'string'
                     ]
                     , 'sentthrough' => [
-                        'preferred_name' => 'SentThrough'
+                        'preferred_name' => 'Provider'
                         , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'Provider'
+                            , 'preferred_local_key_name' => 'ProviderId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'smsgatewayinfo'
+                            , 'remote_driver' => 'smsgateway'
+                        ]
                     ]
                     , 'smscount' => [
                         'preferred_name' => 'SMSCount'
@@ -221,6 +229,62 @@ function smsgateway_connection_driver__get_entity_definitions()
                     ]
                     , 'remoteid' => [
                         'preferred_name' => 'RemoteId'
+                        , 'type' => 'string'
+                    ]
+                ]
+            ]
+            , 'smsgatewayinfo' => [
+                'internal_name' => 'SMSGatewayInfo'
+                , 'delegate_to' => 'sql'
+                , 'manage_timestamps' => TRUE
+                , 'fields' => [
+                    'id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'createdby' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'modifiedby' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                    ]
+                    , 'status' => [
+                        'preferred_name' => 'Status'
+                        , 'type' => 'string'
+                    ]
+                    , 'description' => [
+                        'preferred_name' => 'Description'
                         , 'type' => 'string'
                     ]
                 ]

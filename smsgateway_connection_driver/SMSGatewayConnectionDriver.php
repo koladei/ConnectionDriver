@@ -100,13 +100,13 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
                 $msg->Id = "{$batchId}-{$recipient}";
                 $msg->Body = $objects['message'];
                 $msg->Recipient = $recipient;
-                $msg->From = $senderid;
+                $msg->SentAs = $senderid;
                 $msg->SentBy = 'appdev';
                 $msg->BatchId = $batchId;
                 $msg->Status = 'SENDING';
                 $msg->StatusDescription = 'Waiting to be sent.';
                 $msg->SMSCount = 0;
-                $msg->SentThrough = $connectionToken->providerName;
+                $msg->Provider = $connectionToken->providerName;
                 $x = $this->createItem('smslog', $msg, [
                     '$setId' => '1'
                 ]);
@@ -239,7 +239,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
         }
 
         // $this->updateDeliveryStatus();
-        return $this->getItems('smslog', 'Id,Delivered,Recipient,Status,SentThrough,SentBy/[DisplayName]', "BatchId eq '{$objects['batchid']}'", 'SentBy', []);
+        return $this->getItems('smslog', 'Id,Delivered,Recipient,Status,Provider/[Name],SentAs,SentBy/[DisplayName]', "BatchId eq '{$objects['batchid']}'", 'SentBy', []);
     }
 
     public function getStringer()
