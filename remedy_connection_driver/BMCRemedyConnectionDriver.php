@@ -146,8 +146,6 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 if(isset($otherOptions['$all'])) {
                     $getListInputMap->maxLimit = '';
                 }
-
-                echo $filter;
                 
                 //execute the query
                 try {

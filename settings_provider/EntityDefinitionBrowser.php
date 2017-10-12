@@ -681,7 +681,6 @@ class EntityDefinitionBrowser
             return $mergeExpansion(...func_get_args());
         } else {
             // Watch this: Not clear why this is necessary but it helped caching
-            var_dump('Is null');
             $data = is_null($data) ? [] : $data;
             $data = array_merge($data, $chunkResult);
             return $data;

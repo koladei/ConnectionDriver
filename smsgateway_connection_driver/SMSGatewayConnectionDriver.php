@@ -238,8 +238,16 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
             throw new \Exception("Parameter 'batchid' is required.");
         }
 
-        // $this->updateDeliveryStatus();
-        return $this->getItems('smslog', 'Id,Delivered,Recipient,Status,Provider/[Name],SentAs,SentBy/[DisplayName]', "BatchId eq '{$objects['batchid']}'", 'SentBy,Provider', []);
+        // Run the check in a separated thread.
+        // $thread = new SMSDeliveryStatusChecker($objects, $connectionToken);
+        // $thread->start();
+
+        return $this->getItems(
+            'smslog', 
+            'Id,Delivered,Recipient,Status,LastChecked,Provider/[Name],SentAs,SentBy/[DisplayName]', 
+            "BatchId eq '{$objects['batchid']}'", 
+            'SentBy,Provider', []
+        );
     }
 
     public function getStringer()
@@ -261,3 +269,15 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
         return $obj;
     }
 }
+
+// class SMSDeliveryStatusChecker extends \Thread {
+//     public function __construct($gateWay, $objects, $connectionToken){
+//         $this->smsGateway = $gateWay;
+//         $this->objects = $objects;
+//         $this->connectionToken = $connectionToken;
+//     }
+    
+//     public function run(){
+//         $this->smsGateway->getDeliveryStatus($this->objects, $this->connectionToken);
+//     }
+// }

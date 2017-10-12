@@ -317,7 +317,6 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
 
         $feed = mware_blocking_http_request($url, ['options' => $options]);
 
-        var_dump( $feed->getContent());
         return [];
     }
 
@@ -347,7 +346,6 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
         $connection->debug = TRUE;
         $response = $connection->post('https://mainyard.mainone.net/docs/_api/contextinfo', '');
 
-        var_dump($response);
         $headers = [];
         return null;
 
