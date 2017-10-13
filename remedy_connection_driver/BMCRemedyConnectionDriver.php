@@ -156,7 +156,9 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                     
                     return $return;              
                 } catch (\SoapFault $sf) {
-                    if(trim($sf->getMessage()) == 'ERROR (302): Entry does not exist in database;'){
+                    $noEntryString = 'ERROR (302): Entry does not exist in database';
+                    $errors = explode(';', trim($sf->getMessage()));
+                    if(in_array($noEntryString, $errors)){
                         return [];
                     }
                     throw new \Exception("{$sf->getMessage()}");
