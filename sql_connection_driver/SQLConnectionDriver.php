@@ -343,7 +343,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 
                 return array_values($rs);
             } catch (\Exception $e) {
-
+                watchdog('SQL_CONNECTION_DRIVER', '{0} : {1}', [$e->getMessage(), $e->getTraceAsString()], WATCHDOG_ERROR);
                 throw new \Exception('Connection failed: ' . $e->getMessage());
             }
         } else {
