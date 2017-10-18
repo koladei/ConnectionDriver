@@ -289,30 +289,19 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             $result = [];
             $lastResult = [];
             $counter = 0;
-            // do {
-                if($start > 2000){
-                    $start = 2000;
-                }
 
-                // Prepare the limit
-                $offset = " OFFSET {$start}";
+            // Generate the SOQL query to send in the POST request
+            $query_url =  'SELECT ' . implode(',', $select)
+                . " FROM {$entityBrowser->getInternalName()}"
+                . (strlen($filter) > 0 ? "  WHERE {$filter} " : '');
 
-                if($all) {                    
-                    $limit = " LIMIT 1000000000";
-                }
+            $query_url = str_replace(' ', '+', $query_url);
 
-                // Generate the SOQL query to send in the POST request
-                $query_url =  'SELECT ' . implode(',', $select)
-                    . " FROM {$entityBrowser->getInternalName()}"
-                    . (strlen($filter) > 0 ? "  WHERE {$filter} " : '')
-                    . ' ORDER BY Id'
-                    . $limit
-                    . $offset;
-
-                // Execute the POST request.
-                $new_url = $connectionToken->instance_url . '/services/data/v39.0/query?' . drupal_http_build_query(['q' => $query_url]);
-                
-                $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+            // Execute the POST request.
+            $res = new \stdClass();                
+            $res->nextRecordsUrl = "/services/data/v39.0/queryAll/?q={$query_url}";            
+            do {                
+                $feed = mware_blocking_http_request("{$connectionToken->instance_url}{$res->nextRecordsUrl}", ['options' => $options]);
 
                 // Process the request
                 $content =$feed->getContent();
@@ -321,13 +310,11 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
                 if (is_object($res) && property_exists($res, 'records')) {
                     $lastResult = $res->records;
-                    $result = array_merge($result, $lastResult);
+                    $result = array_merge($result, $lastResult);                        
                 } else {
                     throw new \Exception("An empty response was received from Salesforce. Please retry later. {$query_url}\n{$content}");
                 }
-
-                $start = $start + count($lastResult);
-            // } while($all && $start <= 2000);
+            } while(\property_exists($res, 'nextRecordsUrl'));
 
             return $result;
         } else {
