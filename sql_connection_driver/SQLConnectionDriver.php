@@ -137,8 +137,8 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
         
         // Get a connection token
         if($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken($source))){
-            $sets = '';
-            $xets = '';
+            $sets = [];
+            $xets = [];
             $xetz = [];
             $createId = isset($otherOptions['$setId'])?"{$otherOptions['$setId']}":'0';
             $createId = $createId == '1'?TRUE:FALSE;

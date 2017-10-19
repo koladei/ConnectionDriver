@@ -563,6 +563,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'PaymentStatus'
                     , 'type' => 'string'
                 ]
+                , 'isDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]
                 , 'Account_Manager__c' => [
                     'preferred_name' => 'AccountManager'
                     , 'type' => 'string'
@@ -660,6 +664,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Phone' => [
                     'preferred_name' => 'Phone'
                     , 'type' => 'string',
+                ]
+                , 'isDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
                 ]
                 , 'Primary_Sector__c' => [
                     'preferred_name' => 'PrimarySector'
