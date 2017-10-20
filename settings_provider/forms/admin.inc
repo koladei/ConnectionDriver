@@ -92,6 +92,11 @@ function settings_provider_admin() {
                     '#title' => t('Synch data from'),
                     '#type' => 'hidden',
                     '#value' => $def['continue_from'],
+                ];    
+                $form['data_object_settings']["{$entity['original_display_name']}_LastSync__{$sourceDestination}"]['failure_count'] = [
+                    '#title' => t('Failure count'),
+                    '#type' => 'textfield',
+                    '#value' => $def['failure_count'],
                 ];                
             }
             
