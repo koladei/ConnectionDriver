@@ -58,6 +58,12 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         } else if (is_string($value) && strtolower($value) == '$now$') {
             $this->value = new \DateTime();
             $this->quote = '\'';
+        } else if (is_string($value) && strtolower($value) == '$true$') {
+            $this->value = TRUE;
+            $this->quote = '';
+        } else if (is_string($value) && strtolower($value) == '$false$') {
+            $this->value = FALSE;
+            $this->quote = '';
         } else if (is_string($value) && strtolower($value) == '$today$') {
             $this->value = new \DateTime();
             $this->value->setTime(0, 0);
@@ -78,9 +84,11 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             if (!is_null($this->value)) {
                 if ($fieldInfo->getDataType() == 'int' && strlen($this->quote) > 0) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} is an integer field. Quotes are not allowed for integer fields.");
-                } else if ($fieldInfo->getDataType() != 'int' && strlen($this->quoteValue()) < 1) {
+                } else if ($fieldInfo->getDataType() == 'boolean' && strlen($this->quote) > 0) {
+                    throw new \Exception("Field {$fieldInfo->getDisplayName()} is a boolean field. Quotes are not allowed for boolean fields.");
+                } else if (!in_array($fieldInfo->getDataType(), ['int', 'boolean']) && strlen($this->quoteValue()) < 1) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} requires that it's values be quoted. {$value}");
-                } else if (($fieldInfo->getDataType() != 'int' && strlen($this->quote) > 1) || ($fieldInfo->getDataType() != 'int' && ($this->quote != '"' && $this->quote != '\''))) {
+                } else if ((!in_array($fieldInfo->getDataType(), ['int', 'boolean']) && strlen($this->quote) > 1) || (!in_array($fieldInfo->getDataType(), ['int', 'boolean']) && ($this->quote != '"' && $this->quote != '\''))) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} only supports qoutes of type ''' or '\"'.");
                 } else {
                     $this->quote = (strlen($this->quote) > 0) ? '\'' : '';
@@ -272,35 +280,42 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         $ret = '';
 
         $value = $this->value;
+        $q = "'";
         if ($value instanceof \DateTime) {
             $value = $value->format('Y-m-d\\TH:i:s\\Z');
         } else if (is_null($value)) {
             $value = 'NULL';
+        } else if (is_bool($value)) {
+            $q = '';
+            $value = $value ? 'TRUE':'FALSE';
         }
 
         switch ($this->operator) {
             case self::STARTS_WITH: {
-                    $ret = "{$this->field} LIKE '{$value}%'";
+                    $ret = "{$this->field} LIKE {$q}{$value}%{$q}";
                     break;
                 }
             case self::ENDS_WITH: {
-                    $ret = "{$this->field} LIKE '%{$value}'";
+                    $ret = "{$this->field} LIKE {$q}%{$value}{$q}";
                     break;
                 }
             case self::SUBSTRING_OF: {
-                    $ret = "{$this->field} LIKE '%{$value}%'";
+                    $ret = "{$this->field} LIKE {$q}%{$value}%{$q}";
                     break;
                 }
             case self::NOT_EQUAL_TO: {
-                    $ret = "{$this->field} != {$this->quoteValue()}";
+                    $ret = "{$this->field} != {$q}{$value}{$q}";
+                    // $ret = "{$this->field} != {$this->quoteValue()}";
                     break;
                 }
             case self::EQUAL_TO: {
-                    $ret = "{$this->field} = {$this->quoteValue()}";
+                    $ret = "{$this->field} = {$q}{$value}{$q}";
+                    // $ret = "{$this->field} = {$this->quoteValue()}";
                     break;
                 }
             case self::GREATER_THAN: {
-                    $ret = "{$this->field} > {$this->quoteValue()}";
+                    $ret = "{$this->field} = {$q}{$value}{$q}";
+                    // $ret = "{$this->field} > {$this->quoteValue()}";
                     break;
                 }
             case self::GREATER_THAN_EQUAL_TO: {
@@ -403,13 +418,18 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         $ret = '';
 
         $value = $this->value;
+        $q = "'";
         if ($value instanceof \DateTime) {
             $value = $value->format('\'Y-m-d H:i:s\'');
         } else if (is_null($value)) {
             $value = 'NULL';
+        } else if (is_bool($value)) {
+            $q = '';
+            $value = $value ? '1':'0';
         } else {
             $value = $this->quoteValue();
         }
+
         switch ($this->operator) {
             case self::STARTS_WITH: {
                     $ret = "{$this->field} LIKE '{$this->value}%'";
@@ -425,7 +445,11 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                     break;
                 }
             case self::NOT_EQUAL_TO: {
-                    $ret = "{$this->field} != {$value}";
+                    if(is_null($value) || strtolower($value) == 'null'){
+                        $ret = "{$this->field} IS NOT NULL";
+                    } else {                        
+                        $ret = "{$this->field} != {$value}";
+                    }
                     break;
                 }
             case self::EQUAL_TO: {

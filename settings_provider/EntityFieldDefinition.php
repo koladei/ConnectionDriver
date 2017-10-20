@@ -207,7 +207,7 @@ class EntityFieldDefinition {
         }
         return false;
     }
-
+    
     /**
      * Returns true if the return data type of this field is integer.
      *
@@ -215,6 +215,31 @@ class EntityFieldDefinition {
      */
     public function isInteger() {
         if ($this->dataType == 'int') {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Returns true if the return data type of this field is decimal.
+     *
+     * @return boolean
+     */
+    public function isDecimal() {
+        if ($this->dataType == 'decimal') {
+            return true;
+        }
+        return false;
+    }
+
+    
+    /**
+     * Returns true if the return data type of this field is boolean.
+     *
+     * @return boolean
+     */
+    public function isBoolean() {
+        if ($this->dataType == 'boolean') {
             return true;
         }
         return false;

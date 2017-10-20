@@ -914,7 +914,7 @@ abstract class MiddlewareConnectionDriver
                         $r->{$displayName} = $record->{$key}[0];
                     }
                 } else {
-                    $r->{$displayName} = $field->isInteger()?intval($record->{$key}):$record->{$key};
+                    $r->{$displayName} = $field->isInteger()?intval($record->{$key}):($field->isBoolean()?boolVal($record->{$key}):$record->{$key});
                 }
             } elseif (is_array($record) && isset($record[$key])) {
                 if (is_array($record[$key])) {
@@ -924,7 +924,7 @@ abstract class MiddlewareConnectionDriver
                         $r->{$displayName} = $record[$key][0];
                     }
                 } else {
-                    $r->{$displayName} = $field->isInteger()?intval($record[$key]):$record[$key];
+                    $r->{$displayName} = $field->isInteger()?intval($record[$key]):($field->isBoolean()?boolVal($record[$key]):$record[$key]);
                 }
             } else {
                 $r->{$displayName} = $field->isArray() ? [] : null;
