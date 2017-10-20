@@ -4,16 +4,17 @@ function settings_provider__update_cache()
 {
     // Get all entities that are exportable.
     $cached_all = module_invoke_all('_get_cached_entity_definitions', 'sql');
+    
 
     foreach ($cached_all as $sourceDestination => $cached) {
-        list($from, $to) = $sd = explode('|', $sourceDestination);
+        list($from, $to) = explode('|', $sourceDestination);
 
         // Get references to the source and destination data sources
         $source = mware_connection_driver__get_driver($from);
         $destination = mware_connection_driver__get_driver($to);
         $sql = mware_connection_driver__get_driver('sql');
 
-        if (!is_null($source) && !is_null($destination) && !is_null($sql)) {
+        if ($source && $destination && $sql) {
             foreach ($cached as $entity) {
                 // Get the field names to select
                 $selectFields = [];
@@ -26,6 +27,7 @@ function settings_provider__update_cache()
                 ]; 
 
                 $lastSyncInfo = variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $defaultSyncData);
+
                 // For backward version upgrade.
                 if(is_string($lastSyncInfo)){
                     $lastSyncInfo = $defaultSyncData;
@@ -44,7 +46,6 @@ function settings_provider__update_cache()
                 $badLastRun = ($defaultSyncData['time'] != $defaultSyncData['continue_from'])?TRUE:FALSE;
                                 
                 if ($interval || ($badLastRun && $defaultSyncData['failure_count'] < 10)) {
-                    
                     foreach ($entity['fields'] as $field) {
                         if($field['type'] != 'detail'){
                             $selectFields[] = $field['preferred_name'];
@@ -52,7 +53,6 @@ function settings_provider__update_cache()
                     };
 
                     $selectFields = implode(', ', $selectFields);
-
                     $filter = "Created ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}' or Modified ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}'";
                     $newbies = [];
                     $generalErrorOccured = FALSE;
@@ -67,6 +67,7 @@ function settings_provider__update_cache()
                                 '$skipCache' => 1
                             ]
                         );
+
                     } catch(\Exception $ce){
                         $generalErrorOccured = TRUE;
 
@@ -145,27 +146,27 @@ function settings_provider__update_cache()
                     // If everything went on smoothly.
                     if($synched == count($newbies) && $generalErrorOccured != TRUE) {
                         $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s');
-                        $lastSyncInfo['failureCount'] = 0; // reset the error counter.
+                        $lastSyncInfo['failure_count'] = 0; // reset the error counter.
                         $lastSyncInfo['time'] = $now->format('Y-m-d\TH:i:s');
                         variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $lastSyncInfo);
                     } 
 
                     // Otherwise
                     else {
-                        $lastSyncInfo['failureCount'] = $lastSyncInfo['failureCount'] + 1;
+                        $lastSyncInfo['failure_count'] = $lastSyncInfo['failure_count'] + 1;
                         $lastSyncInfo['time'] = $lastSynched->format('Y-m-d\TH:i:s'); // So that this block can be rerun asap.
                         
                         // After 10 errored tries, move forward but log the problem.
-                        if($lastSyncInfo['failureCount'] > 10){
+                        if($lastSyncInfo['failure_count'] > 10){
                             $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s');
                             $lastSyncInfo['time'] = $now->format('Y-m-d\TH:i:s');
-                            $lastSyncInfo['failureCount'] = 0;
+                            $lastSyncInfo['failure_count'] = 0;
 
                             // Log the error.
                             $info = new \stdClass();
                             $info->Name = 'MULTIPLE CACHE FAILURES';
                             $info->EntityName = $entity['original_display_name'];
-                            $info->Details = "After {$lastSyncInfo['failureCount']} unsuccessful tries, the system is moving on.";
+                            $info->Details = "After {$lastSyncInfo['failure_count']} unsuccessful tries, the system is moving on.";
                             $info->LineNumber = ''.__LINE__;
                             $info->FileName = __FILE__;
                             $info->Created = $now->format('Y-m-d\TH:i:s');
@@ -176,6 +177,8 @@ function settings_provider__update_cache()
                     }
                 }
             }
+        } else {
+            watchdog('UPDATING CACHE ERROR', 'One or more sources could not be loaded.');
         }
     }
 }
