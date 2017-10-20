@@ -170,7 +170,7 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'cash_inflow' => [
             'internal_name' => 'Cash_Inflow__c'
-            // , 'cache_to' => 'sql'
+            , 'cache_to' => 'sql'
             , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
@@ -251,6 +251,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'InvoiceNumber'
                     , 'type' => 'string'
                     , 'mandatory' => 1
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
                 ]
                 , 'Id' => [
                     'preferred_name' => 'Id'
@@ -453,6 +457,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'LastMile'
                     , 'type' => 'string'
                 ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]
                 , 'Account__c' => [
                     'preferred_name' => 'Account'
                     , 'type' => 'string'
@@ -563,7 +571,7 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'PaymentStatus'
                     , 'type' => 'string'
                 ]
-                , 'isDeleted' => [
+                , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
                     , 'type' => 'boolean',
                 ]
@@ -665,7 +673,7 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Phone'
                     , 'type' => 'string',
                 ]
-                , 'isDeleted' => [
+                , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
                     , 'type' => 'boolean',
                 ]
@@ -744,7 +752,7 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'opportunity' => [
             'internal_name' => 'Opportunity'
-            // , 'cache_to' => 'sql'
+            , 'cache_to' => 'sql'
             , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
@@ -824,6 +832,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'NRC__c' => [
                     'preferred_name' => 'NRC'
                     , 'type' => 'int'
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
                 ]
                 , 'RecordTypeId' => [
                     'preferred_name' => 'Type'
@@ -929,6 +941,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'type' => 'string'
                     , 'mandatory' => 1
                 ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]
                 , '_Accounts' => [
                     'preferred_name' => 'Accounts'
                     , 'type' => 'detail'
@@ -1009,6 +1025,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Q4CashTarget'
                     , 'type' => 'int'
                 ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]
             ],
         ]
         , 'sales_sector' => [
@@ -1032,6 +1052,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'CreatedDate' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
                 ]
                 , 'Parent__c' => [
                     'preferred_name' => 'ParentSector'
@@ -1059,7 +1083,7 @@ function salesforce_settings_provider__get_entity_definitions()
         , 'contact' => [
             'internal_name' => 'Contact'
             , 'cache_to' => 'sql'
-            , 'cache_freq' => 7200
+            , 'cache_freq' => 60
             , 'fields' => [
                 'Id' => [
                     'preferred_name' => 'Id'
@@ -1101,6 +1125,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Title' => [
                     'preferred_name' => 'Title'
                     , 'type' => 'string'
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
                 ]
                 , 'AccountId' => [
                     'preferred_name' => 'Account'
