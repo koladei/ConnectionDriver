@@ -405,6 +405,14 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'BillingStartDate'
                     , 'type' => 'date'
                 ]
+                , 'Contract_Expiration__c' => [
+                    'preferred_name' => 'ContractExpirationDate'
+                    , 'type' => 'date'
+                ]
+                , 'Contract_Tenure__c' => [
+                    'preferred_name' => 'ContractTenure'
+                    , 'type' => 'int'
+                ]
                 , 'Product_Type__c' => [
                     'preferred_name' => 'SubType'
                     , 'type' => 'string'
