@@ -335,7 +335,6 @@ abstract class MiddlewareConnectionDriver
 
         // implode the values based on the type of the field
         $implosion = '';
-        $backslash = '\'';
         $type = $entityField->getDataType();
         switch ($type) {
             case 'int': {
@@ -860,7 +859,7 @@ abstract class MiddlewareConnectionDriver
             try {
                 $return = $this->getItems($entityBrowser, $select, $filter, $expand);
                 $deleteResult = $return;
-                $deleteResult->deleteCount = $deleteCount;
+                $deleteResult['deleteCount'] = $deleteCount;
             } catch (\Exception $ex) {
                 $deleteResult = [];
             }
