@@ -39,17 +39,17 @@ function smsgateway_connection_driver_cron(){
     // Get the last and next run time of the workflow
     $smsgatewayupdateInfo = variable_get('SMSGATEWAY_UPDATEINFO', [
         'lastrun' => '1998-01-01T00:00:00'
-        , 'frequency' => 30
-        , 'inprogresssince' => '1996-01-01T00:00:00'
-        , 'concurrencyinterval' => 30
+        , 'frequency_min' => 30
+        , 'frequency_sec' => 30
     ]);
     $lastRun = \DateTime::createFromFormat('Y-m-d\TH:i:s', $smsgatewayupdateInfo['lastrun']);
-    $frequency = new \DateInterval("PT{$smsgatewayupdateInfo['frequency']}M");
+    $frequency = new \DateInterval("PT{$smsgatewayupdateInfo['frequency_min']}M{$smsgatewayupdateInfo['frequency_sec']}S");
     $nextRun = \DateTime::createFromFormat('Y-m-d\TH:i:s', $smsgatewayupdateInfo['lastrun']);
     $nextRun->add($frequency);
         
     // Invoke the workflow if it is due to run.
-    if($now > $nextRun) {        
+    if($now > $nextRun) {      
+        watchdog('SMSGATEWAY', 'About to check SMS delivery status.', [], WATCHDOG_NOTICE);  
         global $base_url;
     
         $tokenOption = [
@@ -65,9 +65,8 @@ function smsgateway_connection_driver_cron(){
         mware_http_request("{$base_url}/smsgateway/update-sms-status", ['options' => $tokenOption, 'callback' => function($event) use ($now, $smsgatewayupdateInfo){
             $smsgatewayupdateInfo['lastrun'] = $now->format('Y-m-d\TH:i:s');
             variable_set('SMSGATEWAY_UPDATEINFO', $smsgatewayupdateInfo);
+            watchdog('SMSGATEWAY', 'Finished checking SMS delivery status', [], WATCHDOG_NOTICE);
         }]);
-    } else {
-
     }
     
     // TODO: IMPLEMENT A CONCURRENCY CHECK CONTROL FEATURE SO THAT MORETHAN 1 INSTANCE OF THIS WORKFLOW IS NOT STARTED.
@@ -286,6 +285,11 @@ function smsgateway_connection_driver__get_entity_definitions()
                     , 'description' => [
                         'preferred_name' => 'Description'
                         , 'type' => 'string'
+                    ]
+                    , 'delivery_logic' => [
+                        'preferred_name' => 'DeliveryLogic'
+                        , 'type' => 'string'
+                        , 'length' => 'unlimited'
                     ]
                 ]
             ]
