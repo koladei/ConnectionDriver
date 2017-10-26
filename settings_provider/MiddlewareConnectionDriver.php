@@ -588,12 +588,17 @@ abstract class MiddlewareConnectionDriver
             });
 
             // Fetch the related field values in one sweep
-            array_walk($expands, function (&$expand_val, $expand_key) use ($driverScope) {
+            array_walk($expands, function (&$expand_val, $expand_key) use ($driverScope, $skipCache) {
                 $localField = $expand_val['info'];
                 $remoteField = $expand_val['remoteFieldInfo'];
                 $remoteEntityBrowser = $remoteField->getParent();
                 $remoteDriver = $remoteEntityBrowser->getParent();
                 $otherOptions = ['$top' => 10000];
+
+                // Propagate $skipCache parameter
+                if($skipCache){
+                    $otherOptions['$skipCache'] = '1';
+                }
 
                 if (!is_null($localField->getRemoteEntityFilter())) {
                     $otherOptions['more_filter'] = $localField->getRemoteEntityFilter();
