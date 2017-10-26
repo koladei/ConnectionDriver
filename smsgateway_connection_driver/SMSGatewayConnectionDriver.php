@@ -41,6 +41,9 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
                 case 'sendsms': {
                     return $this->deliverSMS($objects, $connectionToken, $otherOptions);
                 }
+                case 'sendsms2': {
+                    return $this->deliverSMS2($objects, $connectionToken, $otherOptions);
+                }
                 case 'updatedeliverystatus':{
                     return $this->updateDeliveryStatus($objects, $connectionToken, $otherOptions);
                 }
@@ -96,7 +99,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
             foreach ($recipients as $recipient) {
                 // Log the SMS to the database.
                 $msg = new \stdClass();
-                $msg->BatchId = $bulkId;
+                $msg->BatchId = $batchId;
                 $msg->Id = "{$batchId}-{$recipient}";
                 $msg->Body = $objects['message'];
                 $msg->Recipient = $recipient;
@@ -161,6 +164,123 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
                     $this->updateItem('smslog', "{$res->data->bulkId}-{$invalid}", $msg, []);
                 }
             }
+
+            // Return the status of the SMS.                    
+            return [
+                ['batch_id' => $batchId, 'provider_name' => 'SMS Torrent', 'number_of_recipients' => count($recipients)]
+            ];
+        } else {
+            throw new \Exception('There was a problem getting the connection token');
+        }
+    }
+    
+    function deliverSMS2($objects, $connectionToken = NULL, $otherOptions = []){
+        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            global $base_url;
+            $return = new \stdClass();
+            // $authorization = \base64_encode("{$connectionToken->username}:{$connectionToken->password}");
+
+            // Require the recipients
+            if (!isset($objects['recipients'])) {
+                throw new \Exception("Parameter 'recipients' is required.");
+            }
+
+            // Validate the recipients
+            $recipients = is_string($objects['recipients'])?preg_split('/[\s*,\s*]*,+[\s*,\s*]*/', $objects['recipients']):(is_array($objects['recipients'])?$objects['recipients']:[]);
+            if (count($recipients) < 1) {
+                throw new \Exception("Parameter 'recipients' must contain at least 1 valid number");
+            }
+            $recipients = array_unique($recipients);
+            
+            // validate the message
+            if (!isset($objects['message']) || strlen($objects['message']) < 1) {
+                throw new \Exception("Parameter 'message' is required and cannot be empty.");
+            }
+            
+            // Validate the sender id
+            if(isset($objects['senderid'])){
+                if (!is_string($objects['senderid']) || count($objects['senderid']) > 11 || count($objects['senderid']) < 1) {
+                    throw new \Exception("Parameter 'senderid' cannot be longer than 11 characters");
+                }
+            }
+            
+            // Get the sender id
+            $senderid = isset($objects['senderid'])?$objects['senderid']:$connectionToken->defaultSenderId;
+
+            // Generate a batch id
+            $batchId = strtoupper(trim(substr($base_url, 6), '/').'-'.time());
+            
+            // Log the SMS to the database for each recipient.
+            foreach ($recipients as $recipient) {
+                $msg = new \stdClass();
+                $msg->BatchId = $batchId;
+                $msg->Id = "{$batchId}-{$recipient}";
+                $msg->Body = $objects['message'];
+                $msg->Recipient = $recipient;
+                $msg->SentAs = $senderid;
+                $msg->SentBy = 'appdev';
+                $msg->BatchId = $batchId;
+                $msg->Status = 'SENDING';
+                $msg->StatusDescription = 'Waiting to be sent.';
+                $msg->SMSCount = 0;
+                $msg->Provider = $connectionToken->providerName;
+                $x = $this->createItem('smslog', $msg, [
+                    '$setId' => '1'
+                ]);
+            }
+        
+            // Try sending the SMS.
+            $defaultOptions = [
+                CURLOPT_HTTPHEADER => []
+                , CURLOPT_PROTOCOLS => CURLPROTO_HTTPS
+                , CURLOPT_SSL_VERIFYPEER => 0
+                , CURLOPT_SSL_VERIFYHOST => 0
+                , CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
+            ];
+
+            $v8 = new \V8Js('$', []);
+            $v8->post = function (\V8Object $a = NULL) use($defaultOptions) {
+                $a = \is_null($a)?(new \stdClass()):$a;
+                $url = (property_exists($a, 'url'))?$a->url:NULL;
+                $data = (property_exists($a, 'data'))?$a->data:new \stdClass();
+                if(is_null($url)){
+                    throw new \Exception('The post URL is missing');
+                }
+
+                $defaultOptions[CURLOPT_POSTFIELDS] = json_encode($data);
+                $headers = (property_exists($a, 'headers'))?$a->headers:[];
+                foreach($headers as $headerName => $header){
+                    $defaultOptions[CURLOPT_HTTPHEADER][] = "{$headerName}: {$header}";
+                }
+                $feed = mware_blocking_http_request($url, ['options' => $defaultOptions]);
+                // var_dump(json_decode($feed->getContent()));
+                return json_decode($feed->getContent());
+            };
+    
+            // Get a reference to the SMS connection driver.
+            $sql = mware_connection_driver__get_driver('smsgateway');
+            $providers = $sql->getItems('smsgatewayinfo', 'Name,Description,DeliveryLogic', '', '', ['$all' => '1']);
+            $remaining = $recipients;
+
+            foreach($providers as $provider){
+                if(count($remaining) > 0){
+                    $v8->username = $connectionToken->username;
+                    $v8->password = $connectionToken->password;
+                    $v8->url = $connectionToken->sendUrl;
+                    $v8->batchId = $batchId;
+                    $v8->message = $objects['message'];
+                    $v8->base64_encode = function($value) {
+                        return \base64_encode($value);
+                    };
+                    $evaluation = get_object_vars($v8->executeString($provider->DeliveryLogic, $provider->Name));
+                    $remaining[$provider->Id] = $evaluation;
+                    // $remaining[$provider->Id] = \get_object_vars($v8->executeString($provider->DeliveryLogic, $provider->Name));
+                }
+            }
+
+            return $remaining;
+
+            
 
             // Return the status of the SMS.                    
             return [

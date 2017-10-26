@@ -291,6 +291,11 @@ function smsgateway_connection_driver__get_entity_definitions()
                         , 'type' => 'string'
                         , 'length' => 'unlimited'
                     ]
+                    , 'report_logic' => [
+                        'preferred_name' => 'ReportLogic'
+                        , 'type' => 'string'
+                        , 'length' => 'unlimited'
+                    ]
                 ]
             ]
         ]
