@@ -465,6 +465,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'LastMile'
                     , 'type' => 'string'
                 ]
+                , 'Address__c' => [
+                    'preferred_name' => 'Address'
+                    , 'type' => 'string'
+                ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
                     , 'type' => 'boolean',
