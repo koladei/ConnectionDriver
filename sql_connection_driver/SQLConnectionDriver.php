@@ -243,8 +243,9 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
                 // Execute the Update request.
-                $sql = "DELETE FROM {$entityBrowser->getInternalName()} WHERE {$idField->getInternalName()} = {$id}";
+                $sql = "DELETE FROM {$entityBrowser->getInternalName()} WHERE {$idField->getInternalName()} = :{$idField->getInternalName()}";
                 $statement = $pdo->prepare($sql);
+                $statement->bindValue(":{$idField->getInternalName()}", $id);
                 $statement->execute();
                  
                 $d = new \stdClass();
