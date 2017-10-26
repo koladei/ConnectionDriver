@@ -155,6 +155,7 @@ function settings_provider__format_cached_definition($from, $to, callable $entit
         $entities = $entitiesSource();
         foreach ($entities as $entity_name => $entity) {
             if (isset($entity['cache_to']) && $entity['cache_to'] == $to) {
+
                 //TODO: Ensure that values that were ommitted are populated.
                 $fields = &$entity['fields'];
                 $name = strtolower("{$from}__{$entity['internal_name']}");
@@ -190,6 +191,7 @@ function settings_provider__format_delegated_definition($from, $to, callable $en
         $entities = $entitiesSource();
         foreach ($entities as $entity_name => $entity) {
             if (isset($entity['delegate_to']) && $entity['delegate_to'] == $to) {
+                
                 //TODO: Ensure that values that were ommitted are populated.
                 $fields = &$entity['fields'];
                 $name = strtolower("{$from}__{$entity['internal_name']}");
