@@ -158,7 +158,9 @@ function settings_provider__update_cache()
                         
                         // After 10 errored tries, move forward but log the problem.
                         if($lastSyncInfo['failure_count'] > 10){
-                            $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s');
+                            //TODO: Send a mail to appdev team.
+                            
+                            // $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s'); // Experimentally ommitted.
                             $lastSyncInfo['time'] = $now->format('Y-m-d\TH:i:s');
                             $lastSyncInfo['failure_count'] = 0;
 
