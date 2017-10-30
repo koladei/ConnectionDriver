@@ -71,7 +71,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
             }
 
             // Validate the recipients
-            $recipients = is_string($objects['recipients'])?preg_split('/[\s*,\s*]*,+[\s*,\s*]*/', $objects['recipients']):(is_array($objects['recipients'])?$objects['recipients']:[]);
+            $recipients = is_string($objects['recipients'])?preg_split('/[\s*,\s*]*,+[\s*,\s*]*/', str_replace('+', '', $objects['recipients'])):(is_array($objects['recipients'])?$objects['recipients']:[]);
             if (count($recipients) < 1) {
                 throw new \Exception("Parameter 'recipients' must contain at least 1 valid number");
             }
