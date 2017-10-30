@@ -43,9 +43,9 @@ function settings_provider__update_cache()
 
                 $nextRun->add($freqInterval);
                 $interval = $now > $nextRun;
-                $badLastRun = ($defaultSyncData['time'] != $defaultSyncData['continue_from'])?TRUE:FALSE;
+                $badLastRun = ($lastSyncInfo['time'] != $lastSyncInfo['continue_from'])?TRUE:FALSE;
                                 
-                if ($interval || ($badLastRun && $defaultSyncData['failure_count'] < 10)) {
+                if ($interval || ($badLastRun && $lastSyncInfo['failure_count'] < 10)) {
                     foreach ($entity['fields'] as $field) {
                         if($field['type'] != 'detail'){
                             $selectFields[] = $field['preferred_name'];
@@ -159,7 +159,7 @@ function settings_provider__update_cache()
                         // After 10 errored tries, move forward but log the problem.
                         if($lastSyncInfo['failure_count'] > 10){
                             //TODO: Send a mail to appdev team.
-                            
+
                             // $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s'); // Experimentally ommitted.
                             $lastSyncInfo['time'] = $now->format('Y-m-d\TH:i:s');
                             $lastSyncInfo['failure_count'] = 0;

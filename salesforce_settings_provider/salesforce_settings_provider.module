@@ -687,7 +687,7 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
-                    , 'type' => 'boolean',
+                    , 'type' => 'boolean'
                 ]
                 , 'Primary_Sector__c' => [
                     'preferred_name' => 'PrimarySector'
