@@ -199,6 +199,41 @@ function dynamics_connection_driver__get_entity_definitions() {
                 ]
             ]
         ]
+        , 'globalcustomerinformation' => [
+            'internal_name' => 'globalcustomerinformation'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1
+                ]
+                , 'ACCOUNTNAME' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'GLOBALID' => [
+                    'preferred_name' => 'GCID'
+                    , 'type' => 'string'
+                ]
+                , 'DATAAREAID' => [
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string',
+                ]
+                , 'STATUS' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+            ]
+        ]
         , 'paymentterm' => [
             'internal_name' => 'paymterm'
             , 'fields' => [
