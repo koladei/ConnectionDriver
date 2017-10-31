@@ -806,6 +806,7 @@ abstract class MiddlewareConnectionDriver
             $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             return $return;
         } 
+        
         // Otherwise, if something is wrong, retry
         else {
             if ($retryCount < $this->maxRetries) {

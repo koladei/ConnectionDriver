@@ -43,7 +43,7 @@ function settings_provider_menu()
     $items['settings-provider/update-cache'] = [
         'page callback' => 'settings_provider__update_cache'
         , 'file' => 'crons/cron.update-cache.inc'
-        , 'page arguments' => ['internal']
+        , 'page arguments' => []
         , 'access arguments' => ['access content']
         , 'type' => MENU_CALLBACK
     ];
