@@ -34,8 +34,6 @@ function settings_provider__update_cache($sourceDestination = NULL, $entityId = 
 function settings_provider__update_cache_inner($sourceDestination, $entity, $source, $destination, $sql, $start = NULL)
 {
     if ($source && $destination && $sql) {
-        // foreach ($cached as $entity) {
-
             // Get the field names to select
             $selectFields = [];
 
@@ -168,8 +166,6 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     }
                 }
 
-                // $lastSyncInfo['continue_from'] = $lastSyncInfo['time'];
-
                 // If everything went on smoothly.
                 if($synched == count($newbies) && $generalErrorOccured != TRUE) {
                     $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s');
@@ -185,7 +181,17 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     
                     // After 10 errored tries, move forward but log the problem.
                     if($lastSyncInfo['failure_count'] > 10){
-                        //TODO: Send a mail to appdev team.
+                        //Send a mail to appdev team.
+                        $message = "There has been multiple failures synching {$entity['original_display_name']} from {$from} to {$to}.<br/>
+                        Failure count is {$lastSyncInfo['failure_count']}.";
+                        $params = [
+                            'subject' => t('Multiple Cache Synch Errors'),
+                            'body' => check_markup(t($message),'plain_text'),
+                        ];
+                        $admin_mail = variable_get('site_mail', ini_get('sendmail_from'));
+
+                        drupal_mail('mware_sms', 'cache_synch_error', $admin_mail, language_default(), $params);
+                        
 
                         // $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s'); // Experimentally ommitted.
                         $lastSyncInfo['time'] = $now->format('Y-m-d\TH:i:s');
@@ -205,7 +211,6 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $lastSyncInfo);
                 }
             }
-        // }
     } else {
         watchdog('UPDATING CACHE ERROR', 'One or more sources could not be loaded.');
     }

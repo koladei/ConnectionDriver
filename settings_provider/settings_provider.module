@@ -239,3 +239,16 @@ function settings_provider_cron(){
         }]);
     }
 }
+
+/**
+ * Implements hook_mail for module_name.
+ */
+function settings_provider_mail($key, &$message, $params) {
+    switch ($key) {
+      case 'cache_synch_error':{
+        $message['subject'] = $params['subject'];
+        $message['body'][] = $params['body'];
+        break;
+      }
+    }
+  }
