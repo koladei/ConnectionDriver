@@ -28,7 +28,9 @@ abstract class MiddlewareConnectionDriver
     protected $maxRetries = 50;
     protected $sourceLoader = null;
     protected static $loadedDrivers = [];
-    protected $identifier = __CLASS__;
+    protected $identifier = __CLASS__;    
+    protected $preferredDateFormat = 'Y-m-d';
+    protected $preferredDateTimeFormat = 'Y-m-d\TH:i:s';
 
     public function getItemsInternal($entityBrowser, &$connection_token = null, array $select, $filter, $expands = [], $otherOptions = []){
         throw new \Exception('Not yet implemented');
@@ -421,6 +423,15 @@ abstract class MiddlewareConnectionDriver
         
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
         $otherOptions['retryCount'] = $retryCount + 1;
+
+        // Take note of the preferred date format
+        if(isset($otherOptions['$dateFormat'])){
+            $this->preferredDateFormat = $otherOptions['$dateFormat'];
+        }
+
+        if(isset($otherOptions['$dateTimeFormat'])){
+            $this->preferredDateTimeFormat = $otherOptions['$dateTimeFormat'];
+        }
         
         // Set the default limit
         if (!isset($otherOptions['$top'])) {
@@ -561,12 +572,12 @@ abstract class MiddlewareConnectionDriver
 
                     if (is_object($record) && !is_null($record) && !is_null($record->{$dateFieldName})) {
                         $dateVal =  $this->parseDateValue($record->{$dateFieldName});
-                        $record->{$dateFieldName} = ( $dateField->isDateTime() ? $dateVal->format('Y-m-d\TH:i:s') : $dateVal->format('Y-m-d') );
+                        $record->{$dateFieldName} = ( $dateField->isDateTime() ? $dateVal->format($this->preferredDateTimeFormat) : $dateVal->format($this->preferredDateFormat) );
                     } elseif (is_array($record)) {
                         foreach ($record as &$innerRecord) {
                             if (is_object($innerRecord) && !is_null($innerRecord) && !is_null($innerRecord->{$dateFieldName})) {
                                 $dateVal =  $this->parseDateValue($innerRecord->{$dateFieldName});
-                                $innerRecord->{$dateFieldName} = ( $dateField->isDateTime() ? $dateVal->format('Y-m-d\TH:i:s') : $dateVal->format('Y-m-d') );
+                                $innerRecord->{$dateFieldName} = ( $dateField->isDateTime() ? $dateVal->format($this->preferredDateTimeFormat) : $dateVal->format($this->preferredDateFormat) );
                             } else {
                                 throw new \Exception('Error on date field');
                             }
