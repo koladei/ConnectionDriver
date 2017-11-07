@@ -8,7 +8,6 @@ function settings_provider__update_cache($sourceDestination = NULL, $entityId = 
     // Get all entities that are exportable.
     $cached_all = module_invoke_all('_get_cached_entity_definitions', 'sql');
     
-
     foreach ($cached_all as $sourceDestination => $cached) {
         list($from, $to) = explode('|', $sourceDestination);
 
@@ -57,6 +56,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
             if(!is_null($start)){
                 $defaultSyncData['time'] = $start;
                 $defaultSyncData['continue_from'] = $start;
+                $defaultSyncData['failure_count'] = 0;
                 $lastSyncInfo = $defaultSyncData;
             }
 
@@ -107,6 +107,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     $info->Modified = $now->format('Y-m-d\TH:i:s');
                     $sql->createItem('syncherrorlog', $info);
                 }
+                watchdog('SYNCING', 'ABGGG 1');
 
                 $synched = 0;
                 foreach ($newbies as $newbie) {

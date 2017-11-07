@@ -27,6 +27,16 @@ function salesforce_settings_provider_connection_driver_salesforce_alter(&$conta
 
     $defs = salesforce_settings_provider__get_entity_definitions_local();
     $driver->setEntities(($defs));
+    $driver->addUtilityFunction('date_sync_util', function(){
+        // module_load_include('module', 'settings_provider');
+        watchdog('SYNCING', 'INVOKING');
+        // if(function_exists('settings_provider__update_cache')){
+            watchdog('SYNCING', 'INVOKING X');
+            $args = func_get_args();
+            module_invoke('settings_provider', '_update_cache', ...$args);
+            // settings_provider__update_cache(...$args);
+        // }
+    });
     $container['salesforce'] = $driver;
 }
 

@@ -284,7 +284,7 @@ class EntityDefinitionBrowser
     
     public function getCacheDriverName()
     {
-        return $this->cacheDriverName;
+        return $this->cachingDriverName;
     }
     
     public function getDelegateDriverName()

@@ -11,16 +11,6 @@ function settings_provider_admin() {
         '#description' => t('Provide configuration values below'),
     );
 
-    // $form['general_settings']['general_settings2'] = [
-    //     '#type' => 'markup',
-    // ];
-
-    // $form['general_settings']['general_settings2']['general_settings3'] = [
-    //     '#type' => 'fieldset',
-    //     '#title' => t('General settings'),
-    //     '#description' => t('Define settings for cached data objects')
-    // ];
-
     $form['general_settings']['MWARE_ROOT_CONNECTION_DRIVER__SYNCH_CACHE'] = [
         '#type' => 'checkbox',
         '#weight' => -1,
@@ -69,10 +59,7 @@ function settings_provider_admin() {
                 '#title' => strtoupper("<b>{$from}:</b> {$entity['original_display_name']}"),
                 '#type' => 'fieldset',
                 '#description' => t('When to begin synching'),
-                // '#prefix' => '<div>'.strtoupper("<b>{$from}:</b> {$entity['original_display_name']}").': ',
-                // '#suffix' => '</div>',
                 '#description' => t("Last run at: {$def['time']}"),
-                // '#default_value' => variable_get("{$entity['original_display_name']}_LastSync__{$sourceDestination}", ['continue_from' => '1998-01-01T00:00:00']),
                 '#tree' => TRUE
             ];
 
@@ -84,9 +71,16 @@ function settings_provider_admin() {
                     '#default_value' => $def['continue_from']                     
                 ]; 
                 $form['data_object_settings']["{$entity['original_display_name']}_LastSync__{$sourceDestination}"]['save'] = [
-                    '#title' => t('Synch data from'),
-                    '#type' => 'submit',
-                    '#value' => t('update'),
+                    '#name' => "{$entity['original_display_name']}_LastSync__{$sourceDestination}_save"
+                    , '#type' => 'submit'
+                    , '#value' => t('Update')
+                    , '#submit' => ['settings_provider__update_sync_information']
+                ];
+                $form['data_object_settings']["{$entity['original_display_name']}_LastSync__{$sourceDestination}"]['synch_now'] = [
+                    '#name' => "{$entity['original_display_name']}_LastSync__{$sourceDestination}_sync_now"
+                    , '#type' => 'submit'
+                    , '#value' => t('Sync. Now')
+                    , '#submit' => ['settings_provider__sync_now']
                 ];
                 $form['data_object_settings']["{$entity['original_display_name']}_LastSync__{$sourceDestination}"]['time'] = [
                     '#title' => t('Synch data from'),
@@ -133,6 +127,15 @@ function settings_provider_admin() {
     $form['#validate'][] = 'settings_provider_admin_validate';
 
     return system_settings_form($form);
+}
+
+function settings_provider__update_sync_information($form, &$form_state){
+    // drupal_set_message(print_r($form_state['triggering_element'], true));
+    // drupal_form_submit('settings_provider_admin', $form_state);
+}
+
+function settings_provider__sync_now($form, &$form_state){
+    
 }
 
 function settings_provider_admin_validate($form, $form_state){

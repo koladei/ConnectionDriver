@@ -7,6 +7,42 @@ include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/NetBossConne
 
 use com\mainone\middleware\NetBossConnectionDriver;
 
+
+/**
+ * Implement hook_menu().
+ */
+function net_boss_connection_driver_menu()
+{
+    $items = [];
+
+    // Link to cache update cron
+    $items['net-boss/wsdl'] = [
+        'page callback' => 'net_boss_connection_driver__get_wsdl'
+        // , 'file' => 'resources/cron.update-sms-status.inc'
+        , 'access arguments' => array('access content')
+        , 'type' => MENU_CALLBACK
+    ];
+
+    return $items;
+}
+
+function net_boss_connection_driver__get_wsdl($is_proxy = '0'){
+    variable_del('NET_BOSS_WSDL');
+    $wsdl = variable_get('NET_BOSS_WSDL', NULL);
+    if(is_null($wsdl)){
+        $module_path = drupal_get_path('module', 'net_boss_connection_driver');
+
+        $replace = $is_proxy === '1'?'https://nbportal.mainone.net/soap3/api.php':'http://nbportalproxy.mainone.net/echo.php';
+        $wsdl = str_replace('${LOCATION_URL}', $replace, file_get_contents("{$module_path}/resources/api.wsdl"));
+
+        variable_set('NET_BOSS_WSDL', $wsdl);
+    }
+
+    drupal_add_http_header('content-type', 'text/xml');
+    echo $wsdl;
+    drupal_exit();
+}
+
 function net_boss_connection_driver_connection_driver_netboss_alter(&$container)
 {
     $driver = new NetBossConnectionDriver(function ($x) {

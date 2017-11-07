@@ -31,6 +31,7 @@ abstract class MiddlewareConnectionDriver
     protected $identifier = __CLASS__;    
     protected $preferredDateFormat = 'Y-m-d';
     protected $preferredDateTimeFormat = 'Y-m-d\TH:i:s';
+    protected $utilityFunctions = [];
 
     public function getItemsInternal($entityBrowser, &$connection_token = null, array $select, $filter, $expands = [], $otherOptions = []){
         throw new \Exception('Not yet implemented');
@@ -62,6 +63,53 @@ abstract class MiddlewareConnectionDriver
     {
         throw new \Exception('Not yet implemented');
     }
+
+    /**
+     * Invokes the synch function of the specified driver
+     *
+     * @param mixed $entityBrowser
+     * @param string $date
+     * @return void
+     */
+    public function syncFromDate($entityBrowser, $date = '1900-01-01'){        
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        if (is_null($entityBrowser)) {
+            throw new \Exception('Invalid entity could not be found.');
+        }
+
+        if($entityBrowser->shouldCacheData()){
+            // Check for date constants
+            $now = new \DateTime();
+            switch($date){
+                case '$today$':{
+                    $date = $now->format('Y-m-d');
+                    break;
+                }
+                case '$24HR$':{
+                    $interval = new \DateInterval("PT24H");
+                    $date = ($now->sub($interval))->format('Y-m-d');
+                    break;
+                }
+                case '$month$':{
+                    $interval = new \DateInterval("P1M");
+                    $date = ($now->sub($interval))->format('Y-m-d');
+                    break;
+                }
+                case '$year$':{
+                    $interval = new \DateInterval("P1Y");
+                    $date = ($now->sub($interval))->format('Y-m-d');
+                    break;
+                }
+            }
+
+            if(isset($this->utilityFunctions['date_sync_util'])){
+                $sync = $this->utilityFunctions['date_sync_util'];
+                $sourceDestination = implode('|', [$this->getIdentifier(), $entityBrowser->getCacheDriverName()]);
+                watchdog('SYNCING', 'ABGGG');
+                $sync($sourceDestination, $entityBrowser->getDisplayName(), $date);
+            }
+        }
+    }
     
     abstract public function getStringer();
 
@@ -71,6 +119,10 @@ abstract class MiddlewareConnectionDriver
         $this->sourceLoader = $sourceLoader;
         self::$loadedDrivers[$identifier] = &$this;
         $this->identifier = $identifier;
+    }
+
+    public function addUtilityFunction($name, callable $function){
+        $this->utilityFunctions[$name] = $function;
     }
 
     public function isDriverLoaded($driverName)
