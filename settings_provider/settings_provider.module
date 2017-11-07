@@ -3,6 +3,7 @@
 $module_path = drupal_get_path('module', 'settings_provider');
 $middleware_driver_path = str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/');
 include_once str_replace('/', DIRECTORY_SEPARATOR, $middleware_driver_path . '/MiddlewareConnectionDriver.php');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $middleware_driver_path . '/crons/cron.update-cache.inc');
 
 use com\mainone\middleware\MiddlewareConnectionDriver;
 
