@@ -920,8 +920,294 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'cash_inflow'
                     ],
-                ],
+                ]
+                , '_Lines' => [
+                    'preferred_name' => 'Lines'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'OpportunityId'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'opportunity_product'
+                        , 'filter' => 'IsDeleted eq $false$'
+                    ],
+                ]
             ],
+        ]
+        , 'opportunity_product' => [
+            'internal_name' => 'OpportunityLineItem'
+            // , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
+            , 'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'ServiceDate' => [
+                    'preferred_name' => 'ServiceDate'
+                    , 'type' => 'date'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'ListPrice' => [
+                    'preferred_name' => 'ListPrice'
+                    , 'type' => 'decimal'
+                ]
+                , 'ProductCode' => [
+                    'preferred_name' => 'ProductCode'
+                    , 'type' => 'string'
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'LineDescription'
+                    , 'type' => 'string'
+                ]
+                , 'MRC__c' => [
+                    'preferred_name' => 'MRC'
+                    , 'type' => 'decimal'
+                ]
+                , 'Quantity' => [
+                    'preferred_name' => 'Quantity'
+                    , 'type' => 'decimal'
+                ]
+                , 'UnitPrice' => [
+                    'preferred_name' => 'SalesPrice'
+                    , 'type' => 'decimal'
+                ]
+                , 'Subtotal' => [
+                    'preferred_name' => 'Subtotal'
+                    , 'type' => 'decimal'
+                ]
+                , 'TotalPrice' => [
+                    'preferred_name' => 'TotalPrice'
+                    , 'type' => 'decimal'
+                ]
+                , 'NRC__c' => [
+                    'preferred_name' => 'NRC'
+                    , 'type' => 'decimal'
+                ]
+                , 'X3rd_Party_MRC__c' => [
+                    'preferred_name' => 'ThirdPartyMRC'
+                    , 'type' => 'decimal'
+                ]
+                , 'X3rd_Party_NRC__c' => [
+                    'preferred_name' => 'ThirdPartyNRC'
+                    , 'type' => 'decimal'
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]
+                , 'Fulfilment__c' => [
+                    'preferred_name' => 'Fulfilment'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Fulfilment'
+                        , 'preferred_local_key_name' => 'FulfilmentId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'fulfilment'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'OpportunityId' => [
+                    'preferred_name' => 'Opportunity'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Opportunity'
+                        , 'preferred_local_key_name' => 'OpportunityId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'opportunity'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'RecordTypeId' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Type'
+                        , 'preferred_local_key_name' => 'TypeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'record_types'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'CreatedBy' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Owner'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+                , 'ModifiedBy' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Owner'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+            ]
+        ]
+        , 'fulfilment' => [
+            'internal_name' => 'Fulfilment__c'
+            // , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
+            , 'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'ServiceDate' => [
+                    'preferred_name' => 'ServiceDate'
+                    , 'type' => 'date'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Description' => [
+                    'preferred_name' => 'LineDescription'
+                    , 'type' => 'string'
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]
+                , 'Opportunity' => [
+                    'preferred_name' => 'Opportunity'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Opportunity'
+                        , 'preferred_local_key_name' => 'OpportunityId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'opportunity'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'RecordTypeId' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Type'
+                        , 'preferred_local_key_name' => 'TypeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'record_types'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'CreatedBy' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Owner'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+                , 'ModifiedBy' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Owner'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+            ]
+        ]
+        , 'product' => [
+            'internal_name' => 'Product'
+            // , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
+            , 'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]                
+                , 'RecordTypeId' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Type'
+                        , 'preferred_local_key_name' => 'TypeId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'record_types'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'CreatedBy' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Owner'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+                , 'ModifiedBy' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Owner'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'salesforce_user'
+                    ]
+                ]
+            ]
         ]
         , 'salesforce_user' => [
             'internal_name' => 'User'
