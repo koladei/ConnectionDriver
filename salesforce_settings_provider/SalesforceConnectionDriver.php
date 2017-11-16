@@ -58,20 +58,21 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
         
         // Get a connection token
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
-            $objs = ['inputs' => $objects];
+            // $objs = ['inputs' => $objects];
             // $obj = json_encode($objs);
             
             // Prepare the POST request
             $options = array(
                 CURLOPT_HTTPHEADER => array(
                     'Authorization: Bearer ' . $connectionToken->access_token,
-                    'Content-Type: application/json'
+                    'Content-Type: application/json',
+                    'X-PrettyPrint: 1'
                 ),
                 CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
                 CURLOPT_SSL_VERIFYPEER => 0,
                 CURLOPT_SSL_VERIFYHOST => 0,
                 CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
-                CURLOPT_POSTFIELDS => $obj
+                // CURLOPT_POSTFIELDS => $obj
             );
 
             if ($connectionToken->ConnectionParameters->UseProxyServer) {
@@ -80,12 +81,39 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 //$tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
             }
 
-            // Execute the POST request.
-            $new_url = "{$connectionToken->instance_url}/services/data/v35.0/actions/custom/flow/{$functionName}";
-            $feed = mware_blocking_http_request($new_url, ['options' => $options]);
-            
-            // Process the request
-            $res = json_decode($feed->getContent());
+            switch($functionName){
+                case 'VerifyUserSession':{
+                    // Check if the username was provided
+                    if(!isset($objects['user_id'])){
+                        throw new \Exception('Kindly provide 3 the \'user_id\' parameter');
+                    }    
+                    $user_id = $objects['user_id'];
+                                        
+                    // Check if the password was provided
+                    if(!isset($objects['org_id'])){
+                        throw new \Exception('Kindly provide the \'org_id\' parameter');
+                    }
+                    $org_id = $objects['org_id'];
+
+                    // Execute the POST request.
+                    $options[CURLOPT_CUSTOMREQUEST] = 'GET';
+                    $new_url = "{$connectionToken->instance_url}/id/{$org_id}/{$user_id}";
+                    $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+                    
+                    // Process the request
+                    $res = json_decode($feed->getContent());
+
+                    return $res;
+                }
+                case 'ExecuteFlow': {
+                    // Execute the POST request.
+                    $new_url = "{$connectionToken->instance_url}/id/data/v35.0/actions/custom/flow/{$functionName}";
+                    $feed = mware_blocking_http_request($new_url, ['options' => $options]);
+                    
+                    // Process the request
+                    $res = json_decode($feed->getContent());
+                }
+            }            
 
             if (is_array($res)) {
                 throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
@@ -230,7 +258,53 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
      * @param array $otherOptions
      */
     public function deleteItemInternal($entityBrowser, &$connectionToken = NULL, $id, array $otherOptions = []) {
-        throw new \Exception('Not yet implemented.');
+        // $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
+        
+        // Get a connection token
+        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            $obj = new \stdClass();
+
+            // Prepare the POST request
+            $options = [
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $connectionToken->access_token,
+                    // 'Content-Type: application/json',
+                ],
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
+                // CURLOPT_POSTFIELDS => $obj,
+                CURLOPT_CUSTOMREQUEST => 'DELETE'
+            ];
+
+            if ($connectionToken->ConnectionParameters->UseProxyServer) {
+                $options[CURLOPT_PROXY] = $connectionToken->ConnectionParameters->ProxyServer;
+                $options[CURLOPT_PROXYPORT] = $connectionToken->ConnectionParameters->ProxyServerPort;
+            //                $tokenOption[CURLOPT_PROXYUSERPWD] = $sf_settings->ProxyServer;
+            }
+
+            // Execute the POST request.
+            $new_url = "{$connectionToken->instance_url}/services/data/v35.0/sobjects/{$entityBrowser->getInternalName()}/{$id}";
+            $response = mware_blocking_http_request($new_url, ['options' => $options]);
+
+            $content = $response->getContent();
+
+            // Salesforce does return anything on successful update, something is wrong.
+            if (strlen($content) > 0) {
+                // Process the request
+                $res = json_decode($content);
+                throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
+            }
+
+            $resp = (object)['d' => 1];
+
+            // Get the resulting data afresh
+            // $selectFields = array_keys(get_object_vars($object));
+            return $resp;
+        } else {
+            throw new \Exception('Unable to connect to Salesforce');
+        }
     }
 
     /**
