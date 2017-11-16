@@ -22,6 +22,7 @@ class EntityFieldDefinition {
     private $remoteEntityName;
     private $expandable = false;
     private $isAnArray = 0;
+    private $description = '255';
 
     public function __construct($name, array $fieldDefinition, EntityDefinitionBrowser &$parent) {
         $this->parent = $parent;
@@ -31,12 +32,19 @@ class EntityFieldDefinition {
         $this->displayName = $fieldDefinition['preferred_name'];
         $this->type = $fieldDefinition['type'];
         $this->dataType = $fieldDefinition['type'];
+        switch($this->dataType){
+            case 'decimal':{
+                $this->description = '16,2';
+            }
+        }
+        $this->description = (isset($fieldDefinition['type_descripition']) ? $fieldDefinition['type_descripition']: $this->description);
+
         $this->isAnArray = isset($fieldDefinition['is_array']) ? $fieldDefinition['is_array'] : 0;
         if ($this->type != 'detail' && isset($fieldDefinition['relationship'])) {
             if ($this->localField = $fieldDefinition['relationship']['local_field'] == $fieldDefinition['preferred_name']) {
                 $idName = isset($fieldDefinition['relationship']['preferred_local_key_name']) ? $fieldDefinition['relationship']['preferred_local_key_name'] : "{$fieldDefinition['relationship']['local_field']}Key";
-                $fieldDefinition['relationship']['local_field'] = $idName; //"{$fieldDefinition['relationship']['local_field']}Id";
-                $this->internalName = "{$name}_lookup";
+                $fieldDefinition['relationship']['local_field'] = $idName;
+                $this->internalName = "{$name}_\$LOOKUP\$";
                 $this->actualInternalName = $name;
                 $this->type = 'detail';
                 $x = $fieldDefinition;
@@ -68,7 +76,6 @@ class EntityFieldDefinition {
             $this->remoteEntityRelationship = $fieldDefinition['relationship']['remote_type'];
             $this->remoteEntityName = isset($fieldDefinition['relationship']['remote_entity']) ? $fieldDefinition['relationship']['remote_entity'] : $fieldDefinition['lookup_entity'];
             $this->remoteEntityFilter = isset($fieldDefinition['relationship']['filter']) ? $fieldDefinition['relationship']['filter'] : NULL;
-            // $this->remoteDriver = isset($fieldDefinition['relationship']['remote_driver']) ? $this->parent->getParent()->loadDriver($fieldDefinition['relationship']['remote_driver']) : $this->parent->getParent();
             
             $this->remoteDriverName = $fieldDefinition['relationship']['remote_driver'] = isset($fieldDefinition['relationship']['remote_driver'])?$fieldDefinition['relationship']['remote_driver']:$this->parent->getParent()->getIdentifier();
             if(!$this->parent->getParent()->isDriverLoaded($this->remoteDriverName)){
@@ -230,6 +237,10 @@ class EntityFieldDefinition {
             return true;
         }
         return false;
+    }
+
+    public function getFieldDescription(){
+        return $this->description;
     }
 
     
