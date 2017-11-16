@@ -64,6 +64,10 @@ abstract class MiddlewareConnectionDriver
         throw new \Exception('Not yet implemented');
     }
 
+    public function ensureDataStructureInternal($entityBrowser, &$connectionToken = null, array $otherOptions = []){
+        throw new \Exception('Not yet implemented');
+    }
+
     /**
      * Invokes the synch function of the specified driver
      *
@@ -324,6 +328,48 @@ abstract class MiddlewareConnectionDriver
     }
 
     /**
+     * Creates the data table structure equivalent of the object schema in this connection driver.
+     *
+     * @param mixed $entityBrowser
+     * @param array $otherOptions
+     * @return void
+     */
+    public function ensureDataStructure($entityBrowser, array $otherOptions = []){
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }
+
+        // If this entity is cached to another driver
+        $skipCache = isset($otherOptions['$skipCache'])?''.$otherOptions['$skipCache']:'0';
+        $skipCache = $skipCache == '1'?TRUE:FALSE;
+        if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && $skipCache == FALSE) {
+            // Load the driver instead
+            $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $return = $cacheDriver->ensureDataStructure(...$args);
+            return $return;
+        }
+        
+        // If this entity's storage is delegated to another driver.
+        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
+            // Load the driver instead
+            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $return = $delegateDriver->ensureDataStructure(...$args);
+            return $return;
+        }
+
+        return $this->ensureDataStructureInternal($entityBrowser, $this->connectionToken, $otherOptions);
+    }
+
+    /**
      * Returns the resource identified by <code>$id</code>
      *
      * @param EntityDefinitionBrowser $entityBrowser A reference to the entity datasource.
@@ -422,7 +468,7 @@ abstract class MiddlewareConnectionDriver
      * @param array $performance
      * @return void
      */
-    public function getItems($entityBrowser, $fields, $filter, $expandeds = '', $otherOptions = [], &$performance = [])
+    public function getItems($entityBrowser, $fields = 'Id', $filter = '', $expandeds = '', $otherOptions = [], &$performance = [])
     {
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
         if (is_string($entityBrowser) || is_null($entityBrowser)) {
@@ -440,7 +486,17 @@ abstract class MiddlewareConnectionDriver
             // Execute the update provider's update method.
             $args = func_get_args();
             $args[0] = $providerInfo->entity;
-            $return = $driver->getItems(...$args);
+            $return = NULL;
+            
+            try {
+                $return = $driver->getItems(...$args);
+            } 
+            // May be the datastructure is faulty
+            catch(\Exception $exc){
+                $cacheDriver->ensureDataStructure($args[0]);
+                $return = $driver->getItems(...$args);
+            }
+            
             return $return;
         }
 
@@ -454,7 +510,17 @@ abstract class MiddlewareConnectionDriver
             // Return the results from the cache driver.
             $args = func_get_args();
             $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
-            $return = $cacheDriver->getItems(...$args);
+            $return = NULL;
+            
+            try {
+                $return = $cacheDriver->getItems(...$args);
+            } 
+            // May be the datastructure is faulty
+            catch(\Exception $exc){
+                $cacheDriver->ensureDataStructure($args[0]);
+                $this->syncFromDate($entityBrowser);
+                $return = $cacheDriver->getItems(...$args);
+            }
             return $return;
         }
         
@@ -926,13 +992,12 @@ abstract class MiddlewareConnectionDriver
 
             $deleteCount = $deleteResult->d;
             try {
-                $return = $this->getItems($entityBrowser, $select, $filter, $expand);
-                $deleteResult = $return;
+                // $return = $this->getItems($entityBrowser, $select, $filter, $expand);
+                $deleteResult = [];//$return;
                 $deleteResult['deleteCount'] = $deleteCount;
             } catch (\Exception $ex) {
                 $deleteResult = [];
-            }
-         
+            }         
             return $deleteResult;
         } catch (\Exception $exc) {
             if ($retryCount < $this->maxRetries) {
