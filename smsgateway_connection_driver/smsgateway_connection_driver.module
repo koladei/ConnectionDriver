@@ -181,6 +181,7 @@ function smsgateway_connection_driver__get_entity_definitions()
                     , 'message' => [
                         'preferred_name' => 'Body'
                         , 'type' => 'string'
+                        , 'type_description' => 'MAX'
                     ]
                     , 'recipient' => [
                         'preferred_name' => 'Recipient'
