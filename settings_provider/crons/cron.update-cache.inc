@@ -71,6 +71,12 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
             $badLastRun = ($lastSyncInfo['time'] != $lastSyncInfo['continue_from'])?TRUE:FALSE;
                             
             if ($interval || ($badLastRun && $lastSyncInfo['failure_count'] < 10)) {
+                
+                try {
+                    $destination->ensureDataStructure($entity['internal_name']);
+                } catch (\Exception $exe){}
+
+
                 foreach ($entity['fields'] as $field) {
                     if($field['type'] != 'detail'){
                         $selectFields[] = $field['preferred_name'];
@@ -105,6 +111,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     $info->FileName = $ce->getFile();
                     $info->Created = $now->format('Y-m-d\TH:i:s');
                     $info->Modified = $now->format('Y-m-d\TH:i:s');
+
                     $sql->createItem('syncherrorlog', $info);
                 }
                 watchdog('SYNCING', 'ABGGG 1');
