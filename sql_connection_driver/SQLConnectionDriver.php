@@ -24,6 +24,173 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
         parent::__construct($driverLoader, $sourceLoader, $identifier);
     }
 
+    public function ensureDataStructureInternal($entityBrowser, &$connectionToken = null, array $otherOptions = []){
+        $source = $entityBrowser->getDataSourceName();
+        
+        // Get a connection token
+        if($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken($source))){
+            
+            try {
+                $pdo = new \PDO($connectionToken->DSN, $connectionToken->Username, $connectionToken->Password);
+                $pdo->exec('SET CHARACTER SET utf8');
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+                $createSQL = '';
+                $constraint = '';
+                $fields = $entityBrowser->getFieldsByInternalNames();
+                foreach($fields as $name => $field){
+                    $c = [];
+                    preg_match('/([\w\d\_]+)_\$LOOKUP\$/', $name, $c);
+                    if(count($c)){
+                        continue;
+                    }
+                    $nullable = 'NULL';
+
+                    if($field->getInternalName() == $entityBrowser->getIdField()->getInternalName()){
+                        $nullable = 'NOT NULL';
+                        $constraint = "CONSTRAINT {$entityBrowser->getInternalName()}_{$field->getInternalName()} UNIQUE({$field->getInternalName()})";
+                    }
+
+                    switch($field->getDataType()){
+                        case 'string': {
+                            $createSQL = "{$createSQL}, {$name} varchar({$field->getFieldDescription()}) {$nullable}";
+                            break;
+                        }
+                        case 'date':
+                        case 'datetime':{
+                            $createSQL = "{$createSQL}, {$name} datetime2(7) {$nullable}";
+                            break;
+                        }
+                        case 'int':{
+                            $createSQL = "{$createSQL}, {$name} int {$nullable}";
+                            break;
+                        }
+                        case 'decimal':{
+                            $createSQL = "{$createSQL}, {$name} decimal({$field->getFieldDescription()}) {$nullable}";
+                            break;
+                        }
+                        case 'boolean':{
+                            $createSQL = "{$createSQL}, {$name} bit {$nullable}";
+                            break;
+                        }
+                    }
+                }
+
+                $createSQL = trim($createSQL, ', ');
+                $constraint = strlen($constraint) > 0?", {$constraint}":'';
+
+                $createSQL = "
+                IF NOT EXISTS (select * from sysobjects where name='{$entityBrowser->getInternalName()}' and xtype='U')
+                CREATE TABLE {$entityBrowser->getInternalName()} (
+                    {$createSQL}{$constraint}
+                );";
+
+
+                $statement = $pdo->exec($createSQL);
+
+                // Query for the columns of the table
+                $stmt = $pdo->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='{$entityBrowser->getInternalName()}'");
+                $rs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $re = [];
+                foreach(array_values($rs) as $column) {
+                    // Remove unwanted columns
+                    if(!in_array($column['COLUMN_NAME'], array_keys($fields))){
+                        $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} DROP COLUMN {$column['COLUMN_NAME']}");
+                    } else {
+                        $re[$column['COLUMN_NAME']] = [];
+                        switch( $column['DATA_TYPE']) {
+                            case 'varchar':{
+                                $re[$column['COLUMN_NAME']]['type'] = 'string';
+                                $re[$column['COLUMN_NAME']]['type_description'] = $column['CHARACTER_MAXIMUM_LENGTH'];
+                                break;
+                            }
+                            case 'bit':{
+                                $re[$column['COLUMN_NAME']]['type'] = 'boolean';
+                                break;
+                            }
+                            case 'decimal':{
+                                $re[$column['COLUMN_NAME']]['type'] = 'decimal';
+                                $re[$column['COLUMN_NAME']]['type_description'] = "{$column['NUMERIC_PRECISION']},{$column['NUMERIC_SCALE']}";
+                                break;
+                            }
+                            case 'datetime2':{
+                                $re[$column['COLUMN_NAME']]['type'] = 'datetime';
+                                $re[$column['COLUMN_NAME']]['type_description'] = "{$column['NUMERIC_PRECISION']},{$column['NUMERIC_SCALE']}";
+                                break;
+                            }
+                            default:{
+                                $re[$column['COLUMN_NAME']]['type'] = $column['DATA_TYPE'];
+                                $re[$column['COLUMN_NAME']]['type_description'] = '255';
+                            }
+                        }
+                    }
+                }
+
+                // Add new columns
+                foreach($fields as $name => $field){
+                    $c = [];
+                    preg_match('/([\w\d\_]+)_\$LOOKUP\$/', $name, $c);
+                    if(count($c)){
+                        continue;
+                    }
+
+                    if(
+                        in_array($name, array_keys($re)) && 
+                        (
+                            $re[$name]['type'] == $field->getDataType() || 
+                            ($re[$name]['type'] == 'datetime' && $field->getDataType() == 'date')
+                        )
+                    ) {
+                        continue;
+                    } else {
+                        if(in_array($name, array_keys($re))){
+                            $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} DROP COLUMN {$name}");
+                        }
+                    };
+
+                    $nullable = 'NULL';
+
+                    switch($field->getDataType()){
+                        case 'string': {
+                            $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} ADD {$name} varchar({$field->getFieldDescription()}) {$nullable}");
+                            break;
+                        }
+                        case 'date':
+                        case 'datetime':{
+                            $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} ADD {$name} datetime2(7) {$nullable}");
+                            break;
+                        }
+                        case 'int':{
+                            $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} ADD {$name} int {$nullable}");
+                            break;
+                        }
+                        case 'decimal':{
+                            $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} ADD {$name} decimal({$field->getFieldDescription()}) {$nullable}");
+                            break;
+                        }
+                        case 'boolean':{
+                            $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} ADD {$name} bit {$nullable}");
+                            break;
+                        }
+                    }    
+                }
+                
+                return $re;
+
+            } catch (\Exception $e) {
+                throw new \Exception('Connection failed: ' . $e->getMessage());
+            }       
+
+            // Get the resulting data afresh
+            $selectFields = array_keys(get_object_vars($object));
+
+            return $this->getItemById($entityBrowser, $id, $selectFields);
+        } else {
+            throw new \Exception('The connection datasource settings could not be retrieved, contact the administrator.');
+        }
+    }
+
     /**
      * @override
      * Overrides the default implementation.
@@ -276,7 +443,6 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
     public function getItemsInternal($entityBrowser, &$connectionToken = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
         $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
         $source = $entityBrowser->getDataSourceName();
-        
 
         if($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken($source))){
             // Set defaults
