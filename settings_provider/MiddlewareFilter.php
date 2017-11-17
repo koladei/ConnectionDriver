@@ -281,6 +281,18 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
         $value = $this->value;
         $q = "'";
+
+        if(!is_null($this->fieldInfo)){
+            switch($this->fieldInfo->getDataType()){
+                case 'int':
+                case 'boolean':
+                case 'decimal': {
+                    $q = '';
+                    break;
+                }
+            }
+        }
+
         if ($value instanceof \DateTime) {
             $value = $value->format('Y-m-d\\TH:i:s\\Z');
         } else if (is_null($value)) {
@@ -305,17 +317,14 @@ class MiddlewareFilter extends MiddlewareFilterBase {
                 }
             case self::NOT_EQUAL_TO: {
                     $ret = "{$this->field} != {$q}{$value}{$q}";
-                    // $ret = "{$this->field} != {$this->quoteValue()}";
                     break;
                 }
             case self::EQUAL_TO: {
                     $ret = "{$this->field} = {$q}{$value}{$q}";
-                    // $ret = "{$this->field} = {$this->quoteValue()}";
                     break;
                 }
             case self::GREATER_THAN: {
                     $ret = "{$this->field} = {$q}{$value}{$q}";
-                    // $ret = "{$this->field} > {$this->quoteValue()}";
                     break;
                 }
             case self::GREATER_THAN_EQUAL_TO: {
