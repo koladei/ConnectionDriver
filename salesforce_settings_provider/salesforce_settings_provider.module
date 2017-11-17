@@ -560,11 +560,13 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Carry_Over_Amount__c' => [
                     'preferred_name' => 'CarryOverAmount'
-                    , 'type' => 'int'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Total__c' => [
                     'preferred_name' => 'Total'
-                    , 'type' => 'int'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Year__c' => [
                     'preferred_name' => 'Year'
