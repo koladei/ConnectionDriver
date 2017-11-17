@@ -514,7 +514,7 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'payable_commission' => [
             'internal_name' => 'Payable_Commission__c'
-            // , 'cache_to' => 'sql'
+            , 'cache_to' => 'sql'
             , 'cache_freq' => 60
             , 'fields' => [
                 'Name' => [
