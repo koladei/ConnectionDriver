@@ -202,25 +202,23 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'ValueDate'
                     , 'type' => 'datetime'
                 ]
-                , 'Type__c' => [
-                    'preferred_name' => 'Type'
-                    , 'type' => 'string'
-                ]
                 , 'Amount__c' => [
                     'preferred_name' => 'Amount'
                     , 'type' => 'string'
                 ]
                 , 'Commission__c' => [
                     'preferred_name' => 'Commission'
-                    , 'type' => 'string'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '15,3'
                 ]
                 , 'Conversion_Rate__c' => [
                     'preferred_name' => 'ConversionRate'
-                    , 'type' => 'string'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '5,13'
                 ]
                 , 'Commission_Computed__c' => [
                     'preferred_name' => 'CommissionComputed'
-                    , 'type' => 'string'
+                    , 'type' => 'boolean'
                 ]
                 , 'Narrative__c' => [
                     'preferred_name' => 'Narrative'
@@ -232,7 +230,8 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Commission_Rate__c' => [
                     'preferred_name' => 'CommissionRate'
-                    , 'type' => 'int'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '10,8'
                 ]
                 , 'Age_Of_Payment__c' => [
                     'preferred_name' => 'AgeOfPayment'
@@ -240,7 +239,8 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'ExchangeRate__c' => [
                     'preferred_name' => 'ExchangeRate'
-                    , 'type' => 'int'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Quarter__c' => [
                     'preferred_name' => 'Quarter'
@@ -254,7 +254,6 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Invoice__c' => [
                     'preferred_name' => 'InvoiceNumber'
                     , 'type' => 'string'
-                    , 'mandatory' => 1
                 ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
@@ -541,19 +540,23 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Amount_Paid__c' => [
                     'preferred_name' => 'AmountPaid'
-                    , 'type' => 'int'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Amount_Unpaid__c' => [
                     'preferred_name' => 'AmountDue'
-                    , 'type' => 'int'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Cash_Amount__c' => [
                     'preferred_name' => 'CashAmount'
-                    , 'type' => 'int'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Sale_Amount__c' => [
                     'preferred_name' => 'SaleAmount'
-                    , 'type' => 'int'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Carry_Over_Amount__c' => [
                     'preferred_name' => 'CarryOverAmount'
@@ -573,7 +576,7 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Trigger_Calculation__c' => [
                     'preferred_name' => 'TriggerCalculation'
-                    , 'type' => 'int'
+                    , 'type' => 'boolean'
                 ]
                 , 'Days_To_Quarter_End__c' => [
                     'preferred_name' => 'DaysToQuarterEnd'
