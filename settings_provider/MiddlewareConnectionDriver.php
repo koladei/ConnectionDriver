@@ -845,6 +845,32 @@ abstract class MiddlewareConnectionDriver
 
         try {
             if ($this->updateItemInternal($entityBrowser, $this->connectionToken, $id, $obj, $otherOptions)) {
+                // Try to write the update to the cache also
+                try {
+                    if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName())) {
+                        // Load the driver instead
+                        $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
+                        
+                        // Refactor the arguments to target the cache.
+                        $args = func_get_args();
+                        $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+                        $now = (new \DateTime())->format('Y-m-d');
+                        try {
+                            $cacheDriver->updateItem(...$args);
+                            $this->syncFromDate($entityBrowser, $now);
+                        } 
+                        // May be the datastructure is faulty
+                        catch(\Exception $exc){
+                            $cacheDriver->ensureDataStructure($args[0]);
+                            $cacheDriver->updateItem(...$args);
+                            $this->syncFromDate($entityBrowser, $now);
+                        }
+                    }
+                } 
+                // Fail silently
+                catch(\Exception $exp){}
+
+                // Return the item that was just updated.
                 return $this->getItemById($entityBrowser, $id, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             }
         } catch (\Exception $exc) {
@@ -931,6 +957,33 @@ abstract class MiddlewareConnectionDriver
         
         // Requery and return the created object.
         if (property_exists($res, 'd') && $res->success == true) {
+            // Try to write the update to the cache also
+            try {
+                if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName())) {
+                    // Load the driver instead
+                    $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
+                    
+                    // Refactor the arguments to target the cache.
+                    $args = func_get_args();
+                    $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+                    $args[1]->Id = $res->d;
+                    $args[2]['$setId'] = '1';
+                    $now = (new \DateTime())->format('Y-m-d');
+                    try {
+                        $cacheDriver->createItem(...$args);
+                        $this->syncFromDate($entityBrowser, $now);
+                    } 
+                    // May be the datastructure is faulty
+                    catch(\Exception $exc){
+                        $cacheDriver->ensureDataStructure($args[0]);
+                        $cacheDriver->createItem(...$args);
+                        $this->syncFromDate($entityBrowser, $now);
+                    }
+                }
+            } 
+            // Fail silently
+            catch(\Exception $exp){}
+
             $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             return $return;
         } 
