@@ -196,7 +196,7 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Year__c' => [
                     'preferred_name' => 'Year'
-                    , 'type' => 'integer'
+                    , 'type' => 'int'
                 ]
                 , 'Value_Date__c' => [
                     'preferred_name' => 'ValueDate'
