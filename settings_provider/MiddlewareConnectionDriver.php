@@ -109,7 +109,6 @@ abstract class MiddlewareConnectionDriver
             if(isset($this->utilityFunctions['date_sync_util'])){
                 $sync = $this->utilityFunctions['date_sync_util'];
                 $sourceDestination = implode('|', [$this->getIdentifier(), $entityBrowser->getCacheDriverName()]);
-                watchdog('SYNCING', 'ABGGG');
                 $sync($sourceDestination, $entityBrowser->getDisplayName(), $date);
             }
         }
