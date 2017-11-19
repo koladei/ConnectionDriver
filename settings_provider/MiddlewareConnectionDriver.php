@@ -601,7 +601,7 @@ abstract class MiddlewareConnectionDriver
         // If not stated otherwise, try to exclude already deleted items.
         if($includeDeleted){
             if($isDeletedField = $entityBrowser->hasField('IsDeleted')) {
-                $filter = strlen($filter) > 0 ? ' and IsDeleted eq $FALSE$':'IsDeleted eq $FALSE$'
+                $filter = strlen($filter) > 0 ? ' and IsDeleted eq $FALSE$':'IsDeleted eq $FALSE$';
             }
         }
 
