@@ -595,7 +595,15 @@ abstract class MiddlewareConnectionDriver
         $otherOptions['$orderBy'] = "{$entityBrowser->getIdField()->getInternalName()} ASC";
         
         // Set the default filter
-        $filter = strlen(trim($filter)) < 1 ? $this->getDefaultFilter() : $filter;
+        $filter = trim(strlen(trim($filter)) < 1 ? $this->getDefaultFilter() : $filter);
+        $includeDeleted = isset($otherOptions['$includeDeleted']) && ($otherOptions['$includeDeleted'] == '1')?TRUE:FALSE;
+
+        // If not stated otherwise, try to exclude already deleted items.
+        if($includeDeleted){
+            if($isDeletedField = $entityBrowser->hasField('IsDeleted')) {
+                $filter = strlen($filter) > 0 ? ' and IsDeleted eq $FALSE$':'IsDeleted eq $FALSE$'
+            }
+        }
 
         // Convert the select parameter into an array.
         $fields = is_array($fields) ? $fields : preg_split('@(?:\s*,\s*|^\s*|\s*$)@', $fields, null, PREG_SPLIT_NO_EMPTY);
@@ -716,16 +724,20 @@ abstract class MiddlewareConnectionDriver
             });
 
             // Fetch the related field values in one sweep
-            array_walk($expands, function (&$expand_val, $expand_key) use ($driverScope, $skipCache) {
+            array_walk($expands, function (&$expand_val, $expand_key) use ($driverScope, $skipCache, $includeDeleted) {
                 $localField = $expand_val['info'];
                 $remoteField = $expand_val['remoteFieldInfo'];
                 $remoteEntityBrowser = $remoteField->getParent();
                 $remoteDriver = $remoteEntityBrowser->getParent();
-                $otherOptions = ['$top' => 10000];
+                $otherOptions = ['$top' => 1000000000];
 
                 // Propagate $skipCache parameter
                 if($skipCache){
                     $otherOptions['$skipCache'] = '1';
+                }
+
+                if($includeDeleted){
+                    $otherOptions['$includeDeleted'] = '1';
                 }
 
                 if (!is_null($localField->getRemoteEntityFilter())) {
@@ -754,8 +766,6 @@ abstract class MiddlewareConnectionDriver
 
             // Attach the fetched values to their corresponding parents
             array_walk($result, function (&$record, $recordIndex) use ($entityBrowser, $expands) {
-
-
                 // Prepare to fetch expanded data
                 foreach ($expands as $expand_key => &$expand_val) {
                     $fieldInfo = &$expand_val['info'];

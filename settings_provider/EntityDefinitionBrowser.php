@@ -89,7 +89,6 @@ class EntityDefinitionBrowser
                     $this->redirectUpdateTo->driver = $this->getParent()->getIdentifier();
                 }
             }
-
             
             if(isset($definition['redirects']['delete'])){
                 $this->redirectDeleteTo = (object)$definition['redirects']['delete'];
@@ -360,6 +359,24 @@ class EntityDefinitionBrowser
         }
 
         return array_values($fieldNames);
+    }
+
+    /**
+     * Checks whether this entity has a field with the specified name and type.
+     */
+    public function hasField($name, $nameType = 'display'){
+        try {
+            switch($nameType){
+                case 'display':{
+                    return $this->getFieldByDisplayName($name);
+                }
+                default:{
+                    return $this->getFieldByInternalName($name);
+                }
+            }
+        } catch (\Exception $exp) {
+            return FALSE;
+        }
     }
 
     /**
