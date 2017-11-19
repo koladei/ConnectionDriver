@@ -599,13 +599,12 @@ abstract class MiddlewareConnectionDriver
         $includeDeleted = isset($otherOptions['$includeDeleted']) && ($otherOptions['$includeDeleted'] == '1')?TRUE:FALSE;
 
         // If not stated otherwise, try to exclude already deleted items.
-        if($includeDeleted){
+        if(!$includeDeleted){
             $isDeletedField = $entityBrowser->hasField('IsDeleted');
             if($isDeletedField != FALSE) {
                 $filter = strlen($filter) > 0 ? ' and IsDeleted eq $FALSE$':'IsDeleted eq $FALSE$';
             }
         }
-        watchdog('MIDDLEWARE', $filter);
 
         // Convert the select parameter into an array.
         $fields = is_array($fields) ? $fields : preg_split('@(?:\s*,\s*|^\s*|\s*$)@', $fields, null, PREG_SPLIT_NO_EMPTY);
