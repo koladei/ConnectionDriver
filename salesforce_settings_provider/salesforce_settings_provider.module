@@ -132,7 +132,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'CreatedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'LastModifiedDate' => [
@@ -147,7 +147,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'ModifiedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'NamespacePrefix' => [
@@ -272,7 +272,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'AccountManagerId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ],
                 ]
                 , 'Related_Account__c' => [
@@ -362,7 +362,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'CreatedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'LastModifiedDate' => [
@@ -377,7 +377,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'ModifiedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'Auxiliary_Circuit_ID__c' => [
@@ -604,7 +604,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'AccountManagerId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'Carried_To__c' => [
@@ -733,7 +733,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'OwnerId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'Description' => [
@@ -913,7 +913,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         'local_field' => 'Owner'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'Parent_Opportunity__c' => [
@@ -1151,7 +1151,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'CreatedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'LastModifiedById' => [
@@ -1162,7 +1162,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'ModifiedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
             ]
@@ -1231,7 +1231,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'CreatedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'LastModifiedById' => [
@@ -1242,7 +1242,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'ModifiedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , '_SubTerms' => [
@@ -1329,7 +1329,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'CreatedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'LastModifiedById' => [
@@ -1340,7 +1340,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'preferred_local_key_name' => 'ModifiedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
             ]
@@ -1411,7 +1411,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         'local_field' => 'Owner'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
                 , 'ModifiedBy' => [
@@ -1421,7 +1421,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         'local_field' => 'Owner'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'salesforce_user'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
             ]
@@ -1470,7 +1470,7 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
             ]
         ]
-        , 'salesforce_user' => [
+        , 'user' => [
             'internal_name' => 'User'
             , 'cache_to' => 'sql'
             , 'cache_freq' => 7200
@@ -1523,10 +1523,6 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Id'
                     , 'type' => 'string'
                     , 'mandatory' => 1
-                ]
-                , 'IsDeleted' => [
-                    'preferred_name' => 'IsDeleted'
-                    , 'type' => 'boolean',
                 ]
                 , '_Accounts' => [
                     'preferred_name' => 'Accounts'
@@ -1665,7 +1661,7 @@ function salesforce_settings_provider__get_entity_definitions()
         ]
         , 'contact' => [
             'internal_name' => 'Contact'
-            // , 'cache_to' => 'sql'
+            , 'cache_to' => 'sql'
             , 'cache_freq' => 60
             , 'fields' => [
                 'Id' => [
