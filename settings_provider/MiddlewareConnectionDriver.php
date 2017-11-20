@@ -602,7 +602,7 @@ abstract class MiddlewareConnectionDriver
         if(!$includeDeleted){
             $isDeletedField = $entityBrowser->hasField('IsDeleted');
             if($isDeletedField != FALSE) {
-                $filter = strlen($filter) > 0 ? ' and IsDeleted eq $FALSE$':'IsDeleted eq $FALSE$';
+                $filter = $filter.(strlen($filter) > 0 ? ' and IsDeleted eq $FALSE$':'IsDeleted eq $FALSE$');
             }
         }
 
