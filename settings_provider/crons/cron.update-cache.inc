@@ -114,7 +114,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
 
                     $sql->createItem('syncherrorlog', $info);
                 }
-                $newbieCount = count($newbie);
+                $newbieCount = count($newbies);
                 
                 $synched = 0;
                 foreach ($newbies as $newbie) {
