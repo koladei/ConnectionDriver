@@ -114,8 +114,8 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
 
                     $sql->createItem('syncherrorlog', $info);
                 }
-                watchdog('SYNCING', 'ABGGG 1');
-
+                $newbieCount = count($newbie);
+                
                 $synched = 0;
                 foreach ($newbies as $newbie) {
                     try {
@@ -173,6 +173,8 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                         $sql->createItem('syncherrorlog', $info);
                     }
                 }
+
+                watchdog("MIDDLEWRE CACHE {$entity['original_display_name']}", "DOWNLOADED {$newbieCount}, SYNCHED {$synched}", [], WATCHDOG_INFO);               
 
                 // If everything went on smoothly.
                 if($synched == count($newbies) && $generalErrorOccured != TRUE) {
