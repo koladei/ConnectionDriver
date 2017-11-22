@@ -95,7 +95,8 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                         '', 
                         [
                             '$all' => 1,
-                            '$skipCache' => 1
+                            '$skipCache' => 1,
+                            '$includeDeleted' => 1
                         ]
                     );
 
