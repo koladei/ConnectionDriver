@@ -209,12 +209,12 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Commission__c' => [
                     'preferred_name' => 'Commission'
                     , 'type' => 'decimal'
-                    , 'type_description' => '15,3'
+                    , 'type_description' => '13,5'
                 ]
                 , 'Conversion_Rate__c' => [
                     'preferred_name' => 'ConversionRate'
                     , 'type' => 'decimal'
-                    , 'type_description' => '5,13'
+                    , 'type_description' => '13,5'
                 ]
                 , 'Commission_Computed__c' => [
                     'preferred_name' => 'CommissionComputed'
