@@ -37,7 +37,7 @@ class EntityFieldDefinition {
                 $this->description = '16,2';
             }
         }
-        $this->description = (isset($fieldDefinition['type_descripition']) ? $fieldDefinition['type_descripition']: $this->description);
+        $this->description = (isset($fieldDefinition['type_description']) ? $fieldDefinition['type_description']: $this->description);
 
         $this->isAnArray = isset($fieldDefinition['is_array']) ? $fieldDefinition['is_array'] : 0;
         if ($this->type != 'detail' && isset($fieldDefinition['relationship'])) {
