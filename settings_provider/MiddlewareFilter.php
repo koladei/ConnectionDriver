@@ -369,15 +369,18 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
         switch ($this->operator) {
             case self::STARTS_WITH: {
-                    $ret = "'{$field}' LIKE '{$value}%'";
+                    $value = is_string($value)?substr($value, 1, strlen($value) - 2):$value;
+                    $ret = "'{$field}' LIKE \"{$value}%\"";
                     break;
                 }
             case self::ENDS_WITH: {
-                    $ret = "'{$field}' LIKE '%{$value}'";
+                    $value = is_string($value)?substr($value, 1, strlen($value) - 2):$value;
+                    $ret = "'{$field}' LIKE \"%{$value}\"";
                     break;
                 }
             case self::SUBSTRING_OF: {
-                    $ret = "'{$field}' LIKE '%{$value}%'";
+                    $value = is_string($value)?substr($value, 1, strlen($value) - 2):$value;
+                    $ret = "'{$field}' LIKE \"%{$value}%\"";
                     break;
                 }
             case self::NOT_EQUAL_TO: {
