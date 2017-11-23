@@ -968,7 +968,7 @@ function dynamics_connection_driver__get_entity_definitions() {
         ]
     ]];
 
-    $return['account'] = $return['dynamics']['rootaccount'];
+    $return['dynamics']['account'] = $return['dynamics']['rootaccount'];
 
     return $return;
 }
