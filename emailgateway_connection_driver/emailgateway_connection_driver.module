@@ -1,0 +1,299 @@
+<?php
+
+module_load_include('module', 'settings_provider');
+$module_path = drupal_get_path('module', 'emailgateway_connection_driver');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/EmailGatewayConnectionDriver.php');
+
+use com\mainone\middleware\EmailGatewayConnectionDriver;
+
+
+
+spl_autoload_register(function ($class_name) use($module_path) {
+    // Start from the base path and determine the location from the class name,
+    $base_path = $module_path . '\\php-ews';
+    $include_file1 = str_replace('\\', DIRECTORY_SEPARATOR, ($base_path . '\\' . str_replace('_', '\\', $class_name) . '.php'));
+    $include_file2 = str_replace('\\', DIRECTORY_SEPARATOR, ($base_path . '\\' . $class_name . '.php'));
+
+    return (file_exists($include_file1) ? require_once $include_file1 : (file_exists($include_file2) ? require_once $include_file2 : false));
+});
+
+/**
+ * Implement hook_menu().
+ */
+function emailgateway_connection_driver_menu()
+{
+    $items = [];
+
+    // Link to cache update cron
+    $items['emailgateway/update-sms-status'] = [
+        'page callback' => 'emailgateway_connection_driver__update_email_status'
+        , 'file' => 'crons/cron.update-email-status.inc'
+        , 'page arguments' => ['internal']
+        , 'access arguments' => ['access content']
+        , 'type' => MENU_CALLBACK
+    ];
+
+    return $items;
+}
+
+/**
+ * Implements hook_cron
+ *
+ * @return void
+ */
+function emailgateway_connection_driver_cron(){
+
+    // Get the current date and time
+    $now = new \DateTime();
+
+    // Get the last and next run time of the workflow
+    $emailgatewayupdateInfo = variable_get('SMSGATEWAY_UPDATEINFO', [
+        'lastrun' => '1998-01-01T00:00:00'
+        , 'frequency_min' => 30
+        , 'frequency_sec' => 30
+    ]);
+    $lastRun = \DateTime::createFromFormat('Y-m-d\TH:i:s', $emailgatewayupdateInfo['lastrun']);
+    $frequency = new \DateInterval("PT{$emailgatewayupdateInfo['frequency_min']}M{$emailgatewayupdateInfo['frequency_sec']}S");
+    $nextRun = \DateTime::createFromFormat('Y-m-d\TH:i:s', $emailgatewayupdateInfo['lastrun']);
+    $nextRun->add($frequency);
+        
+    // Invoke the workflow if it is due to run.
+    if($now > $nextRun) {      
+        watchdog('SMSGATEWAY', 'About to check SMS delivery status.', [], WATCHDOG_NOTICE);  
+        global $base_url;
+    
+        $tokenOption = [
+            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
+            , CURLOPT_PROTOCOLS => CURLPROTO_HTTPS
+            , CURLOPT_SSL_VERIFYPEER => FALSE
+            , CURLOPT_SSL_VERIFYHOST => 0
+            , CURLOPT_FOLLOWLOCATION => TRUE
+            , CURLOPT_HTTPPROXYTUNNEL => TRUE
+            , CURLOPT_VERBOSE => TRUE
+        ];
+
+        mware_http_request("{$base_url}/emailgateway/update-sms-status", ['options' => $tokenOption, 'callback' => function($event) use ($now, $emailgatewayupdateInfo){
+            $emailgatewayupdateInfo['lastrun'] = $now->format('Y-m-d\TH:i:s');
+            variable_set('SMSGATEWAY_UPDATEINFO', $emailgatewayupdateInfo);
+            watchdog('SMSGATEWAY', 'Finished checking SMS delivery status', [], WATCHDOG_NOTICE);
+        }]);
+    }
+    
+    // TODO: IMPLEMENT A CONCURRENCY CHECK CONTROL FEATURE SO THAT MORETHAN 1 INSTANCE OF THIS WORKFLOW IS NOT STARTED.
+}
+
+function emailgateway_connection_driver_connection_driver_emailgateway_alter(&$container)
+{
+    $driver = new EmailGatewayConnectionDriver(function ($x) {
+        $return = mware_connection_driver__get_driver($x);
+        return $return;
+    }, function ($source_name) {
+        return emailgateway_connection_driver__get_settings($source_name);
+    }, 'emailgateway');
+
+    $defs = emailgateway_connection_driver__get_entity_definitions_local();
+    $driver->setEntities($defs);
+    $container['emailgateway'] = $driver;
+}
+
+function emailgateway_connection_driver__get_settings($key)
+{
+    $settings = new \stdClass();
+
+    $settings->server = variable_get('MWARE_EMAIL_SMS_MAILBOX_SERVER', 'hostname');
+    $settings->username = variable_get('MWARE_EMAIL_SMS_MAILBOX_USER_NAME', 'username');
+    $settings->password = variable_get('MWARE_EMAIL_SMS_MAILBOX_USER_PASSWORD', 'password');
+
+    return $settings;
+}
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function emailgateway_connection_driver_permission()
+{
+    $permission = [];
+
+    return $permission;
+}
+
+/**
+ * Confirms if a user should be allowed to access something.
+ * @param type $args
+ * @return boolean
+ */
+function emailgateway_connection_driver__user_access($args)
+{
+    return true;
+}
+
+
+/**
+ * Returns entity definitions that have been marked as cacheable to the specified entity.
+ *
+ * @param String $targetDriver the connection driver to use to retrieve the cache.
+ * @return void
+ */
+function emailgateway_connection_driver__get_cached_entity_definitions($targetDriver)
+{
+    return settings_provider__format_cached_definition('emailgateway', $targetDriver, function(){
+        $args = func_get_args();
+        $return = emailgateway_connection_driver__get_entity_definitions_local(...$args);
+        return $return;
+    });
+}
+
+/**
+ *
+ * Returns entity definitions that have been marked as cacheable to the specified entity.
+ *
+ * @param String $targetDriver the connection driver to use to retrieve the cache.
+ * @return void
+ */
+function emailgateway_connection_driver__get_delegated_entity_definitions($targetDriver)
+{
+    return settings_provider__format_delegated_definition('emailgateway', $targetDriver, function () {
+        $args = func_get_args();
+        $return = emailgateway_connection_driver__get_entity_definitions_local(...$args);
+        return $return;
+    });
+}
+
+function emailgateway_connection_driver__get_entity_definitions_local()
+{
+    return emailgateway_connection_driver__get_entity_definitions(...func_get_args())['emailgateway'];
+}
+
+/**
+ * Returns all the entity definitions implemented in Dynamics AX.
+ * @return type
+ */
+function emailgateway_connection_driver__get_entity_definitions()
+{
+    $return = [
+        'emailgateway'=> [
+            'mails' => [
+                'internal_name' => 'Email'
+                , 'cache_to' => 'sql'
+                , 'cache_freq' => 360
+                // , 'manage_timestamps' => TRUE
+                , 'fields' => [
+                    'Id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'ChangeKey' => [
+                        'preferred_name' => 'ChangeKey'
+                        , 'type' => 'string'
+                    ]
+                    , 'DateTimeCreated' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'ALIAS__DateTimeCreated' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'DateTimeSent' => [
+                        'preferred_name' => 'Sent'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Body' => [
+                        'preferred_name' => 'Body'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
+                    , 'BodyType' => [
+                        'preferred_name' => 'BodyType'
+                        , 'type' => 'string'
+                    ]
+                    , 'CcRecipients' => [
+                        'preferred_name' => 'CcRecipients'
+                        , 'type' => 'string'
+                    ]
+                    , 'ToRecipients' => [
+                        'preferred_name' => 'ToRecipients'
+                        , 'type' => 'string'
+                    ]
+                    , 'Subject' => [
+                        'preferred_name' => 'Subject'
+                        , 'type' => 'string'
+                    ]
+                    , 'Sender' => [
+                        'preferred_name' => 'From'
+                        , 'type' => 'string'
+                    ]
+                    , 'IsRead' => [
+                        'preferred_name' => 'IsRead'
+                        , 'type' => 'boolean'
+                    ]
+                ]
+            ]
+            , 'emailgatewayinfo' => [
+                'internal_name' => 'EmailGatewayInfo'
+                , 'delegate_to' => 'sql'
+                , 'manage_timestamps' => TRUE
+                , 'fields' => [
+                    'id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'createdby' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'modifiedby' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                    ]
+                    , 'status' => [
+                        'preferred_name' => 'Status'
+                        , 'type' => 'string'
+                    ]
+                    , 'description' => [
+                        'preferred_name' => 'Description'
+                        , 'type' => 'string'
+                    ]
+                    , 'service_type' => [
+                        'preferred_name' => 'ServiceType'
+                        , 'type' => 'string'
+                    ]
+                ]
+            ]
+        ]
+    ];
+
+    return $return;
+}

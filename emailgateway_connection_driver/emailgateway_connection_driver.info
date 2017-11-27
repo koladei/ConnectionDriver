@@ -1,0 +1,8 @@
+name = Email Gateway Connection Driver
+description = Enables the Middleware to communicate with Email Gateway servers.
+configure = admin/config/administration/settings_provider
+dependencies[] = settings_provider
+dependencies[] = sql_connection_driver
+package = MainOne
+version = 7.x-1.0 
+core = 7.x
