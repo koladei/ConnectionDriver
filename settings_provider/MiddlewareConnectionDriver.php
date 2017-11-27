@@ -531,7 +531,16 @@ abstract class MiddlewareConnectionDriver
             // Return the results from the cache driver.
             $args = func_get_args();
             $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
-            $return = $delegateDriver->getItems(...$args);
+            
+            try {
+                $return = $delegateDriver->getItems(...$args);
+            } 
+            // May be the datastructure is faulty
+            catch(\Exception $exc){
+                $delegateDriver->ensureDataStructure($args[0]);
+                $this->syncFromDate($entityBrowser);
+                $return = $delegateDriver->getItems(...$args);
+            }
             return $return;
         }
 

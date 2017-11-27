@@ -161,6 +161,17 @@ function sql_connection_driver__get_entity_definitions()
                             , 'remote_driver' => 'bmc_remedy'
                         ]
                     ]
+                    , '_DynamicsAccountInformation' => [
+                        'preferred_name' => 'RelatedDynamicsAccount'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'SystemKey'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'cust_table'
+                            , 'remote_driver' => 'dynamics'
+                        ]
+                    ]
                     , '_AdvancedInfo' => [
                         'preferred_name' => 'AdvancedInformation'
                         , 'type' => 'detail'
@@ -366,12 +377,151 @@ function sql_connection_driver__get_entity_definitions()
                     , 'logic' => [
                         'preferred_name' => 'Logic'
                         , 'type' => 'string'
-                        , 'length' => 'unlimited'
+                        , 'type_description' => 'MAX'
                     ]
                     , 'wsdl' => [
                         'preferred_name' => 'WSDL'
                         , 'type' => 'string'
-                        , 'length' => 'unlimited'
+                        , 'type_description' => 'MAX'
+                    ]
+                ]
+            ]
+            , 'rest_endpoints' => [
+                'internal_name' => 'RESTEndPoints'
+                , 'manage_timestamps' => TRUE
+                , 'fields' => [
+                    'id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'createdby' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'modifiedby' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                    ]
+                    , 'status' => [
+                        'preferred_name' => 'Status'
+                        , 'type' => 'string'
+                    ]
+                    , 'description' => [
+                        'preferred_name' => 'Description'
+                        , 'type' => 'string'
+                    ]
+                    , 'script' => [
+                        'preferred_name' => 'Logic'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
+                    , 'url' => [
+                        'preferred_name' => 'URL'
+                        , 'type' => 'string'
+                        , 'type_description' => '1024'
+                    ]
+                ]
+            ]
+            , 'mail_endpoints' => [
+                'internal_name' => 'MailEndPoints'
+                , 'manage_timestamps' => TRUE
+                , 'fields' => [
+                    'id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'createdby' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'modifiedby' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                    ]
+                    , 'status' => [
+                        'preferred_name' => 'Status'
+                        , 'type' => 'string'
+                    ]
+                    , 'description' => [
+                        'preferred_name' => 'Description'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
+                    , 'logic' => [
+                        'preferred_name' => 'Logic'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
+                    , 'sender' => [
+                        'preferred_name' => 'Sender'
+                        , 'type' => 'string'
+                        , 'length' => '1024'
+                    ]
+                    , 'is_pulled' => [
+                        'preferred_name' => 'IsPulled'
+                        , 'type' => 'boolean'
+                    ]
+                    , 'next_pull' => [
+                        'preferred_name' => 'NextPull'
+                        , 'type' => 'datetime'
                     ]
                 ]
             ]

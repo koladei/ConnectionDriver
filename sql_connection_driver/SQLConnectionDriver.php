@@ -441,7 +441,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
      * @throws \Exception when something goes wrong.
      */
     public function getItemsInternal($entityBrowser, &$connectionToken = NULL, array $select, $filter, $expands = [], $otherOptions = []) {
-        $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
+        // $entityBrowser = ($entityBrowser instanceof EntityDefinitionBrowser) ? $entityBrowser : $this->entitiesByInternalName[$entityBrowser];
         $source = $entityBrowser->getDataSourceName();
 
         if($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken($source))){

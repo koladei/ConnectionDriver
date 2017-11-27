@@ -75,6 +75,38 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
             switch ($functionName) {
 
+                case 'sendEmailMessage': {
+                    return $this->sendEmail($objects, $connectionToken, $otherOptions);
+                }
+                default:{
+                    throw new \Exception("Sorry! the function '{$functionName}' is not supported yet.");
+                }
+            }
+        } else {
+            throw new \Exception('There was a problem getting the connection token');
+        }
+    }    
+
+    // public function executeEntityFunctionInternal($entityBrowser, $functionName, array $objects = [], &$connectionToken = null, array $otherOptions = [])
+    // {
+    //     if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+    //         switch ($functionName) {
+    //             case 'sendEmailMessage': {
+    //                 return $this->markMessageAsRead($objects, $connectionToken, $otherOptions);
+    //             }
+    //             default:{
+    //                 throw new \Exception("Sorry! the function '{$functionName}' is not supported yet.");
+    //             }
+    //         }
+    //     } else {
+    //         throw new \Exception('There was a problem getting the connection token');
+    //     }
+    // }
+    
+    public function executeEntityItemFunctionInternal($entityBrowser, $id, $functionName, array $data = [], &$connectionToken = null, array $otherOptions = [])
+    {
+        if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
+            switch ($functionName) {
                 case 'markMessageAsRead': {
                     return $this->markMessageAsRead($objects, $connectionToken, $otherOptions);
                 }
@@ -91,7 +123,7 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
         // Get a connection reference
         if (($ews = (!is_null($ews) ? $ews : $this->getConnectionToken()))) {
 
-            $this->sendEmail(['to'=>'kolade.ige@mainone.net', 'cc'=>'theophilus.ajayi@mainone.net', 'bc'=>'amir.sanni@mainone.net', 'subject' => 'I am here', 'body' => 'Na wa o'], $ews);
+            // $this->sendEmail(['to'=>'kolade.ige@mainone.net', 'cc'=>'theophilus.ajayi@mainone.net', 'bc'=>'amir.sanni@mainone.net', 'subject' => 'I am here', 'body' => 'Na wa o'], $ews);
                 
             $request = new EWSType_FindItemType();
     
@@ -228,25 +260,25 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             }
             
             $ccAddresses = [];
-            foreach($cc as $to){
+            foreach($ccs as $cc){
                 $toAdd = new EWSType_EmailAddressType();
-                $toAdd->EmailAddress = $to;
+                $toAdd->EmailAddress = $cc;
                 $ccAddresses[] = $toAdd;
             }
             
-            $bccAddresses = [];
-            foreach($bccs as $to){
-                $toAdd = new EWSType_EmailAddressType();
-                $toAdd->EmailAddress = $to;
-                $bccAddresses[] = $toAdd;
-            }
+            // $bccAddresses = [];
+            // foreach($bccs as $to){
+            //     $toAdd = new EWSType_EmailAddressType();
+            //     $toAdd->EmailAddress = $to;
+            //     $bccAddresses[] = $toAdd;
+            // }
 
             $msg->ToRecipients = $toAddresses;
             $msg->CcRecipients = $ccAddresses;
-            $msg->BcRecipients = $bccAddresses;
+            // $msg->BcRecipients = $bccAddresses;
             
             $fromAddress = new EWSType_EmailAddressType();
-            $fromAddress->EmailAddress = isset($message['from'])?$message['from']:'test.sharepoint@mainone.net';
+            $fromAddress->EmailAddress = isset($message['from'])?$message['from']:'kolade.ige@mainone.net';
 
             $msg->From = new EWSType_SingleRecipientType();
             $msg->From->Mailbox = $fromAddress;
