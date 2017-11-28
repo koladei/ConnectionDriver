@@ -1111,6 +1111,18 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_driver' => 'salesforce'
                     ]
                 ]
+                , 'PricebookEntryId' => [
+                    'preferred_name' => 'PricebookEntry'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'PricebookEntry'
+                        , 'preferred_local_key_name' => 'PricebookEntryId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'pricebook_entry'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
                 , 'Originating_Address__c' => [
                     'preferred_name' => 'OriginatingAddress'
                     , 'type' => 'string'
@@ -1466,6 +1478,152 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'record_types'
                         , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+            ]
+        ]
+        , 'pricebook' => [
+            'internal_name' => 'Pricebook2'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
+            , 'fields' => [
+                'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]   
+                , 'IsActive' => [
+                    'preferred_name' => 'IsActive'
+                    , 'type' => 'boolean',
+                ]
+                , 'Company__c' => [
+                    'preferred_name' => 'Company'
+                    , 'type' => 'string'
+                ]
+                , 'CreatedById' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CreatedBy'
+                        , 'preferred_local_key_name' => 'CreatedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                    ]
+                ]
+                , 'LastModifiedById' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                    ]
+                ]
+            ]
+        ]
+        , 'pricebook_entry' => [
+            'internal_name' => 'PricebookEntry'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
+            , 'fields' => [
+                'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'CurrencyIsoCode' => [
+                    'preferred_name' => 'CurrencyCode'
+                    , 'type' => 'string'
+                ]
+                , 'UnitPrice' => [
+                    'preferred_name' => 'UnitPrice'
+                    , 'type' => 'decimal'
+                ]
+                , 'UseStandardPrice' => [
+                    'preferred_name' => 'CurrencyCode'
+                    , 'type' => 'boolean'
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]   
+                , 'IsActive' => [
+                    'preferred_name' => 'IsActive'
+                    , 'type' => 'boolean',
+                ]
+                , 'Pricebook2Id' => [
+                    'preferred_name' => 'Pricebook'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Pricebook'
+                        , 'preferred_local_key_name' => 'PricebookId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'pricebook'
+                    ]
+                ]
+                , 'Product2Id' => [
+                    'preferred_name' => 'Product'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Product'
+                        , 'preferred_local_key_name' => 'ProductId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'product'
+                    ]
+                ]
+                , 'CreatedById' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CreatedBy'
+                        , 'preferred_local_key_name' => 'CreatedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                    ]
+                ]
+                , 'LastModifiedById' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
                     ]
                 ]
             ]
