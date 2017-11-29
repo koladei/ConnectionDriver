@@ -1309,6 +1309,7 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Custom_Description__c' => [
                     'preferred_name' => 'AdditionalDescription'
                     , 'type' => 'string'
+                    , 'type_description' => 'MAX'
                 ]
                 , 'Weight__c' => [
                     'preferred_name' => 'Weight'
