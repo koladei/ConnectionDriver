@@ -989,14 +989,22 @@ abstract class MiddlewareConnectionDriver
                     $args = func_get_args();
                     $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
                     $args[1]->Id = $res->d;
+
+                    // Since we ommit items that are deleted, set this one as not deleted
+                    if($entityBrowser->hasField('IsDeleted')){
+                        $args[1]->IsDeleted = FALSE;
+                    }
+
                     $args[2]['$setId'] = '1';
                     $now = (new \DateTime())->format('Y-m-d');
                     try {
+                        // var_dump(['creating in cache']);
                         $cacheDriver->createItem(...$args);
                         $this->syncFromDate($entityBrowser, $now);
                     } 
                     // May be the datastructure is faulty
                     catch(\Exception $exc){
+                        // var_dump(['error creating in cache'.$exc->getMessage()]);
                         $cacheDriver->ensureDataStructure($args[0]);
                         $cacheDriver->createItem(...$args);
                         $this->syncFromDate($entityBrowser, $now);
