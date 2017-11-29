@@ -890,6 +890,15 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'ComputedThirdPartyNRC'
                     , 'type' => 'decimal'
                 ]
+                , 'SOF_Status__c' => [
+                    'preferred_name' => 'SOFStatus'
+                    , 'type' => 'string'
+                ]
+                , 'SOF_Request_Comments__c' => [
+                    'preferred_name' => 'SOFRequestComments'
+                    , 'type' => 'string'
+                    , 'type_description' => 'MAX'
+                ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
                     , 'type' => 'boolean',
