@@ -874,6 +874,8 @@ abstract class MiddlewareConnectionDriver
                         // Refactor the arguments to target the cache.
                         $args = func_get_args();
                         $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+
+                        // Try to sync the cache
                         $now = (new \DateTime())->format('Y-m-d');
                         try {
                             $cacheDriver->updateItem(...$args);
@@ -1035,7 +1037,7 @@ abstract class MiddlewareConnectionDriver
             // Execute the update provider's update method.
             $args = func_get_args();
             $args[0] = $providerInfo->entity;
-            $return = $driver->deleteItem(...$args);
+            $return = $driver->deleteItem(...$args);            
             return $return;
         }
 
@@ -1063,14 +1065,61 @@ abstract class MiddlewareConnectionDriver
             $expand = isset($otherOptions['$expand'])?$otherOptions['$expand']:'';
 
             $deleteCount = $deleteResult->d;
-            try {
-                // $return = $this->getItems($entityBrowser, $select, $filter, $expand);
-                $deleteResult = [];//$return;
-                $deleteResult['deleteCount'] = $deleteCount;
-            } catch (\Exception $ex) {
-                $deleteResult = [];
-            }         
-            return $deleteResult;
+            if($deleteCount > 0){
+                try {
+                    // $return = $this->getItems($entityBrowser, $select, $filter, $expand);
+                    $deleteResult = ['status' => 'success'];//$return;
+                    $deleteResult['deleteCount'] = $deleteCount;
+
+                    // Try marking it as deleted or deleting it in the cache also
+                    if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName())) {
+                        // Load the driver instead
+                        $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
+                        
+                        // Refactor the arguments to target the cache.
+                        $args = func_get_args();
+                        $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+                        $today = (new \DateTime())->format('Y-m-d');
+
+                        // Mark as deleted
+                        if($entityBrowser->hasField('IsDeleted')){    
+                            $update = new \stdClass();
+                            $update->Id = $id;
+                            $update->IsDeleted = TRUE;
+                            try {
+                                $cacheDriver->updateItem($args[0], $id, $update, $otherOptions);
+                                $this->syncFromDate($entityBrowser, $today);
+                            } 
+                            // May be the datastructure is faulty
+                            catch(\Exception $exc){
+                                $cacheDriver->ensureDataStructure($args[0]);
+                                $cacheDriver->updateItem($args[0], $id, $update, $otherOptions);
+                                $this->syncFromDate($entityBrowser, $today);
+                            }
+                        } 
+                        else 
+                        // Otherwise, delete from the cache
+                        {
+                            try {
+                                $cacheDriver->deleteItem(...$args);
+                                $this->syncFromDate($entityBrowser, $today);
+                            } 
+                            // May be the datastructure is faulty
+                            catch(\Exception $exc){
+                                $cacheDriver->ensureDataStructure($args[0]);
+                                $cacheDriver->deleteItem(...$args);
+                                $this->syncFromDate($entityBrowser, $today);
+                            }
+                        }
+                    }
+                } catch (\Exception $ex) {
+                    $deleteResult = [
+                        'status' => 'failure'
+                    ];
+                }                
+                
+                return $deleteResult;
+            }            
         } catch (\Exception $exc) {
             if ($retryCount < $this->maxRetries) {
                 return $this->deleteItem($entityBrowser, $id, $otherOptions);
@@ -1078,6 +1127,48 @@ abstract class MiddlewareConnectionDriver
                 throw $exc;
             }
         }
+
+        // Requery and return the created object.
+        // if (property_exists($res, 'd') && $res->success == true) {
+        //     // Try to write the update to the cache also
+        //     try {
+        //         if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName())) {
+        //             // Load the driver instead
+        //             $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
+                    
+        //             // Refactor the arguments to target the cache.
+        //             $args = func_get_args();
+        //             $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+        //             $args[1]->Id = $res->d;
+        //             $args[2]['$setId'] = '1';
+        //             $now = (new \DateTime())->format('Y-m-d');
+        //             try {
+        //                 $cacheDriver->createItem(...$args);
+        //                 $this->syncFromDate($entityBrowser, $now);
+        //             } 
+        //             // May be the datastructure is faulty
+        //             catch(\Exception $exc){
+        //                 $cacheDriver->ensureDataStructure($args[0]);
+        //                 $cacheDriver->createItem(...$args);
+        //                 $this->syncFromDate($entityBrowser, $now);
+        //             }
+        //         }
+        //     } 
+        //     // Fail silently
+        //     catch(\Exception $exp){}
+
+        //     $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+        //     return $return;
+        // } 
+        
+        // // Otherwise, if something is wrong, retry
+        // else {
+        //     if ($retryCount < $this->maxRetries) {
+        //         return $this->createItem($entityBrowser, $object, $otherOptions);
+        //     } else {
+        //         throw new \Exception("Unable to create a new record in {$entityBrowser->getDisplayName()} of ".__CLASS__);
+        //     }
+        // }
     }
 
     public function fetchFieldValues($record, $selected_field)
