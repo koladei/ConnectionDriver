@@ -175,7 +175,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     }
                 }
 
-                watchdog("MIDDLEWRE CACHE {$entity['original_display_name']}", "DOWNLOADED {$newbieCount}, SYNCHED {$synched}", [], WATCHDOG_INFO);               
+                // watchdog("MIDDLEWRE CACHE {$entity['original_display_name']}", "DOWNLOADED {$newbieCount}, SYNCHED {$synched}", [], WATCHDOG_INFO);               
 
                 // If everything went on smoothly.
                 if($synched == count($newbies) && $generalErrorOccured != TRUE) {
@@ -193,15 +193,24 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     // After 10 errored tries, move forward but log the problem.
                     if($lastSyncInfo['failure_count'] > 10){
                         //Send a mail to appdev team.
-                        $message = "There has been multiple failures synching {$entity['original_display_name']} from {$from} to {$to}.<br/>
-                        Failure count is {$lastSyncInfo['failure_count']}.";
-                        $params = [
-                            'subject' => t('Multiple Cache Synch Errors'),
-                            'body' => check_markup(t($message),'plain_text'),
-                        ];
+                        $message = "There has been multiple failures synching {$entity['original_display_name']} {$sourceDestination}.<br/>
+                        Failure count is {$lastSyncInfo['failure_count']}.";                        
                         $admin_mail = variable_get('site_mail', ini_get('sendmail_from'));
 
-                        drupal_mail('mware_sms', 'cache_synch_error', $admin_mail, language_default(), $params);
+                        try {                            
+                            $emailDriver = mware_connection_driver__get_driver('emailgateway');
+                            if($emailDriver){                                
+                                $emailDriver->executeFunction('sendEmailMessage', [
+                                    'to'=> [$admin_mail], 
+                                    'cc'=> [], 
+                                    'bc'=> [],
+                                    'subject' => t('Multiple Cache Synch Errors'), 
+                                    'body' => $message
+                                ]);
+                            }
+                        } catch (\Exception $exp){}
+
+                        // drupal_mail('mware_sms', 'cache_synch_error', $admin_mail, language_default(), $params);
                         
 
                         // $lastSyncInfo['continue_from'] = $now->format('Y-m-d\TH:i:s'); // Experimentally ommitted.
