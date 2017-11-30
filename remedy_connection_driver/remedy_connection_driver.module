@@ -849,6 +849,7 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Service_Account_Name__c' => [
                     'preferred_name' => 'Name'
+                    , 'preferred_query_name' => 'Service Account Name__c'
                     , 'type' => 'string'
                 ]
                 , 'Escalation_List__c' => [
@@ -1011,6 +1012,17 @@ function remedy_connection_driver__get_entity_definitions() {
                 , 'Customer_Escalation_List__c' => [
                     'preferred_name' => 'EscalationList'
                     , 'type' => 'string'
+                ]
+                , '_SalesforcePair' => [
+                    'preferred_name' => 'SalesforcePair'
+                    , 'type' => 'parent'
+                    , 'relationship' => [
+                        'local_field' => 'Name'
+                        , 'remote_field' => 'Name'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product'
+                        , 'remote_driver' => 'salesforce'
+                    ],
                 ]
             ]
         ]
