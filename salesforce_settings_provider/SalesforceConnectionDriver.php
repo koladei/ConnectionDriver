@@ -408,19 +408,17 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
      * Returns a connection token to aid communication with the datasource.
      * @return boolean
      */
-    private function getConnectionToken() {
+    private function getConnectionToken($force = FALSE) {
         $t = self::retrieveValue('SF_access_token', NULL);
-        $age = new \DateInterval('PT1H');
-        $ten_minutes = new \DateInterval('PT10M');
+        $age = new \DateInterval('PT1H0M');
+        $ten_minutes = new \DateInterval('PT0H10M');
         $now = new \DateTime();
 
-        if(!is_null($t) && array_key_exists('last_update', $t)){
+        if(!$force && !is_null($t) && array_key_exists('last_update', $t)){
             try{
                 $age = $now->diff((\DateTime::createFromFormat('Y-m-d\TH:i:s', $t['last_update'])));
-
-                // $comparator = DateIntervalCompoarator();
-                // echo $comparator->compare($age, $ten_minutes);
-                if(intval($age->format('i')) <= 10){
+                
+                if(intval($age->format('i')) <= 15){
                     return $t['token'];
                 }
             }catch(\Exception $e){}
@@ -460,7 +458,6 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             $feed = mware_blocking_http_request($uri, ['options' => $tokenOption, 'block' => true]);
             $token_response = json_decode($feed->getContent());
 
-
             if(!is_null($token_response) && property_exists($token_response, 'access_token')){
                 $token_response->ConnectionParameters = $sf_settings;
                 self::storeValue('SF_access_token', ['token' => $token_response,  'last_update' => $now->format('Y-m-d\TH:i:s')]);
@@ -468,6 +465,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
             } else {
                 return FALSE;
             }
+            
         } catch (Exception $x) {
             return FALSE;
         }
