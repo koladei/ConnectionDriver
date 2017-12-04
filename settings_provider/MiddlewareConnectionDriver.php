@@ -1015,8 +1015,15 @@ abstract class MiddlewareConnectionDriver
             // Fail silently
             catch(\Exception $exp){}
 
-                // var_dump($entityBrowser->getInternalName());
-            $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+            $autoFetch = !isset($otherOptions['$autoFetch'])?TRUE:(
+                (isset($otherOptions['$autoFetch']) && (''.$otherOptions['$autoFetch']) == '1')?TRUE:FALSE
+            );
+
+            if($autoFetch){
+                $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+            } else {
+                return $res->d;
+            }
             return $return;
         } 
         
