@@ -80,7 +80,7 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 $getListInputMap = new \stdClass();
 
                 //execute the query
-                // var_dump(get_class_methods($client));
+                // var_dump($object);
                 try {
                     //get the result
                     $d = $client->{$methods->create}($object);
