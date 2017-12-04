@@ -65,7 +65,8 @@ abstract class MiddlewareConnectionDriver
     }
 
     public function ensureDataStructureInternal($entityBrowser, &$connectionToken = null, array $otherOptions = []){
-        throw new \Exception('Not yet implemented');
+        // throw new \Exception('Not yet implemented');
+        return NULL;
     }
 
     /**
@@ -492,7 +493,7 @@ abstract class MiddlewareConnectionDriver
             } 
             // May be the datastructure is faulty
             catch(\Exception $exc){
-                $cacheDriver->ensureDataStructure($args[0]);
+                $driver->ensureDataStructure($args[0]);
                 $return = $driver->getItems(...$args);
             }
             
@@ -1014,6 +1015,7 @@ abstract class MiddlewareConnectionDriver
             // Fail silently
             catch(\Exception $exp){}
 
+                // var_dump($entityBrowser->getInternalName());
             $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             return $return;
         } 
