@@ -341,6 +341,14 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Description'
                     , 'type' => 'string'
                 ]
+                , 'Service_Type' => [
+                    'preferred_name' => 'ServiceType'
+                    , 'type' => 'string'
+                ]
+                , 'Urgency' => [
+                    'preferred_name' => 'Urgency'
+                    , 'type' => 'string'
+                ]
                 , 'Localization' => [
                     'preferred_name' => 'Localization'
                     , 'type' => 'string'
