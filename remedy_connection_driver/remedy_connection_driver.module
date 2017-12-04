@@ -288,6 +288,10 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'remote_driver' => 'salesforce'
                     ],
                 ]
+                , 'Reported_Source' => [
+                    'preferred_name' => 'ReportedSource'
+                    , 'type' => 'string'
+                ]
                 , 'Submit_Date' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
@@ -365,6 +369,18 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'RootCause'
                     , 'type' => 'string'
                 ]
+                , 'Assigned_Group' => [
+                    'preferred_name' => 'AssignedGroup'
+                    , 'type' => 'string'
+                ]
+                , 'Assigned_Support_Company' => [
+                    'preferred_name' => 'AssignedSupportCompany'
+                    , 'type' => 'string'
+                ]
+                , 'Assigned_Support_Organization' => [
+                    'preferred_name' => 'AssignedSupportOrganization'
+                    , 'type' => 'string'
+                ]
                 , 'IncidentStartTime' => [
                     'preferred_name' => 'StartTime'
                     , 'type' => 'datetime'
@@ -389,26 +405,6 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'objects'
                         , 'remote_driver' => 'ldap'
                         , 'filter' => 'ObjectClass eq \'person\''
-                    ]
-                ]
-                , '_WorkLog' => [
-                    'preferred_name' => 'WorkLog'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'Id'
-                        , 'remote_field' => 'Incident'
-                        , 'remote_type' => 'child'
-                        , 'remote_entity' => 'incidentworklog'
-                    ]
-                ]
-                , '_Service' => [
-                    'preferred_name' => 'Service'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'CircuitID'
-                        , 'remote_field' => 'Name'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'service'
                     ]
                 ]
             ]
