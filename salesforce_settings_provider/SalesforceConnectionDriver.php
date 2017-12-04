@@ -408,7 +408,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
      * Returns a connection token to aid communication with the datasource.
      * @return boolean
      */
-    private function getConnectionToken($force = FALSE) {
+    private function getConnectionToken($force = TRUE) {
         $t = self::retrieveValue('SF_access_token', NULL);
         $age = new \DateInterval('PT1H0M');
         $ten_minutes = new \DateInterval('PT0H10M');
