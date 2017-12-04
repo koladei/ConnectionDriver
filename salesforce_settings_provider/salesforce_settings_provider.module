@@ -890,6 +890,15 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'ComputedThirdPartyNRC'
                     , 'type' => 'decimal'
                 ]
+                , 'Additional_Payment_Details__c' => [
+                    'preferred_name' => 'AdditionalPaymentDetails'
+                    , 'type' => 'string'
+                    , 'type_description' => 'MAX'
+                ]
+                , 'Payment_Terms__c' => [
+                    'preferred_name' => 'PaymentTerms'
+                    , 'type' => 'string'
+                ]
                 , 'SOF_Status__c' => [
                     'preferred_name' => 'SOFStatus'
                     , 'type' => 'string'
