@@ -17,6 +17,8 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
         parent::__construct($driverLoader, $sourceLoader, $identifier);
 
         $this->connection_settings = $connection_settings;
+        
+        $this->autoFetch = FALSE;
     }
 
     

@@ -32,6 +32,7 @@ abstract class MiddlewareConnectionDriver
     protected $preferredDateFormat = 'Y-m-d';
     protected $preferredDateTimeFormat = 'Y-m-d\TH:i:s';
     protected $utilityFunctions = [];
+    protected $autoFetch = TRUE;
 
     public function getItemsInternal($entityBrowser, &$connection_token = null, array $select, $filter, $expands = [], $otherOptions = []){
         throw new \Exception('Not yet implemented');
@@ -878,6 +879,9 @@ abstract class MiddlewareConnectionDriver
 
                         // Try to sync the cache
                         $now = (new \DateTime())->format('Y-m-d');
+
+                        // Mark for pending update so that irrespective of the created or modified time, this record will be updated.
+                        $args[2]->_IsUpdated = FALSE;
                         try {
                             $cacheDriver->updateItem(...$args);
                             $this->syncFromDate($entityBrowser, $now);
@@ -996,16 +1000,17 @@ abstract class MiddlewareConnectionDriver
                         $args[1]->IsDeleted = FALSE;
                     }
 
+                    // Set record as pending update. It is possible that some fields will be calculated by the remote source
+                    $args[1]->_IsUpdated = FALSE;
+
                     $args[2]['$setId'] = '1';
                     $now = (new \DateTime())->format('Y-m-d');
                     try {
-                        // var_dump(['creating in cache']);
                         $cacheDriver->createItem(...$args);
                         $this->syncFromDate($entityBrowser, $now);
                     } 
                     // May be the datastructure is faulty
                     catch(\Exception $exc){
-                        // var_dump(['error creating in cache'.$exc->getMessage()]);
                         $cacheDriver->ensureDataStructure($args[0]);
                         $cacheDriver->createItem(...$args);
                         $this->syncFromDate($entityBrowser, $now);
@@ -1015,17 +1020,20 @@ abstract class MiddlewareConnectionDriver
             // Fail silently
             catch(\Exception $exp){}
 
-            $autoFetch = !isset($otherOptions['$autoFetch'])?TRUE:(
-                (isset($otherOptions['$autoFetch']) && (''.$otherOptions['$autoFetch']) == '1')?TRUE:FALSE
-            );
+            // The $autoFetch parameter determines whether to fetch the just inserted record or its Id alone.
+            // The default is to fetch the inserted record but may be overridden by an implementing cl
+            if(isset($otherOptions['$autoFetch']) && (''.$otherOptions['$autoFetch']) == '1'){
+                $this->autoFetch = TRUE;
+            }
 
-            if($autoFetch){
+            if($this->autoFetch){
                 $return = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
             } else {
                 return $res->d;
             }
+
             return $return;
-        } 
+        }
         
         // Otherwise, if something is wrong, retry
         else {
