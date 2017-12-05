@@ -733,7 +733,6 @@ class EntityDefinitionBrowser
 
     public function mergeExpansionChunks($data, $chunkResult, EntityFieldDefinition $localFieldInfo, EntityFieldDefinition $fieldInfo)
     {
-        // var_dump('ABBBBB', gettype($this->mergeExpansionChunksStrategy));
         $mergeExpansion = $this->mergeExpansionChunksStrategy;
         if (!is_null($mergeExpansion)) {
             return $mergeExpansion(...func_get_args());

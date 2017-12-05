@@ -791,6 +791,7 @@ abstract class MiddlewareConnectionDriver
 
             if($dataIsOld == TRUE){
                 $this->syncByRecordIds($entityBrowser->getCachedObject(), $oldRecords);
+                $args = func_get_args();
                 return $this->getItems(...$args);
             }
 
