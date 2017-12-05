@@ -162,6 +162,7 @@ function settings_provider__format_cached_definition($from, $to, callable $entit
                 $name = strtolower("{$from}__{$entity['internal_name']}");
                 $entity['original_internal_name'] = $entity['internal_name'];
                 $entity['original_display_name'] = $entity_name;
+                $entity['original_driver_name'] = $from;
                 $entity['internal_name'] = $name;
                 unset($entity['cache']);
                 unset($entity['cache_to']);
@@ -174,6 +175,13 @@ function settings_provider__format_cached_definition($from, $to, callable $entit
                         }
                     }
                 }
+
+                // Add the _IsUpdated field to the cache
+                $fields['_IsUpdated'] = [
+                    'preferred_name' => '_IsUpdated'
+                    , 'type' => 'boolean'
+                    , 'mandatory' => 1
+                ];
 
                 $return[$key][$name] = $entity;
             }
@@ -199,8 +207,8 @@ function settings_provider__format_delegated_definition($from, $to, callable $en
                 $entity['original_internal_name'] = $entity['internal_name'];
                 $entity['original_display_name'] = $entity_name;
                 $entity['internal_name'] = $name;
-                unset($entity['cache']);
-                unset($entity['cache_to']);
+                // unset($entity['cache']);
+                unset($entity['delegate_to']);
 
                 // Ensure that all references to self a properly sorted out in lookup fields
                 foreach ($fields as &$field) {

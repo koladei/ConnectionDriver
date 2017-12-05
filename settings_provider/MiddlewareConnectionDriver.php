@@ -77,6 +77,29 @@ abstract class MiddlewareConnectionDriver
      * @param string $date
      * @return void
      */
+    public function syncByRecordIds($entityBrowser, $ids = []){      
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        
+        if (is_null($entityBrowser)) {
+            throw new \Exception('Invalid entity could not be found.');
+        }
+
+        if($entityBrowser->shouldCacheData()){
+            $sync = $entityBrowser->getParent()->getUtilityFunction('date_sync_util');
+            if(!is_null($sync)) {
+                $sourceDestination = implode('|', [$this->getIdentifier(), $entityBrowser->getCacheDriverName()]);
+                $sync($sourceDestination, $entityBrowser->getDisplayName(), NULL, $ids);
+            }
+        }
+    }
+
+    /**
+     * Invokes the synch function of the specified driver
+     *
+     * @param mixed $entityBrowser
+     * @param string $date
+     * @return void
+     */
     public function syncFromDate($entityBrowser, $date = '1900-01-01'){        
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
         if (is_null($entityBrowser)) {
@@ -125,9 +148,13 @@ abstract class MiddlewareConnectionDriver
         self::$loadedDrivers[$identifier] = &$this;
         $this->identifier = $identifier;
     }
-
+    
     public function addUtilityFunction($name, callable $function){
         $this->utilityFunctions[$name] = $function;
+    }
+
+    public function getUtilityFunction($name){
+        return isset($this->utilityFunctions[$name])? $this->utilityFunctions[$name]: NULL;
     }
 
     public function isDriverLoaded($driverName)
@@ -514,6 +541,10 @@ abstract class MiddlewareConnectionDriver
             $return = NULL;
             
             try {
+                // Try to fetch the _IsUpdate field in the cache.
+                $f = is_string($args[1])?\str_replace(' ', '', $args[1]):implode(',', $args[1]);
+                $f = strlen($f) > 0 ? "{$f},_IsUpdated":'_IsUpdated';
+                $args[1] = $f;
                 $return = $cacheDriver->getItems(...$args);
             } 
             // May be the datastructure is faulty
@@ -702,7 +733,30 @@ abstract class MiddlewareConnectionDriver
 
         if (!is_null($result)) {
             $select_map = $entityBrowser->getFieldsByInternalNames($select);
-            array_walk($result, function (&$record) use ($entityBrowser, $select_map, &$expands, $dateFields) {
+            $dataIsOld = FALSE;
+            $oldRecords = [];
+
+            // DeterminE if this is the cache
+            // echo $entityBrowser->getDisplayName();
+            $hasField = $entityBrowser->hasField('_IsUpdated');
+            $isACache = !is_null($hasField);
+            
+            foreach($result as &$record) { //use ($entityBrowser, $select_map, &$expands, $dateFields, &$dataIsOld, $isACache) {
+                // Try to update the cache before fetching the data if it is old.
+                if($isACache){
+                    if(is_object($record) && property_exists($record, '_IsUpdated') && $record->_IsUpdated != TRUE){
+                        $oldRecords[] = $record->{$entityBrowser->getIdField()->getInternalName()};
+                        $dataIsOld = TRUE;
+                        continue;
+                    } else if(array_key_exists('_IsUpdated', $record) && $record['_IsUpdated'] != TRUE){
+                        $oldRecords[] = $record[$entityBrowser->getIdField()->getInternalName()];
+                        $dataIsOld = TRUE;
+                        continue;
+                    } 
+                    // Be quiet about it.
+                    else {}
+                }
+
                 $record = $entityBrowser->renameFields($record, $select_map);
                 foreach ($dateFields as $dateField) {
                     $dateFieldName = $dateField->getDisplayName();
@@ -733,7 +787,12 @@ abstract class MiddlewareConnectionDriver
                         $expand_val['ids'][] = $ids;
                     }
                 }
-            });
+            };
+
+            if($dataIsOld == TRUE){
+                $this->syncByRecordIds($entityBrowser->getCachedObject(), $oldRecords);
+                return $this->getItems(...$args);
+            }
 
             // Fetch the related field values in one sweep
             array_walk($expands, function (&$expand_val, $expand_key) use ($driverScope, $skipCache, $includeDeleted) {

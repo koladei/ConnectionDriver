@@ -1,6 +1,6 @@
 <?php
 
-function settings_provider__update_cache($sourceDestination = NULL, $entityId = NULL, $start = NULL)
+function settings_provider__update_cache($sourceDestination = NULL, $entityId = NULL, $start = NULL, $idsToSync = [])
 {
     $start = (!is_null($start) && strlen($start) === 10)?"{$start}T00:00:00":$start;
     $entityId = (!is_null($entityId) && strtolower($entityId ) == '$null$')?NULL:$entityId;
@@ -22,7 +22,7 @@ function settings_provider__update_cache($sourceDestination = NULL, $entityId = 
                     continue;
                 }
 
-                settings_provider__update_cache_inner($sourceDestination, $entity, $source, $destination, $sql, $start);
+                settings_provider__update_cache_inner($sourceDestination, $entity, $source, $destination, $sql, $start, $idsToSync);
             }
         } else {
             watchdog('UPDATING CACHE ERROR', 'One or more sources could not be loaded.');
@@ -30,9 +30,11 @@ function settings_provider__update_cache($sourceDestination = NULL, $entityId = 
     }
 }
 
-function settings_provider__update_cache_inner($sourceDestination, $entity, $source, $destination, $sql, $start = NULL)
+function settings_provider__update_cache_inner($sourceDestination, $entity, $source, $destination, $sql, $start = NULL, $idsToSync = [])
 {
+    // var_dump($idsToSync);
     if ($source && $destination && $sql) {
+            $idsToSync = is_string($idsToSync) ? explode(',', $idsToSync) : $idsToSync;
             // Get the field names to select
             $selectFields = [];
 
@@ -51,13 +53,16 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                 variable_set("{$entity['original_display_name']}_LastSync__{$sourceDestination}", $lastSyncInfo);
             }
             $lastSyncInfo = array_merge($defaultSyncData, $lastSyncInfo);
-            
+            $bypass = FALSE;
+
             // In case this is an ad-hoc run
             if(!is_null($start)){
                 $defaultSyncData['time'] = $start;
                 $defaultSyncData['continue_from'] = $start;
                 $defaultSyncData['failure_count'] = 0;
                 $lastSyncInfo = $defaultSyncData;
+            } else if (count($idsToSync) > 0){
+                $bypass = TRUE;
             }
 
             $now = (new \DateTime());
@@ -70,16 +75,18 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
             $interval = $now > $nextRun;
             $badLastRun = ($lastSyncInfo['time'] != $lastSyncInfo['continue_from'])?TRUE:FALSE;
                             
-            if ($interval || ($badLastRun && $lastSyncInfo['failure_count'] < 10)) {
+            if ($interval || ($badLastRun && $lastSyncInfo['failure_count'] < 10) || $bypass) {
                 
                 try {
                     $destination->ensureDataStructure($entity['internal_name']);
                 } catch (\Exception $exe){}
 
 
-                foreach ($entity['fields'] as $field) {
+                foreach ($entity['fields'] as $fieldName => $field) {
                     if($field['type'] != 'detail'){
-                        $selectFields[] = $field['preferred_name'];
+                        if(!in_array($fieldName, ['_IsUpdated'])) {
+                            $selectFields[] = $field['preferred_name'];
+                        }
                     }
                 };
 
@@ -88,19 +95,28 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                 $newbies = [];
                 $generalErrorOccured = FALSE;
                 try {
-                    $newbies = $source->getItems(
-                        $entity['original_display_name'], 
-                        $selectFields, 
-                        $filter, 
-                        '', 
-                        [
+                    if(count($idsToSync) > 0){
+                        $newbies = $source->getItemsByIds($entity['original_display_name'], $idsToSync, $selectFields, '',  [
                             '$all' => 1,
                             '$skipCache' => 1,
                             '$includeDeleted' => 1
-                        ]
-                    );
+                        ]);
+                    } else {
+                        $newbies = $source->getItems(
+                            $entity['original_display_name'], 
+                            $selectFields, 
+                            $filter, 
+                            '', 
+                            [
+                                '$all' => 1,
+                                '$skipCache' => 1,
+                                '$includeDeleted' => 1
+                            ]
+                        );
+                    }
 
                 } catch(\Exception $ce){
+                    echo 'something went wrong: '.$ce->getMessage();
                     $generalErrorOccured = TRUE;
 
                     // Log this synchronization error.
@@ -125,6 +141,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     
                         if (count($destCopy) < 1) {
                             try {
+                                $newbie->_IsUpdated = TRUE;
                                 $destination->createItem($entity['internal_name'], $newbie, [
                                     '$setId' => '1'
                                 ]);
@@ -146,6 +163,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                         // Other update it.
                         else {
                             try {
+                                $newbie->_IsUpdated = TRUE;
                                 $destination->updateItem($entity['internal_name'], $newbie->Id, $newbie);
                                 $synched = $synched + 1;
                             } catch(\Exception $ce){
