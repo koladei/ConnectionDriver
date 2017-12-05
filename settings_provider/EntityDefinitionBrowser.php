@@ -41,12 +41,27 @@ class EntityDefinitionBrowser
     private $redirectCreateTo = FALSE;
     private $redirectDeleteTo = FALSE;
     private $redirectUpdateTo = FALSE;
+    private $originalDisplayName = NULL;
+    private $originalInternalName = NULL;
+    private $originalDriverName = NULL;
 
     public function __construct($internalName, array &$definition, MiddlewareConnectionDriver &$parent)
     {
         $this->parent = $parent;
         $this->displayName = $internalName;
         $this->internalName = $definition['internal_name'];
+        
+        if (isset($definition['original_internal_name'])) {
+            $this->originalInternalName = $definition['original_internal_name'];
+        }
+        
+        if (isset($definition['original_display_name'])) {
+            $this->originalDisplayName = $definition['original_display_name'];
+        }
+        
+        if (isset($definition['original_driver_name'])) {
+            $this->originalDriverName = $definition['original_driver_name'];
+        }
         
         if (isset($definition['soap_methods'])) {
             $this->soapMethods = (object) $definition['soap_methods'];
@@ -79,7 +94,6 @@ class EntityDefinitionBrowser
                     $this->redirectCreateTo->driver = $this->getParent()->getIdentifier();
                 }
             }
-
             
             if(isset($definition['redirects']['update'])){
                 $this->redirectUpdateTo = (object)$definition['redirects']['update'];                
@@ -234,9 +248,31 @@ class EntityDefinitionBrowser
         return $this->parent;
     }
 
+    /**
+     * For cached objects, returns the driver of the source object otherwise returns the drive of this object.
+     *
+     * @return void
+     */
+    public function getOriginalParent()
+    {
+        return is_null($this->originalDriverName) ? $this->parent : $this->parent->loadDriver($this->originalDriverName);
+    }
+
+    public function getCachedObject(){
+        return $this->getOriginalParent()->getEntityBrowser($this->getOriginalDisplayName());
+    }
+    
     public function getDisplayName()
     {
         return $this->displayName;
+    }
+    
+    /**
+     * If this a cache of another source, returns the name of the original source
+     */
+    public function getOriginalDisplayName()
+    {
+        return is_null($this->originalDisplayName)?$this->displayName:$this->originalDisplayName;
     }
 
     public function setDisplayName($name)
@@ -248,6 +284,11 @@ class EntityDefinitionBrowser
     public function getInternalName()
     {
         return $this->internalName;
+    }
+    
+    public function getOriginalInternalName()
+    {
+        return is_null($this->originalInternalName)?$this->internalName:$this->originalInternalName;
     }
 
     public function setInternalName($name)
