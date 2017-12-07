@@ -369,11 +369,11 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
                 . " FROM {$entityBrowser->getInternalName()}"
                 . (strlen($filter) > 0 ? "  WHERE {$filter} " : '');
 
-            $query_url = str_replace(' ', '+', $query_url);
+            $query_url = urlencode(trim($query_url));
 
             // Execute the POST request.
             $res = new \stdClass();                
-            $res->nextRecordsUrl = "/services/data/v39.0/queryAll/?q={$query_url}";            
+            $res->nextRecordsUrl = "/services/data/v41.0/queryAll/?q={$query_url}";            
             do {                
                 $feed = mware_blocking_http_request("{$connectionToken->instance_url}{$res->nextRecordsUrl}", ['options' => $options]);
 
