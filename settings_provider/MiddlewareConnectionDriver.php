@@ -789,9 +789,11 @@ abstract class MiddlewareConnectionDriver
                 }
             };
 
+            // Attempt to update the cache and then retry.
             if($dataIsOld == TRUE){
                 $this->syncByRecordIds($entityBrowser->getCachedObject(), $oldRecords);
                 $args = func_get_args();
+                $args[5]['retryCount'] = $retryCount;
                 return $this->getItems(...$args);
             }
 
