@@ -96,6 +96,7 @@ function remedy_connection_driver__get_entity_definitions() {
             , 'fields' => [
                 'Incident_Number' => [
                     'preferred_name' => 'Id'
+                    , 'preferred_query_name' => 'Incident Number'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
@@ -994,7 +995,7 @@ function remedy_connection_driver__get_entity_definitions() {
                     , 'type' => 'string'
                 ]
                 , 'Customer_Name__c' => [
-                    'preferred_name' => 'CustomerId'
+                    'preferred_name' => 'CustomerName'
                     , 'type' => 'string'
                 ]
                 , 'Circuit_Capacity__c' => [
