@@ -1322,7 +1322,7 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Weight__c' => [
                     'preferred_name' => 'Weight'
-                    , 'type' => 'string'
+                    , 'type' => 'int'
                 ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
