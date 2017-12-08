@@ -171,19 +171,19 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
                                 $m->ChangeKey = $message->ItemId->ChangeKey;
                                 $m->Id = $message->ItemId->Id;
 
-                                // Fix copied recipients
+                                // Get the copied recipients
                                 if(!property_exists($m, 'CcRecipients')){
                                     $m->CcRecipients = new \stdClass();
-                                    $m->CcRecipients->MailBox = [];
-                                } else if(property_exists($m->CcRecipients, 'MailBox')){
-                                    $m->CcRecipients->MailBox = [];
-                                }
+                                    $m->CcRecipients->Mailbox = [];
+                                } else if(!property_exists($m->CcRecipients, 'Mailbox')){
+                                    $m->CcRecipients->Mailbox = [];
+                                }                                
                                 foreach($m->CcRecipients->Mailbox as &$r){
                                     $r = $r->EmailAddress;
                                 }
-
                                 $m->CcRecipients = \strtolower(implode(';', $m->CcRecipients->Mailbox));
 
+                                // Collect the direct recipients
                                 foreach($m->ToRecipients->Mailbox as &$r){
                                     $r = $r->EmailAddress;
                                 }
