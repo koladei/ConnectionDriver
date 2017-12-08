@@ -42,6 +42,7 @@ function smsgateway_connection_driver_cron(){
         , 'frequency_min' => 30
         , 'frequency_sec' => 30
     ]);
+
     $lastRun = \DateTime::createFromFormat('Y-m-d\TH:i:s', $smsgatewayupdateInfo['lastrun']);
     $frequency = new \DateInterval("PT{$smsgatewayupdateInfo['frequency_min']}M{$smsgatewayupdateInfo['frequency_sec']}S");
     $nextRun = \DateTime::createFromFormat('Y-m-d\TH:i:s', $smsgatewayupdateInfo['lastrun']);
