@@ -94,10 +94,12 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 
                 $re = [];
                 foreach(array_values($rs) as $column) {
-                    // Remove unwanted columns
+                    // Remove columns that have been removed
                     if(!in_array($column['COLUMN_NAME'], array_keys($fields))){
                         $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} DROP COLUMN {$column['COLUMN_NAME']}");
-                    } else {
+                    } 
+                    
+                    else {
                         $re[$column['COLUMN_NAME']] = [];
                         switch( $column['DATA_TYPE']) {
                             case 'varchar':{
@@ -127,14 +129,19 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                     }
                 }
 
+                $modifiedAColumn = FALSE;
+
                 // Add new columns
-                foreach($fields as $name => $field){
+                foreach($fields as $name => $field) {
                     $c = [];
+
+                    // Skip lookup columns
                     preg_match('/([\w\d\_]+)_\$LOOKUP\$/', $name, $c);
                     if(count($c)){
                         continue;
                     }
 
+                    // Skip columns whose data type has not changed.
                     if(
                         in_array($name, array_keys($re)) && 
                         (
@@ -143,15 +150,19 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                         )
                     ) {
                         continue;
-                    } else {
+                    } 
+                    
+                    // Drop the columns that have changed
+                    else {
                         if(in_array($name, array_keys($re))){
                             $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} DROP COLUMN {$name}");
+                            $modifiedAColumn = TRUE;
                         }
                     };
 
                     $nullable = 'NULL';
 
-                    switch($field->getDataType()){
+                    switch($field->getDataType()) {
                         case 'string': {
                             $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} ADD {$name} varchar({$field->getFieldDescription()}) {$nullable}");
                             break;
@@ -174,6 +185,24 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                             break;
                         }
                     }    
+                }
+
+                // If a column changed, mark all records as due for update
+                if($modifiedAColumn == TRUE){
+                    try {
+                        if($isUpdated = $entityBrowser->hasField('_IsUpdated')){
+                            // $pdo->exec("UPDATE TABLE {$entityBrowser->getInternalName()} SET _IsUpdated = 0");
+                            $filter = '';
+                            if($isDeleted = $entityBrowser->hasField('IsDeleted')){
+                                $filter = " WHERE {$isDeleted->getInternalName()} = :IsDeleted";
+                            }
+
+                            $statement = $pdo->prepare("UPDATE TABLE {$entityBrowser->getInternalName()} SET {$isUpdated->getInternalName()} = :IsUpdated {$filter}");
+                            $statement->bindValue(':IsUpdated', FALSE);
+                            $statement->bindValue(':IsDeleted', FALSE);
+                            $statement->execute();
+                        }
+                    } catch(\Exception $exp){}
                 }
                 
                 return $re;
