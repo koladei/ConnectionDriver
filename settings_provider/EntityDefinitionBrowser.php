@@ -257,9 +257,29 @@ class EntityDefinitionBrowser
     {
         return is_null($this->originalDriverName) ? $this->parent : $this->parent->loadDriver($this->originalDriverName);
     }
-
+    
+    /**
+     * For cached objects, returns the Object browser that is being cached.
+     *
+     * @return void
+     */
     public function getCachedObject(){
         return $this->getOriginalParent()->getEntityBrowser($this->getOriginalDisplayName());
+    }
+    
+    /**
+     * For non-cached objects, returns the Object browser that is responsible for caching
+     *
+     * @return void
+     */
+    public function getCachingObject(){
+        if($this->getParent()->getIdentifier() != $this->getCachingDriverName()){
+            $driver = $this->getParent()->loadDriver($this->getCachingDriverName());
+            $cachingObjectName = strtolower("{$this->getParent()->getIdentifier()}__{$this->getInternalName()}");
+            return $driver->getEntityBrowser($cachingObjectName);
+        } else {
+            return FALSE;
+        }
     }
     
     public function getDisplayName()
