@@ -354,7 +354,7 @@ abstract class MiddlewareConnectionDriver
             }
         }
     }
-
+    
     /**
      * Creates the data table structure equivalent of the object schema in this connection driver.
      *
@@ -362,7 +362,8 @@ abstract class MiddlewareConnectionDriver
      * @param array $otherOptions
      * @return void
      */
-    public function ensureDataStructure($entityBrowser, array $otherOptions = []){
+    public function ensureDataStructure($entityBrowser, array $otherOptions = [])
+    {
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
         if (is_string($entityBrowser) || is_null($entityBrowser)) {
             throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
@@ -393,6 +394,19 @@ abstract class MiddlewareConnectionDriver
             $return = $delegateDriver->ensureDataStructure(...$args);
             return $return;
         }
+
+        return $this->ensureDataStructureInternal($entityBrowser, $this->connectionToken, $otherOptions);
+    }
+    
+    public function getCacheReference($entityBrowser, array $otherOptions = [])
+    {
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }
+
+        // Get the driver
+        $driverName = $entityBrowser->getCacheDriverName();
 
         return $this->ensureDataStructureInternal($entityBrowser, $this->connectionToken, $otherOptions);
     }
@@ -925,6 +939,32 @@ abstract class MiddlewareConnectionDriver
 
         if (!isset($otherOptions['$expand'])) {
             $otherOptions['$expand'] = '';
+        }
+
+        // If there is need to specifically update the cache copy alone
+        $cacheOnly = (isset($otherOptions['$cacheOnly']) && $otherOptions['$cacheOnly'] == '1')?TRUE:FALSE;
+        if (
+            $entityBrowser->shouldCacheData() && 
+            ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && 
+            $cacheOnly
+        ) {
+            // Load the driver instead
+            $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
+            
+            // Refactor the arguments to target the cache.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+
+            // Mark for pending update so that irrespective of the created or modified time, this record will be updated.
+            $args[2]->_IsUpdated = FALSE;
+            try {
+                return $cacheDriver->updateItem(...$args);
+            } 
+            // May be the datastructure is faulty
+            catch(\Exception $exc){
+                $cacheDriver->ensureDataStructure($args[0]);
+                return $cacheDriver->updateItem(...$args);
+            }
         }
 
         try {
