@@ -116,7 +116,6 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     }
 
                 } catch(\Exception $ce){
-                    echo 'something went wrong: '.$ce->getMessage();
                     $generalErrorOccured = TRUE;
 
                     // Log this synchronization error.
@@ -209,11 +208,11 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     $lastSyncInfo['time'] = $lastSynched->format('Y-m-d\TH:i:s'); // So that this block can be rerun asap.
                     
                     // After 10 errored tries, move forward but log the problem.
-                    if($lastSyncInfo['failure_count'] > 10){
+                    if($lastSyncInfo['failure_count'] > 50){
                         //Send a mail to appdev team.
                         $message = "There has been multiple failures synching {$entity['original_display_name']} {$sourceDestination}.<br/>
                         Failure count is {$lastSyncInfo['failure_count']}.";                        
-                        $admin_mail = variable_get('site_mail', ini_get('sendmail_from'));
+                        $admin_mail = 'kolade.ige@mainone.net;amir.sanni@mainone.net';//variable_get('site_mail', ini_get('sendmail_from'));
 
                         try {                            
                             $emailDriver = mware_connection_driver__get_driver('emailgateway');
