@@ -619,7 +619,7 @@ class EntityDefinitionBrowser
      * @param [type] $name
      * @return void
      */
-    public function getFieldByDisplayName($name)
+    public function getFieldByDisplayName($name = '')
     {
         if (isset($this->fieldsByDisplayName[$name])) {
             return $this->fieldsByDisplayName[$name];
