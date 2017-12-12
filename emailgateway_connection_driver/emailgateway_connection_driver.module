@@ -176,7 +176,7 @@ function emailgateway_connection_driver__get_entity_definitions()
         'emailgateway'=> [
             'mails' => [
                 'internal_name' => 'Email'
-                , 'cache_to' => 'sql'
+                // , 'cache_to' => 'sql'
                 , 'cache_freq' => 360
                 // , 'manage_timestamps' => TRUE
                 , 'fields' => [
