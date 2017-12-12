@@ -27,6 +27,9 @@ use EWSType_BodyType;
 use EWSType_SingleRecipientType;
 use EWSType_CreateItemType;
 use EWSType_NonEmptyArrayOfAllItemsType;
+use EWSType_UpdateItemType;
+use EWSType_ItemChangeType;
+use EWSType_SetItemFieldType;
 use \PDO;
 
 /**
@@ -37,6 +40,7 @@ use \PDO;
 class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
 {
     private $serviceRef = NULL;
+    protected $maxRetries = 10;
 
     /**
      * Instantiates and returns an instance of a EmailGatewayConnectionDriver
@@ -108,7 +112,9 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
             switch ($functionName) {
                 case 'markMessageAsRead': {
-                    return $this->markMessageAsRead($objects, $connectionToken, $otherOptions);
+                    return $this->markMessageAsRead([
+                        'message_id' => $id
+                    ], $connectionToken, $otherOptions);
                 }
                 default:{
                     throw new \Exception("Sorry! the function '{$functionName}' is not supported yet.");
@@ -160,6 +166,7 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
                 }
 
                 $messages = [];
+
                 // Loop over the message array
                 foreach ($response->ResponseMessages->FindItemResponseMessage->RootFolder->Items->Message as $message) {
                     
@@ -168,31 +175,34 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
                             $m = new \stdClass();
                             $m = $this->getMessageById($message->ItemId->Id);
                             if(!is_null($m)){
-                                $m->ChangeKey = $message->ItemId->ChangeKey;
-                                $m->Id = $message->ItemId->Id;
-
-                                // Get the copied recipients
-                                if(!property_exists($m, 'CcRecipients')){
-                                    $m->CcRecipients = new \stdClass();
-                                    $m->CcRecipients->Mailbox = [];
-                                } else if(!property_exists($m->CcRecipients, 'Mailbox')){
-                                    $m->CcRecipients->Mailbox = [];
-                                }                                
-                                foreach($m->CcRecipients->Mailbox as &$r){
-                                    $r = $r->EmailAddress;
-                                }
-                                $m->CcRecipients = \strtolower(implode(';', $m->CcRecipients->Mailbox));
-
-                                // Collect the direct recipients
-                                foreach($m->ToRecipients->Mailbox as &$r){
-                                    $r = $r->EmailAddress;
-                                }
-                                $m->ToRecipients = \strtolower(implode(';', $m->ToRecipients->Mailbox));
-                                $m->Sender = \strtolower($m->From->Mailbox->EmailAddress);
-                                $m->BodyType = $m->Body->BodyType;
-                                $m->Body = $m->Body->_;
-
-                                $messages[] = $m;
+                                try{
+                                    $m->ChangeKey = $message->ItemId->ChangeKey;
+                                    $m->Id = $message->ItemId->Id;
+    
+                                    // Get the copied recipients
+                                    if(!property_exists($m, 'CcRecipients')){
+                                        $m->CcRecipients = new \stdClass();
+                                        $m->CcRecipients->Mailbox = [];
+                                    } else if(!property_exists($m->CcRecipients, 'Mailbox')){
+                                        $m->CcRecipients->Mailbox = [];
+                                    }                                
+                                    foreach($m->CcRecipients->Mailbox as &$r){
+                                        $r = $r->EmailAddress;
+                                    }
+                                    $m->CcRecipients = \strtolower(implode(';', $m->CcRecipients->Mailbox));
+    
+                                    // Collect the direct recipients
+                                    foreach($m->ToRecipients->Mailbox as &$r){
+                                        $r = $r->EmailAddress;
+                                    }
+                                    $m->ToRecipients = \strtolower(implode(';', $m->ToRecipients->Mailbox));
+                                    
+                                    $m->Sender = \strtolower($m->From->Mailbox->EmailAddress);
+                                    $m->BodyType = $m->Body->BodyType;
+                                    $m->Body = $m->Body->_;
+    
+                                    $messages[] = $m;
+                                } catch(\Exception $excp){}                                
                             }
                         }
                     } catch (Exception $exc) {
@@ -238,6 +248,7 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
     }
 
     private function sendEmail($message = [], $ews = NULL){
+        // var_dump($message);
         if(!isset($message['to'])){
             throw new \Exception('Parameter \'to\' is required');
         }
@@ -286,12 +297,13 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $msg->CcRecipients = $ccAddresses;
             // $msg->BcRecipients = $bccAddresses;
             
-            $fromAddress = new EWSType_EmailAddressType();
-            $fromAddress->EmailAddress = isset($message['from'])?$message['from']:'kolade.ige@mainone.net';
+            if(isset($message['from'])){
+                $fromAddress = new EWSType_EmailAddressType();
+                $fromAddress->EmailAddress = $message['from'];
 
-            $msg->From = new EWSType_SingleRecipientType();
-            $msg->From->Mailbox = $fromAddress;
-            
+                $msg->From = new EWSType_SingleRecipientType();
+                $msg->From->Mailbox = $fromAddress;
+            }
             $msg->Subject = $subject;
             
             $msg->Body = new EWSType_BodyType();
@@ -305,6 +317,7 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $msgRequest->MessageDispositionSpecified = true;
                     
             $response = $ews->CreateItem($msgRequest);
+            return $response;
         }
     }
 
@@ -312,15 +325,12 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
         if(!isset($objects['message_id'])){
             throw new \Exception('Parameter \'message_id\' is required');
         }
-        $change_key = $objects['message_id'];
-
-        if(!isset($objects['change_key'])){
-            throw new \Exception('Parameter \'change_key\' is required');
-        }
-        $change_key = $objects['change_key'];
-
-        if (!is_null($msg)) {    
-            if ($ews = (is_null($ews)? $this->getConnectionToken():$ews)) {
+        $message_id = $objects['message_id'];
+   
+        if ($ews = (is_null($ews)? $this->getConnectionToken():$ews)) {
+            
+            $m = $this->getMessageById($message_id);
+            if(!is_null($m)) {
                 $request = new EWSType_UpdateItemType();
                 
                 $request->SendMeetingInvitationsOrCancellations = 'SendToNone';
@@ -332,7 +342,7 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
                 $change = new EWSType_ItemChangeType();
                 $change->ItemId = new EWSType_ItemIdType();
                 $change->ItemId->Id = $message_id;
-                $change->ItemId->ChangeKey = $change_key;
+                $change->ItemId->ChangeKey = $m->ItemId->ChangeKey;
     
                 // Build the set item field object and set the item on it.
                 $field = new EWSType_SetItemFieldType();
@@ -346,9 +356,9 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
     
                 $response = $ews->UpdateItem($request);
 
-                return $response;
-            }            
-        }
+                return $response;                    
+            }
+        }   
         throw new \Exception('Null message received.');
     }
     
