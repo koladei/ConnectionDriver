@@ -743,10 +743,8 @@ abstract class MiddlewareConnectionDriver
         $select = array_unique($entityBrowser->getFieldInternalNames($select));
         $dateFields = $entityBrowser->getFieldsOfTypeByInternalName(['date', 'datetime'], $select);
 
-
-        // return [];
         $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, EncoderDecoder::unescapeall("{$filterExpression}"), $expands, $otherOptions);
-        
+
         if (!is_null($result)) {
             $select_map = $entityBrowser->getFieldsByInternalNames($select);
             $dataIsOld = FALSE;
@@ -757,22 +755,26 @@ abstract class MiddlewareConnectionDriver
             $hasField = $entityBrowser->hasField('_IsUpdated');
             $isACache = !is_null($hasField);
             
-            foreach($result as &$record) { //use ($entityBrowser, $select_map, &$expands, $dateFields, &$dataIsOld, $isACache) {
+            foreach($result as $key => &$record) { //use ($entityBrowser, $select_map, &$expands, $dateFields, &$dataIsOld, $isACache) {
                 // Try to update the cache before fetching the data if it is old.
-                if($isACache){
-                    watchdog("CHECKING-{$entityBrowser->getDisplayName()}", "'i DEY HERE' ".count($result)." ". $otherOptions['retryCount']);
-                    
-                    if(is_object($record) && property_exists($record, '_IsUpdated') && $record->_IsUpdated != TRUE){
-                        $oldRecords[] = $record->{$entityBrowser->getIdField()->getInternalName()};
-                        $dataIsOld = TRUE;
-                        continue;
-                    } else if(array_key_exists('_IsUpdated', $record) && $record['_IsUpdated'] != TRUE){
-                        $oldRecords[] = $record[$entityBrowser->getIdField()->getInternalName()];
-                        $dataIsOld = TRUE;
-                        continue;
-                    } 
-                    // Be quiet about it.
-                    else {}
+                // $record = &$result[$key];
+                if($isACache && $retryCount < $this->maxRetries){
+                    if($retryCount < ($this->maxRetries / 10)){
+                        if(is_object($record) && property_exists($record, '_IsUpdated') && $record->_IsUpdated != TRUE){
+                            $oldRecords[] = $record->{$entityBrowser->getIdField()->getInternalName()};
+                            $dataIsOld = TRUE;
+                            continue;
+                        } else if(array_key_exists('_IsUpdated', $record) && $record['_IsUpdated'] != TRUE){
+                            $oldRecords[] = $record[$entityBrowser->getIdField()->getInternalName()];
+                            $dataIsOld = TRUE;
+                            continue;
+                        } 
+                        // Be quiet about it.
+                        else {}
+                    } else {
+                        // TODO: find an environment agnostic way to log slow queries
+                        watchdog("SLOW & OUTDATED QUERIES", "{$entityBrowser->getDisplayName()}");
+                    }
                 }
 
                 $record = $entityBrowser->renameFields($record, $select_map);
@@ -812,7 +814,6 @@ abstract class MiddlewareConnectionDriver
                 $this->syncByRecordIds($entityBrowser->getCachedObject(), $oldRecords);
                 $args = func_get_args();
                 $args[5]['retryCount'] = $retryCount;
-
                 return $this->getItems(...$args);
             }
 
@@ -1189,7 +1190,6 @@ abstract class MiddlewareConnectionDriver
         
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']: 0;
         $otherOptions['retryCount'] = $retryCount + 1;
-        watchdog('RETRY COUNT', print_r($otherOptions['retryCount'], TRUE));
 
         try {
             $deleteResult = $this->deleteItemInternal($entityBrowser, $this->connectionToken, $id, $otherOptions);
