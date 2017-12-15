@@ -431,12 +431,20 @@ function sql_connection_driver__get_entity_definitions()
                         'preferred_name' => 'Name'
                         , 'type' => 'string'
                     ]
-                    , 'status' => [
-                        'preferred_name' => 'Status'
-                        , 'type' => 'string'
+                    , 'disabled' => [
+                        'preferred_name' => 'IsDisabled'
+                        , 'type' => 'boolean'
                     ]
                     , 'description' => [
                         'preferred_name' => 'Description'
+                        , 'type' => 'string'
+                    ]
+                    , 'version' => [
+                        'preferred_name' => 'Version'
+                        , 'type' => 'string'
+                    ]
+                    , 'api_name' => [
+                        'preferred_name' => 'APIName'
                         , 'type' => 'string'
                     ]
                     , 'script' => [
