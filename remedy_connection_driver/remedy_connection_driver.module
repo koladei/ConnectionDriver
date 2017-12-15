@@ -790,8 +790,24 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'RemedyLoginID'
                     , 'type' => 'string'
                 ]
-                , 'Site' => [
-                    'preferred_name' => 'Site'
+                , 'Login_ID' => [
+                    'preferred_name' => 'LoginID'
+                    , 'type' => 'string'
+                ]
+                , 'E_Mail' => [
+                    'preferred_name' => 'Email'
+                    , 'type' => 'string'
+                ]
+                , 'Phone_Number_Business' => [
+                    'preferred_name' => 'BusinessPhone'
+                    , 'type' => 'string'
+                ]
+                , 'License_Type' => [
+                    'preferred_name' => 'LicenseType'
+                    , 'type' => 'string'
+                ]
+                , 'Profile_Status' => [
+                    'preferred_name' => 'ProfileStatus'
                     , 'type' => 'string'
                 ]
                 , 'Full_Name' => [
