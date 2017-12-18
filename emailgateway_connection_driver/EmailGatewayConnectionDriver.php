@@ -241,7 +241,10 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $request->ItemIds->ItemId[] = $message_item;
         
             $response = $ews->GetItem($request);
-            return $response->ResponseMessages->GetItemResponseMessage->Items->Message;
+            if(\property_exists($response->ResponseMessages->GetItemResponseMessage->Items, 'Message')){
+                return $response->ResponseMessages->GetItemResponseMessage->Items->Message;
+            }
+            return NULL;
         }
         // This should never happen
         return NULL;
