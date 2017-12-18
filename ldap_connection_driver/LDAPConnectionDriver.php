@@ -103,7 +103,7 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver
     }
 
         
-    public function executeTargetedFunctionInternal($entityBrowser, $id, $functionName, array $data = [], &$connectionToken = null, array $otherOptions = [])
+    public function executeEntityItemFunctionInternal($entityBrowser, $id, $functionName, array $data = [], &$connectionToken = null, array $otherOptions = [])
     {
         switch ($functionName) {
             case 'verifypassword': {        
