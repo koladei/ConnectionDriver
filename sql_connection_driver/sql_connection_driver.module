@@ -85,6 +85,10 @@ function sql_connection_driver__get_entity_definitions()
                         , 'type' => 'int'
                         , 'mandatory' => 1,
                     ]
+                    , 'ParentAccountId' => [
+                        'preferred_name' => 'ParentAccountId'
+                        , 'type' => 'string'
+                    ]
                     , 'GCID' => [
                         'preferred_name' => 'GCID'
                         , 'type' => 'string'
@@ -96,17 +100,6 @@ function sql_connection_driver__get_entity_definitions()
                             , 'remote_type' => 'parent'
                             , 'remote_entity' => 'account'
                             , 'remote_driver' => 'salesforce'
-                        ]
-                    ]
-                    , '_Siblings' => [
-                        'preferred_name' => 'Siblings'
-                        , 'type' => 'detail'
-                        , 'relationship' => [
-                            'local_field' => 'GCID'
-                            , 'remote_field' => 'GCID'
-                            , 'remote_type' => 'child'
-                            , 'remote_entity' => 'customerinfo'
-                            , 'filter' => 'SystemId ne 3'
                         ]
                     ]
                     , 'Name' => [
@@ -148,6 +141,17 @@ function sql_connection_driver__get_entity_definitions()
                             , 'remote_field' => 'Id'
                             , 'remote_type' => 'parent'
                             , 'remote_entity' => 'system_entity'
+                        ]
+                    ]
+                    , '_Siblings' => [
+                        'preferred_name' => 'Siblings'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'GCID'
+                            , 'remote_field' => 'GCID'
+                            , 'remote_type' => 'child'
+                            , 'remote_entity' => 'customerinfo'
+                            , 'filter' => 'SystemId ne 3'
                         ]
                     ]
                     , '_RemedyInfo' => [
