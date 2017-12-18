@@ -1365,14 +1365,14 @@ abstract class MiddlewareConnectionDriver
         return $record;
     }
 
-    public function reverseRenameRecordFields(EntityDefinitionBrowser $brower, \stdClass $record)
+    public function reverseRenameRecordFields(EntityDefinitionBrowser $brower, \stdClass $record, $type = 'normal')
     {
-
         $r = new \stdClass();
         $keys = array_keys(get_object_vars($record));
 
         foreach ($keys as $key) {
-            $internalName = $brower->getFieldByDisplayName($key)->getInternalName();
+            $internalName = $brower->getFieldByDisplayName($key)->getInternalName(TRUE, $type);
+            
             if (property_exists($r, $internalName)) {
                 if (!is_null($record->{$key})) {
                     $r->{$internalName} = $record->{$key};

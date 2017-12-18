@@ -62,7 +62,7 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
 
         // Get a connection token
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
-            $object = $entityBrowser->reverseRenameFields($object);
+            $object = $entityBrowser->reverseRenameFields($object, 'create');
             
             //get the result
             $methods = $entityBrowser->getSoapMethods();

@@ -29,6 +29,8 @@ class EntityFieldDefinition {
         $this->internalName = $name;
         $this->actualInternalName = $name;
         $this->preferredQueryName = isset($fieldDefinition['preferred_query_name']) ? $fieldDefinition['preferred_query_name'] : $name;
+        $this->preferredCreateName = isset($fieldDefinition['preferred_create_name']) ? $fieldDefinition['preferred_create_name'] : $name;
+        $this->preferredUpdateName = isset($fieldDefinition['preferred_update_name']) ? $fieldDefinition['preferred_update_name'] : $name;
         $this->displayName = $fieldDefinition['preferred_name'];
         $this->type = $fieldDefinition['type'];
         $this->dataType = $fieldDefinition['type'];
@@ -93,12 +95,37 @@ class EntityFieldDefinition {
         return $this->parent;
     }
 
-    public function getInternalName($actual = TRUE) {
-        return $actual ? $this->actualInternalName : $this->internalName;
+    public function getInternalName($actual = TRUE, $type = 'normal') {
+        $internalName  = $actual ? $this->actualInternalName : $this->internalName;
+        //echo $type;
+        switch($type){
+            case 'update':{
+                $internalName = $this->getUpdateName();
+                break;
+            }
+            case 'create':{
+                // echo $internalName.' '.$this->getParent()->getDisplayName();
+                $internalName = $this->getCreateName();
+                break;
+            }
+            case 'query': {
+                $internalName = $this->getQueryName();
+                break;
+            }
+        }
+        return $internalName;
     }
-
+    
     public function getQueryName() {
         return $this->preferredQueryName;
+    }
+    
+    public function getCreateName() {
+        return $this->preferredCreateName;
+    }
+    
+    public function getUpdateName() {
+        return $this->preferredUpdateName;
     }
 
     public function getDisplayName() {
@@ -111,11 +138,11 @@ class EntityFieldDefinition {
      * @param array $fields A collection of EntityFieldDefinition references.
      * @return array
      */
-    public static function getInternalNames(array $fields){
+    public static function getInternalNames(array $fields, $type = 'normal'){
         $names = [];
 
         foreach($fields as $field){
-            $names[] = $field->getInternalName();
+            $names[] = $field->getInternalName($type);
         }
 
         return $names;

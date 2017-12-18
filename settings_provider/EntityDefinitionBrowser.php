@@ -703,7 +703,7 @@ class EntityDefinitionBrowser
         $this->reverseRenameStrategy = $strategy;
     }
 
-    public function reverseRenameFields($record)
+    public function reverseRenameFields($record, $type = 'normal')
     {
         if (is_callable($this->reverseRenameStrategy)) {
             $rename = $this->reverseRenameStrategy;

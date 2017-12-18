@@ -695,6 +695,7 @@ function remedy_connection_driver__get_entity_definitions() {
             , 'fields' => [
                 'Person_ID' => [
                     'preferred_name' => 'Id'
+                    , 'preferred_query_name' => 'Person ID'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
@@ -819,8 +820,8 @@ function remedy_connection_driver__get_entity_definitions() {
         , 'account' => [
             'internal_name' => 'MainOne_GNOC_CustomerServiceAccount'
             , 'soap_methods' => [
-                'create' => 'CreateServiceAccount_Operation'
-                , 'query' => 'New_GetList_Operation_2'
+                'query' => 'New_GetList_Operation_2'
+                ,'create' => 'CreateServiceAccount_Operation'
             ]
             , 'fields' => [
                 'Request_ID' => [
@@ -871,11 +872,13 @@ function remedy_connection_driver__get_entity_definitions() {
                 , 'Service_Account_Name__c' => [
                     'preferred_name' => 'Name'
                     , 'preferred_query_name' => 'Service Account Name__c'
+                    , 'preferred_create_name' => 'Service_Account_Name'
                     , 'type' => 'string'
                 ]
                 , 'Escalation_List__c' => [
                     'preferred_name' => 'EscalationList'
                     , 'preferred_query_name' => 'Escalation_List'
+                    , 'preferred_create_name' => 'Escalation_List'
                     , 'type' => 'string'
                 ]
                 , 'First_Name' => [
