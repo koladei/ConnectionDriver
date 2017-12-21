@@ -672,11 +672,11 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Number_Of_Active_Products__c' => [
                     'preferred_name' => 'NumberOfActiveProducts'
-                    , 'type' => 'string',
+                    , 'type' => 'int',
                 ]
                 , 'Number_Of_Products__c' => [
                     'preferred_name' => 'NumberOfProducts'
-                    , 'type' => 'string',
+                    , 'type' => 'int',
                 ]
                 , 'Email_address__c' => [
                     'preferred_name' => 'Email'
