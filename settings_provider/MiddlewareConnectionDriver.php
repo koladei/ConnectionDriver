@@ -1087,14 +1087,31 @@ abstract class MiddlewareConnectionDriver
             $otherOptions['$expand'] = '';
         }
 
+        // Check for duplicates
+        $res = new \stdClass();
+        $duplicateFilter = isset($otherOptions['$duplicateFilter'])?$otherOptions['$duplicateFilter']:'';
+        $duplicates = [];
+        if(strlen($duplicateFilter) > 0){
+            // Try getting the item first
+            $duplicates = $this->getItems($entityBrowser, "{$entityBrowser->getIdField()->getDisplayName()}", $duplicateFilter);
+        }
+
+        // If a duplicate exists, pretend the record was just created.
+        if(count($duplicates) > 0){
+            $res->d = $duplicates[0]->Id;
+            $res->success = true;
+        } 
+
         // Invoke the internal create method.
-        $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj, $otherOptions);
+        else {
+            $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj, $otherOptions);
+        }
         
         // Requery and return the created object.
         if (property_exists($res, 'd') && $res->success == true) {
             // Try to write the update to the cache also
             try {
-                if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName())) {
+                if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && count($duplicates) < 1) {
                     // Load the driver instead
                     $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
                     
