@@ -737,10 +737,12 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'First_Name' => [
                     'preferred_name' => 'FirstName'
+                    , 'preferred_query_name' => 'First Name'
                     , 'type' => 'string'
                 ]
                 , 'Last_Name' => [
                     'preferred_name' => 'LastName'
+                    , 'preferred_query_name' => 'Last Name'
                     , 'type' => 'string'
                 ]
                 , 'Region' => [
@@ -749,6 +751,7 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Site_Group' => [
                     'preferred_name' => 'SiteGroup'
+                    , 'preferred_query_name' => 'Site Group'
                     , 'type' => 'string'
                 ]
                 , 'Site' => [
