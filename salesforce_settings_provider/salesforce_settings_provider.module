@@ -396,6 +396,17 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_driver' => 'bmc_remedy'
                     ]
                 ]
+                , 'Current_Contract__c' => [
+                    'preferred_name' => 'CurrentContract'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CurrentContract'
+                        , 'preferred_local_key_name' => 'CurrentContractId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product_contract'
+                    ]
+                ]
                 , 'Status__c' => [
                     'preferred_name' => 'Status'
                     , 'type' => 'string'
@@ -472,6 +483,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Address'
                     , 'type' => 'string'
                 ]
+                , 'Currency__c' => [
+                    'preferred_name' => 'Currency'
+                    , 'type' => 'string'
+                ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
                     , 'type' => 'boolean',
@@ -509,6 +524,125 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'cash_inflow'
                     ],
                 ],
+            ]
+        ]
+        , 'customer_product_contract' => [
+            'internal_name' => 'Customer_Product_Contract__c'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 60
+            , 'fields' => [
+                'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedById' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CreatedBy'
+                        , 'preferred_local_key_name' => 'CreatedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                    ]
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'LastModifiedById' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                    ]
+                ]
+                , 'Activated_Date__c' => [
+                    'preferred_name' => 'Activated'
+                    , 'type' => 'datetime'
+                ]
+                , 'Cancelled_Date__c' => [
+                    'preferred_name' => 'Cancelled'
+                    , 'type' => 'datetime'
+                ]
+                , 'Date_Revised__c' => [
+                    'preferred_name' => 'Revised'
+                    , 'type' => 'datetime'
+                ]
+                , 'Expiration_Date__c' => [
+                    'preferred_name' => 'Expiration'
+                    , 'type' => 'datetime'
+                ]
+                , 'Description__c' => [
+                    'preferred_name' => 'Description'
+                    , 'type' => 'string'
+                    , 'type_description' => 'MAX'
+                ]
+                , 'Reason_Cancelled__c' => [
+                    'preferred_name' => 'ReasonCancelled'
+                    , 'type' => 'string'
+                    , 'type_description' => 'MAX'
+                ]
+                , 'MRC__c' => [
+                    'preferred_name' => 'MRC'
+                    , 'type' => 'decimal'
+                ]
+                , 'NRC__c' => [
+                    'preferred_name' => 'NRC'
+                    , 'type' => 'decimal'
+                ]
+                , 'Pre_Expiration_Notice_Date__c' => [
+                    'preferred_name' => 'PreExpirationNoticeDate'
+                    , 'type' => 'date'
+                ]
+                , 'IsDeleted' => [
+                    'preferred_name' => 'IsDeleted'
+                    , 'type' => 'boolean',
+                ]
+                , 'Status__c' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Tenure__c' => [
+                    'preferred_name' => 'Tenure'
+                    , 'type' => 'int'
+                ]
+                , 'Revision__c' => [
+                    'preferred_name' => 'Revision'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                    , 'relationship' => [
+                        'local_field' => 'Revision'
+                        , 'preferred_local_key_name' => 'RevisionId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product_contract'
+                    ]
+                ]
+                , '_Lines' => [
+                    'preferred_name' => 'Lines'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'CurrentContract'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'customer_product'
+                    ]
+                ]
             ]
         ]
         , 'payable_commission' => [
