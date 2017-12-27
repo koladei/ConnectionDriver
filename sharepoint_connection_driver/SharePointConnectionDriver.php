@@ -31,13 +31,13 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
      * @return void
      */
     protected function parseDateValue($value) {
-        $type_1 = '/^([\d]{4})\-([\d]{2})\-([\d]{2})T([\d]{2})\:([\d]{2})\:([\d]{2})\.([\d\+]+)$/';
+        $type_1 = '/^([\d]{4})\-([\d]{2})\-([\d]{2})T([\d]{2})\:([\d]{2})\:([\d]{2})([Z]+)$/';
         $type_3 = '/^([\d]{4})\\-([\d]{2})\-([\d]{2})$/';
 
         if (preg_match($type_3, $value) == 1) {
             return \DateTime::createFromFormat('Y-m-d', $value);
         } else if (preg_match($type_1, $value) == 1) {
-            $value = substr($value, 0, strpos($value, '.'));
+            $value = substr($value, 0, strpos($value, 'Z'));
             return \DateTime::createFromFormat('Y-m-d\TH:i:s', $value);
         }
 
@@ -298,7 +298,9 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
 
         //Connect to a Sharepoint site
         $site = 'mainyard.mainone.net';
-        $url = str_replace(' ', '%20', "https://{$site}/docs/_api/web/lists/getbytitle('Access Requests')/fields?");
+        // $url = str_replace(' ', '%20', "https://{$site}/docs/_api/web/lists/getbytitle('Access Requests')/fields?");
+        $selections = implode(',', $select);
+        $url = str_replace(' ', '%20', "https://{$site}/applications/performance/_api/web/lists/getbytitle('Employees')/items?\$select={$selections}");
         $username = 'mainonecable\spsetup_13';
         $password = 'P@55word321';
         $options = array(
@@ -316,8 +318,9 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
         );
 
         $feed = mware_blocking_http_request($url, ['options' => $options]);
-
-        return [];
+        $res = json_decode($feed->getContent());
+        // var_dump($res);
+        return $res->d->results;
     }
 
     /**
