@@ -869,7 +869,7 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Customer_Name' => [
                     'preferred_name' => 'CustomerName'
-                    , 'preferred_query_name' => 'Customer_Name__c'
+                    , 'preferred_query_name' => 'Customer Name__c'
                     , 'type' => 'string'
                 ]
                 , 'Service_Account_Name__c' => [
@@ -898,6 +898,8 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Customer_ID__c' => [
                     'preferred_name' => 'CustomerId'
+                    , 'preferred_query_name' => 'Customer ID__c'
+                    , 'preferred_create_name' => 'Customer_ID'
                     , 'type' => 'string'
                 ]
                 , 'Flag' => [
