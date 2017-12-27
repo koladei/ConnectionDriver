@@ -5,10 +5,12 @@ namespace com\mainone\middleware;
 include_once 'EntityFieldDefinition.php';
 include_once 'MiddlewareConnectionDriver.php';
 include_once 'EncoderDecoder.php';
+include_once 'Exceptions.php';
 
 use com\mainone\middleware\EntityFieldDefinition;
 use com\mainone\middleware\MiddlewareConnectionDriver;
 use com\mainone\middleware\EncoderDecoder;
+use com\mainone\middleware\InvalidFieldSelectedException;
 
 /**
  * Description of EntityDefinitionBrowser
@@ -406,20 +408,22 @@ class EntityDefinitionBrowser
      */
     public function getFieldInternalNames(array $fieldNames)
     {
-        foreach ($fieldNames as &$fieldName) {
+        $fieldNames2 = [];
+        foreach ($fieldNames as $fieldName) {
             if (isset($this->fieldsByDisplayName[$fieldName])) {
                 $fieldInfo = $this->fieldsByDisplayName[$fieldName];
                 if ($fieldInfo->isExpandable()) {
-                    $fieldName = $fieldInfo->getRelatedLocalField()->getInternalName();
+                    $fieldNames2[] = $fieldInfo->getRelatedLocalField()->getInternalName();
                 } else {
-                    $fieldName = $fieldInfo->getInternalName();
+                    $fieldNames2[] = $fieldInfo->getInternalName();
                 }
-            } else {
-                unset($fieldName);
+            } 
+            else {
+                throw new InvalidFieldSelectedException("Field '{$fieldName}' does not exist in entity '{$this->getCachedObject()->getDisplayName()}'");
             }
         }
 
-        return array_values($fieldNames);
+        return array_values($fieldNames2);
     }
 
     /**

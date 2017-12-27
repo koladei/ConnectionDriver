@@ -6,11 +6,13 @@ include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/MiddlewareFilter.
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/MiddlewareODataFilterProcessor.php');
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EntityDefinitionBrowser.php');
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EncoderDecoder.php');
+include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/Exceptions.php');
 
 use com\mainone\middleware\MiddlewareFilter;
 use com\mainone\middleware\MiddlewareODataFilterProcessor;
 use com\mainone\middleware\EntityDefinitionBrowser;
 use com\mainone\middleware\EncoderDecoder;
+use com\mainone\middleware\InvalidFieldSelectedException;
 
 /**
  * Description of MiddlewareConnectionDriver
@@ -135,6 +137,7 @@ abstract class MiddlewareConnectionDriver
                 $sync = $this->utilityFunctions['date_sync_util'];
                 $sourceDestination = implode('|', [$this->getIdentifier(), $entityBrowser->getCacheDriverName()]);
                 $sync($sourceDestination, $entityBrowser->getDisplayName(), $date);
+                // echo $date.' '.$sourceDestination.' '.$entityBrowser->getDisplayName().' '.is_null($sync);
             }
         }
     }
@@ -512,10 +515,29 @@ abstract class MiddlewareConnectionDriver
      */
     public function getItems($entityBrowser, $fields = 'Id', $filter = '', $expandeds = '', $otherOptions = [], &$performance = [])
     {
+        $getItemArgs = func_get_args();
+        $fieldsBeforeManipulation = $fields;
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
         if (is_string($entityBrowser) || is_null($entityBrowser)) {
             throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
         }       
+        
+        // if($entityBrowser->getDisplayName() == 'customer_product'){
+        //     // echo __CLASS__." {$this->maxRetries}";
+        //     // watchdog("getItems: ". current_path(), print_r($otherOptions, true));
+        //     throw new \Exception("Invalid entity 2");
+        //     // return [];
+        // }
+        $scope = $this;
+        $entityBrowser = $this->setStrategies($entityBrowser);
+        
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
+        $retryCount = $retryCount + 1;
+        $otherOptions['retryCount'] = $retryCount;
+        $getItemArgs[4] = &$otherOptions;
+        
+        // watchdog('retryCount X', print_r( $otherOptions['retryCount'] , true));
+        // watchdog('OLD DATA', print_r($args[4], true));
 
         // Handle method redirection
         if($entityBrowser->shouldRedirectRead()){
@@ -526,17 +548,18 @@ abstract class MiddlewareConnectionDriver
             }
             
             // Execute the update provider's update method.
-            $args = func_get_args();
-            $args[0] = $providerInfo->entity;
+            // $args = func_get_args();
+            $getItemArgs[0] = $providerInfo->entity;
+            // $getItemArgs[4]['retryCount'] = $retryCount;
             $return = NULL;
             
             try {
-                $return = $driver->getItems(...$args);
+                $return = $driver->getItems(...$getItemArgs);
             } 
             // May be the datastructure is faulty
             catch(\Exception $exc){
-                $driver->ensureDataStructure($args[0]);
-                $return = $driver->getItems(...$args);
+                $driver->ensureDataStructure($getItemArgs[0]);
+                $return = $driver->getItems(...$getItemArgs);
             }
             
             return $return;
@@ -550,22 +573,33 @@ abstract class MiddlewareConnectionDriver
             $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
             
             // Return the results from the cache driver.
-            $args = func_get_args();
-            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            // $args = func_get_args();
+            $getItemArgs[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            // $getItemArgs[4]['retryCount'] = $retryCount;
             $return = NULL;
             
             try {
                 // Try to fetch the _IsUpdate field in the cache.
-                $f = is_string($args[1])?\str_replace(' ', '', $args[1]):implode(',', $args[1]);
+                $f = is_string($getItemArgs[1])?\str_replace(' ', '', $getItemArgs[1]):implode(',', $getItemArgs[1]);
                 $f = strlen($f) > 0 ? "{$f},_IsUpdated":'_IsUpdated';
-                $args[1] = $f;
-                $return = $cacheDriver->getItems(...$args);
+                $getItemArgs[1] = $f;
+                $return = $cacheDriver->getItems(...$getItemArgs);
             } 
-            // May be the datastructure is faulty
+
+            // An invalid field has been selected.
+            catch(InvalidFieldSelectedException $exc){
+                throw $exc;
+            }
+            // May be the data structure is faulty
             catch(\Exception $exc){
-                $cacheDriver->ensureDataStructure($args[0]);
+                $cacheDriver->ensureDataStructure($getItemArgs[0]);
                 $this->syncFromDate($entityBrowser);
-                $return = $cacheDriver->getItems(...$args);
+
+                if($retryCount < $this->maxRetries){
+                    $return = $cacheDriver->getItems(...$getItemArgs);
+                } else{
+                    throw $exc;
+                }
             }
             return $return;
         }
@@ -574,28 +608,27 @@ abstract class MiddlewareConnectionDriver
         if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
             // Load the driver instead
             $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
-            
+            $return = NULL;
             // Return the results from the cache driver.
-            $args = func_get_args();
-            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            // $args = func_get_args();
+            $getItemArgs[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            // $getItemArgs[4]['retryCount'] = $retryCount;
             
             try {
-                $return = $delegateDriver->getItems(...$args);
+                $return = $delegateDriver->getItems(...$getItemArgs);
             } 
             // May be the datastructure is faulty
             catch(\Exception $exc){
-                $delegateDriver->ensureDataStructure($args[0]);
+                $delegateDriver->ensureDataStructure($getItemArgs[0]);
                 $this->syncFromDate($entityBrowser);
-                $return = $delegateDriver->getItems(...$args);
+                if($retryCount < $this->maxRetries) {
+                    $return = $delegateDriver->getItems(...$getItemArgs);
+                } else {
+                    throw $exc;
+                }
             }
             return $return;
         }
-
-        $scope = $this;
-        $entityBrowser = $this->setStrategies($entityBrowser);
-        
-        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
-        $otherOptions['retryCount'] = $retryCount + 1;
 
         // Take note of the preferred date format
         if(isset($otherOptions['$dateFormat'])){
@@ -655,7 +688,7 @@ abstract class MiddlewareConnectionDriver
         $includeDeleted = isset($otherOptions['$includeDeleted']) && ($otherOptions['$includeDeleted'] == '1')?TRUE:FALSE;
 
         // If not stated otherwise, try to exclude already deleted items.
-        if(!$includeDeleted){
+        if(!$includeDeleted) {
             $isDeletedField = $entityBrowser->hasField('IsDeleted');
             if($isDeletedField != FALSE) {
                 $filter = $filter.(strlen($filter) > 0 ? ' and IsDeleted eq $FALSE$':'IsDeleted eq $FALSE$');
@@ -667,7 +700,7 @@ abstract class MiddlewareConnectionDriver
         $driverScope = $this;
 
         // Cleanse the $select parameter
-        $select = self::getCurrentSelections($entityBrowser, $fields);
+        $select = static::getCurrentSelections($entityBrowser, $fields);
 
         // Process the $filter statement
         $filterExpression = MiddlewareODataFilterProcessor::convert($entityBrowser, $filter, null, $this->getStringer());
@@ -742,9 +775,19 @@ abstract class MiddlewareConnectionDriver
         // Fetch the data of matching records
         $select = array_unique($entityBrowser->getFieldInternalNames($select));
         $dateFields = $entityBrowser->getFieldsOfTypeByInternalName(['date', 'datetime'], $select);
+        // if($entityBrowser->getDisplayName() == 'salesforce__customer_products__c') {
+        //     $fieldsBeforeManipulation = is_array($fieldsBeforeManipulation)?implode(',', array_values($fieldsBeforeManipulation)):$fieldsBeforeManipulation;
+        //     watchdog('DDDD7', $entityBrowser->getDisplayName().' '. $fieldsBeforeManipulation.' '.implode(',', array_values($select)));
+        // }
 
-        $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, EncoderDecoder::unescapeall("{$filterExpression}"), $expands, $otherOptions);
-
+        $result = NULL;
+        try {
+            $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, EncoderDecoder::unescapeall("{$filterExpression}"), $expands, $otherOptions);
+        } catch(\Exception $giiExc) {
+            // watchdog("OUTDATED AAAA", "abc: {$giiExc->getMessage()}");
+            throw $giiExc;
+        }
+        
         if (!is_null($result)) {
             $select_map = $entityBrowser->getFieldsByInternalNames($select);
             $dataIsOld = FALSE;
@@ -759,7 +802,7 @@ abstract class MiddlewareConnectionDriver
                 // Try to update the cache before fetching the data if it is old.
                 // $record = &$result[$key];
                 if($isACache && $retryCount < $this->maxRetries){
-                    if($retryCount < ($this->maxRetries / 10)){
+                    if($retryCount < ($this->maxRetries / 2)){
                         if(is_object($record) && property_exists($record, '_IsUpdated') && $record->_IsUpdated != TRUE){
                             $oldRecords[] = $record->{$entityBrowser->getIdField()->getInternalName()};
                             $dataIsOld = TRUE;
@@ -773,7 +816,7 @@ abstract class MiddlewareConnectionDriver
                         else {}
                     } else {
                         // TODO: find an environment agnostic way to log slow queries
-                        watchdog("SLOW & OUTDATED QUERIES", "{$entityBrowser->getDisplayName()}");
+                        watchdog("SLOW & OUTDATED QUERIES", "{$retryCount} {$entityBrowser->getDisplayName()}");
                     }
                 }
 
@@ -812,9 +855,10 @@ abstract class MiddlewareConnectionDriver
             // Attempt to update the cache and then retry.
             if($dataIsOld == TRUE){
                 $this->syncByRecordIds($entityBrowser->getCachedObject(), $oldRecords);
-                $args = func_get_args();
-                $args[5]['retryCount'] = $retryCount;
-                return $this->getItems(...$args);
+                // $args = func_get_args();
+                // $getItemArgs[4]['retryCount'] = $retryCount;
+                watchdog("SLOW & OUTDATED QUERIES VVV", print_r($getItemArgs, true));
+                return $this->getItems(...$getItemArgs);
             }
 
             // Fetch the related field values in one sweep
@@ -868,7 +912,10 @@ abstract class MiddlewareConnectionDriver
             });
         } else {
             if ($retryCount < $this->maxRetries) {
-                return $this->getItems($entityBrowser, $fields, $filter, $expandeds, $otherOptions) ;
+                watchdog("RETRY COUNT: ", "{$retryCount} OF {$this->maxRetries}");
+                $otherOptions['retryCount'] = $retryCount;
+                return $this->getItems(...$getItemArgs);
+                // return $this->getItems($entityBrowser, $fields, $filter, $expandeds, $otherOptions) ;
             } else {
                 throw new \Exception("Failed to get data from Entity {$entityBrowser->getDisplayName()}");
             }
