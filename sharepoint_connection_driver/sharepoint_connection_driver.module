@@ -171,6 +171,68 @@ function sharepoint_connection_driver__get_entity_definitions() {
                 ]                              
             ]
         ]
+        , 'employee' => [
+            'internal_name' => 'Employees'
+            , 'datasource' => 'default'
+            , 'fields' => [
+                'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Title' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1,
+                ]
+                , 'Department' => [
+                    'preferred_name' => 'Department'
+                    , 'type' => 'string'
+                ]
+                , 'Unit' => [
+                    'preferred_name' => 'Unit'
+                    , 'type' => 'string'
+                ]
+                , 'Location' => [
+                    'preferred_name' => 'Location'
+                    , 'type' => 'string'
+                ]
+                , 'Employment_x0020_Status' => [
+                    'preferred_name' => 'Status'
+                    , 'type' => 'string'
+                ]
+                , 'Created' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'AuthorId' => [
+                    'preferred_name' => 'CreatedBy'
+                    , 'type' => 'string'
+                    // , 'relationship' => [
+                    //     'local_field' => 'CreatedBy'
+                    //     , 'preferred_local_key_name' => 'CreatedById'
+                    //     , 'remote_field' => 'Id'
+                    //     , 'remote_type' => 'parent'
+                    //     , 'remote_entity' => 'sharepoint_user'
+                    // ]
+                ]
+                , 'Modified' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'EditorId' => [
+                    'preferred_name' => 'ModifiedBy'
+                    , 'type' => 'string'
+                    // , 'relationship' => [
+                    //     'local_field' => 'ModifiedBy'
+                    //     , 'preferred_local_key_name' => 'ModifiedById'
+                    //     , 'remote_field' => 'Id'
+                    //     , 'remote_type' => 'parent'
+                    //     , 'remote_entity' => 'sharepoint_user'
+                    // ]
+                ]                              
+            ]
+        ]
     ]
     ];
 }
