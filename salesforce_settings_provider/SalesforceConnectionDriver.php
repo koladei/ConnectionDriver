@@ -186,7 +186,7 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
             // Get the resulting data afresh
             $selectFields = array_keys(get_object_vars($object));
-            return $this->getItemById($entityBrowser, $id, $selectFields);
+            return $id;
         } else {
             throw new \Exception('Unable to connect to Salesforce');
         }
