@@ -471,7 +471,7 @@ abstract class MiddlewareConnectionDriver
      * @param array $otherOptions Key-Value array of other query parameters.
      * @return \stdClass
      */
-    public function getItemsByFieldValues($entityBrowser, EntityFieldDefinition $entityField, array $values, $select, $expands = '', &$otherOptions = [])
+    public function _getItemsByFieldValues($entityBrowser, EntityFieldDefinition $entityField, array $values, $select, $expands = '', &$otherOptions = [])
     {
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
         if (is_string($entityBrowser) || is_null($entityBrowser)) {
@@ -500,6 +500,31 @@ abstract class MiddlewareConnectionDriver
         $additionalFilter = isset($otherOptions['more_filter']) ? "({$otherOptions['more_filter']}) and " : '';
         $result = $this->getItems($entityBrowser, $select, "{$additionalFilter}{$entityField->getDisplayName()} IN({$implosion})", $expands, $otherOptions);
         return $result;
+    }
+
+    public function getItemsByFieldValues2($entityBrowser, EntityFieldDefinition $entityField, array $values, $select, $expands = '', &$otherOptions = []){
+        $max_chunk_size = $this->getMaxInToOrConversionChunkSize();
+        $expand_chunks = array_chunk($values, $max_chunk_size);
+        $data = [];
+
+        foreach ($expand_chunks as $chunk) {
+            $chunkResult = $this->_getItemsByFieldValues($entityBrowser, $entityField, $chunk, $select, $expands, $otherOptions);
+            $data = array_merge($data, $chunkResult);
+        }
+
+        return $data;
+    }
+
+    public function getItemsByFieldValues($entityBrowser, $fieldName, array $values, $select, $expands = '', &$otherOptions = []){
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        if (is_null($entityBrowser)) {
+            throw new \Exception('Invalid entity could not be found.');
+        }
+
+        
+        $entityField = ($fieldName instanceof EntityFieldDefinition)? $fieldName: $entityBrowser->getFieldByDisplayName($fieldName);
+
+        return $this->getItemsByFieldValues2($entityBrowser, $entityField, $values, $select, $expands, $otherOptions);
     }
     
     /**
@@ -820,6 +845,11 @@ abstract class MiddlewareConnectionDriver
                     }
                 }
 
+                // Avoid displaying the _IsUpdated field
+                if(array_key_exists('_IsUpdated', $select_map)){
+                    unset($select_map['_IsUpdated']);
+                }
+
                 $record = $entityBrowser->renameFields($record, $select_map);
                 foreach ($dateFields as $dateField) {
                     $dateFieldName = $dateField->getDisplayName();
@@ -855,9 +885,6 @@ abstract class MiddlewareConnectionDriver
             // Attempt to update the cache and then retry.
             if($dataIsOld == TRUE){
                 $this->syncByRecordIds($entityBrowser->getCachedObject(), $oldRecords);
-                // $args = func_get_args();
-                // $getItemArgs[4]['retryCount'] = $retryCount;
-                watchdog("SLOW & OUTDATED QUERIES VVV", print_r($getItemArgs, true));
                 return $this->getItems(...$getItemArgs);
             }
 
@@ -926,6 +953,7 @@ abstract class MiddlewareConnectionDriver
 
     public function updateItem($entityBrowser, $id, \stdClass $object, array $otherOptions = [])
     {
+        $updateItemArgs = func_get_args();
         $entityBrowser = $this->getEntityBrowser($entityBrowser);        
         if (is_string($entityBrowser) || is_null($entityBrowser)) {
             throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
@@ -940,9 +968,9 @@ abstract class MiddlewareConnectionDriver
             }
             
             // Execute the update provider's update method.
-            $args = func_get_args();
-            $args[0] = $providerInfo->entity;
-            $return = $driver->updateItem(...$args);
+            // $args = func_get_args();
+            $updateItemArgs[0] = $providerInfo->entity;
+            $return = $driver->updateItem(...$updateItemArgs);
             return $return;
         }
         
@@ -952,9 +980,9 @@ abstract class MiddlewareConnectionDriver
             $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
             
             // Return the results from the cache driver.
-            $args = func_get_args();
-            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
-            $return = $delegateDriver->updateItem(...$args);
+            // $args = func_get_args();
+            $updateItemArgs[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $return = $delegateDriver->updateItem(...$updateItemArgs);
             return $return;
         }
 
@@ -962,6 +990,10 @@ abstract class MiddlewareConnectionDriver
 
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
         $otherOptions['retryCount'] = $retryCount + 1;
+        if(!isset($updateItemArgs[3])){
+            $updateItemArgs[3] = [];
+        }
+        $updateItemArgs[3]['retryCount'] = $otherOptions['retryCount'];
 
         // Strip-out invalid fields
         $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
@@ -989,10 +1021,15 @@ abstract class MiddlewareConnectionDriver
             $abccc = array_merge($abccd, EntityFieldDefinition::getDisplayNames($setFields));
             $otherOptions['$select'] = array_unique($abccc);
         }
+        // $otherOptions['$select'] = array_keys($otherOptions['$select']);
+        // return 'CCC';//array_keys($otherOptions['$select']);
+        $updateItemArgs[3]['$select'] = $otherOptions['$select'];
+        // return $otherOptions['$select'];
 
         if (!isset($otherOptions['$expand'])) {
             $otherOptions['$expand'] = '';
         }
+        $updateItemArgs[3]['$expand'] = $otherOptions['$expand'];
 
         // If there is need to specifically update the cache copy alone
         $cacheOnly = (isset($otherOptions['$cacheOnly']) && $otherOptions['$cacheOnly'] == '1')?TRUE:FALSE;
@@ -1005,23 +1042,24 @@ abstract class MiddlewareConnectionDriver
             $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
             
             // Refactor the arguments to target the cache.
-            $args = func_get_args();
-            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            // $updateItemArgs = func_get_args();
+            $updateItemArgs[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
 
             // Mark for pending update so that irrespective of the created or modified time, this record will be updated.
-            $args[2]->_IsUpdated = FALSE;
+            $updateItemArgs[2]->_IsUpdated = FALSE;
             try {
-                return $cacheDriver->updateItem(...$args);
+                return $cacheDriver->updateItem(...$updateItemArgs);
             } 
             // May be the datastructure is faulty
             catch(\Exception $exc){
-                $cacheDriver->ensureDataStructure($args[0]);
-                return $cacheDriver->updateItem(...$args);
+                $cacheDriver->ensureDataStructure($updateItemArgs[0]);
+                return $cacheDriver->updateItem(...$updateItemArgs);
             }
         }
 
         try {
             if ($this->updateItemInternal($entityBrowser, $this->connectionToken, $id, $obj, $otherOptions)) {
+                
                 // Try to write the update to the cache also
                 try {
                     if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName())) {
@@ -1029,23 +1067,23 @@ abstract class MiddlewareConnectionDriver
                         $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
                         
                         // Refactor the arguments to target the cache.
-                        $args = func_get_args();
-                        $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+                        // $updateItemArgs = func_get_args();
+                        $updateItemArgs[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
 
                         // Try to sync the cache
                         $now = (new \DateTime())->format('Y-m-d');
 
                         // Mark for pending update so that irrespective of the created or modified time, this record will be updated.
-                        $args[2]->_IsUpdated = FALSE;
+                        $updateItemArgs[2]->{'_IsUpdated'} = FALSE;
                         try {
-                            $cacheDriver->updateItem(...$args);
-                            $this->syncFromDate($entityBrowser, $now);
+                            $cacheDriver->updateItem(...$updateItemArgs);
+                            $this->syncByRecordIds($entityBrowser, [$id]);
                         } 
                         // May be the datastructure is faulty
                         catch(\Exception $exc){
-                            $cacheDriver->ensureDataStructure($args[0]);
-                            $cacheDriver->updateItem(...$args);
-                            $this->syncFromDate($entityBrowser, $now);
+                            $cacheDriver->ensureDataStructure($updateItemArgs[0]);
+                            $cacheDriver->updateItem(...$updateItemArgs);
+                            $this->syncByRecordIds($entityBrowser, [$id]);
                         }
                     }
                 } 
@@ -1053,10 +1091,16 @@ abstract class MiddlewareConnectionDriver
                 catch(\Exception $exp){}
 
                 // Return the item that was just updated.
-                return $this->getItemById($entityBrowser, $id, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+                // $d = [$entityBrowser->getDisplayName(), $id, $updateItemArgs[3]['$select'], $updateItemArgs[3]['$expand'], $updateItemArgs[3]];
+                // return $this->getIdentifier();
+                // $updateItemArgs[0] = $entityBrowser->getDisplayName();
+                // $getItemById = $this->getItemById;
+                // return $otherOptions['$select'];
+                return $this->getItemById($entityBrowser, $id, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);//$updateItemArgs[3]['$select'], $updateItemArgs[3]['$expand'], []);
             }
         } catch (\Exception $exc) {
             if ($retryCount < $this->maxRetries) {
+                $updateItemArgs[0] = $entityBrowser;
                 return $this->updateItem($entityBrowser, $id, $object, $otherOptions);
             } else {
                 throw $exc;

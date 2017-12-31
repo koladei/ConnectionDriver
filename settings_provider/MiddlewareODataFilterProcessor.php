@@ -92,7 +92,7 @@ class MiddlewareODataFilterProcessor {
         
         // Integer and Constants comparisons
         $matchs = [];
-        preg_match_all('/([\w][\w\d\/]*[^\/])\s+([\w]{2})\s+(([\d]+(\.[\d]+)?)|(\$[\w]+\$))/', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/([\w][\w\d\/]*[^\/])\s+([\w]{2})\s+((([\-])?[\d]+(\.[\d]+)?)|(\$[\w]+\$))/', $expression, $matchs, PREG_SET_ORDER);
 
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
