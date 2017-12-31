@@ -301,7 +301,6 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Related_Customer_Product__c' => [
                     'preferred_name' => 'CustomerProduct'
                     , 'type' => 'string'
-                    , 'lookup_entity' => 'customer_product'
                     , 'relationship' => [
                         'local_field' => 'CustomerProduct'
                         , 'preferred_local_key_name' => 'CustomerProductId'
@@ -522,8 +521,8 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_field' => 'CustomerProduct'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'cash_inflow'
-                    ],
-                ],
+                    ]
+                ]
             ]
         ]
         , 'customer_product_contract' => [
