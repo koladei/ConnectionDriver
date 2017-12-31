@@ -298,7 +298,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                         $val = $updatedField->getValue($val)->format('Y-m-d H:i:s');
                         $val = "{$val}";
                     }
-
+                    
                     $statement->bindValue(":{$updatedField->getInternalName()}", $val);
                 }
                 $statement->bindValue(":{$idField->getInternalName()}", $id);
@@ -312,7 +312,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             // Get the resulting data afresh
             $selectFields = array_keys(get_object_vars($object));
 
-            return $this->getItemById($entityBrowser, $id, $selectFields);
+            return $id;
         }  else {
             throw new \Exception('The connection datasource settings could not be retrieved, contact the administrator.');
         }
