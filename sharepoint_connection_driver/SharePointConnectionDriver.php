@@ -287,20 +287,30 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
 
         // Deal with field prefix
         $filter = str_replace('_xENTITYNAME_', '', $filter);
-        
-        $retryCount = 0;
 
-        // Generate the SOQL query to send in the POST request
-        $query_url =  'SELECT ' . implode(',', $select)
-            . " FROM {$entityBrowser->getInternalName()}"
-            . (strlen($filter) > 0 ? "  WHERE {$filter} " : '')
-            . $limit;
+        $expandedFields = [];
+        foreach($select as $s){
+            if (($pos = strpos($s, '/')) > 0) {
+                $n1 = substr($s, 0, $pos);
+                $n2 = substr($s, $pos + 1);
+                
+                if(!in_array($n1, $expands)){
+                    $expands[] = $n1;
+                    $expandedFields[$n1] = [];
+                }
+                $expandedFields[$n1][] = $n2;
+            }
+        }
 
         //Connect to a Sharepoint site
         $site = 'mainyard.mainone.net';
         // $url = str_replace(' ', '%20', "https://{$site}/docs/_api/web/lists/getbytitle('Access Requests')/fields?");
         $selections = implode(',', $select);
-        $url = str_replace(' ', '%20', "https://{$site}/applications/performance/_api/web/lists/getbytitle('Employees')/items?\$select={$selections}");
+        $expansions = implode(',', $expands);
+        $expansions = count($expands) > 0?"&\$expand={$expansions}":'';
+        $url = str_replace(' ', '%20', "https://{$site}/applications/performance/_api/web/lists/getbytitle('Employees')/items?\$select={$selections}{$expansions}&\$top=1000");
+        
+        // echo $url;
         $username = 'mainonecable\spsetup_13';
         $password = 'P@55word321';
         $options = array(
@@ -314,12 +324,21 @@ class SharePointConnectionDriver extends MiddlewareConnectionDriver {
             CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_HTTPAUTH => CURLAUTH_NTLM,            
-            CURLOPT_USERPWD => "$username:$password"
+            CURLOPT_USERPWD => "{$username}:{$password}"
         );
 
         $feed = mware_blocking_http_request($url, ['options' => $options]);
         $res = json_decode($feed->getContent());
-        // var_dump($res);
+        // var_dump( $res->d->results);
+
+        foreach($res->d->results as &$result){
+            foreach($expandedFields as $expand => $f1){
+                foreach($f1 as $f2){
+                    $result->{"{$expand}/{$f2}"} = property_exists($result, $expand) &&  property_exists($result->{$expand}, $f2) ?$result->{$expand}->{$f2}:NULL;
+                }
+            }
+        }
+
         return $res->d->results;
     }
 
