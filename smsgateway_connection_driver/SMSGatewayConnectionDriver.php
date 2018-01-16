@@ -258,7 +258,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
     {
         $obj = new \stdClass;
         $obj->username = 'licensemanager@mainone.net';
-        $obj->password = 'Welcome@123';
+        $obj->password = 'wELCOME@123';
         $obj->sendUrl = 'https://api.ozinta.com/v3/sms/simple';
         $obj->reportUrl = 'https://api.ozinta.com/v3/reports';
         $obj->defaultSenderId = 'MAINONE';

@@ -370,6 +370,10 @@ function sql_connection_driver__get_entity_definitions()
                         'preferred_name' => 'Name'
                         , 'type' => 'string'
                     ]
+                    , 'disabled' => [
+                        'preferred_name' => 'IsDisabled'
+                        , 'type' => 'boolean'
+                    ]
                     , 'status' => [
                         'preferred_name' => 'Status'
                         , 'type' => 'string'
@@ -387,6 +391,34 @@ function sql_connection_driver__get_entity_definitions()
                         'preferred_name' => 'WSDL'
                         , 'type' => 'string'
                         , 'type_description' => 'MAX'
+                    ]
+                    , 'url' => [
+                        'preferred_name' => 'URL'
+                        , 'type' => 'string'
+                        , 'type_description' => '1024'
+                    ]
+                    , 'service_type' => [
+                        'preferred_name' => 'ServiceType'
+                        , 'type' => 'string'
+                        , 'type_description' => '255'
+                    ]
+                    , 'version' => [
+                        'preferred_name' => 'Version'
+                        , 'type' => 'string'
+                    ]
+                    , 'api_name' => [
+                        'preferred_name' => 'APIName'
+                        , 'type' => 'string'
+                    ]
+                    , '_Projects' => [
+                        'preferred_name' => 'Projects'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'Id'
+                            , 'remote_field' => 'FunctionId'
+                            , 'remote_type' => 'child'
+                            , 'remote_entity' => 'dev_projects_function_map'
+                        ]
                     ]
                 ]
             ]
@@ -460,6 +492,132 @@ function sql_connection_driver__get_entity_definitions()
                         'preferred_name' => 'URL'
                         , 'type' => 'string'
                         , 'type_description' => '1024'
+                    ]
+                ]
+            ]
+            , 'dev_projects' => [
+                'internal_name' => 'Development_Projects'
+                , 'manage_timestamps' => TRUE
+                , 'fields' => [
+                    'id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'createdby' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'modifiedby' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                    ]
+                    , 'description' => [
+                        'preferred_name' => 'Description'
+                        , 'type' => 'string'
+                    ]
+                    , '_Functions' => [
+                        'preferred_name' => 'Functions'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'Id'
+                            , 'remote_field' => 'ProjectId'
+                            , 'remote_type' => 'child'
+                            , 'remote_entity' => 'dev_projects_function_map'
+                        ]
+                    ]
+                ]
+            ]
+            , 'dev_projects_function_map' => [
+                'internal_name' => 'Development_Projects_Function_Map'
+                , 'manage_timestamps' => TRUE
+                , 'fields' => [
+                    'id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'createdby' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'modifiedby' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    ,'projectid' => [
+                        'preferred_name' => 'Project'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'Project'
+                            , 'preferred_local_key_name' => 'ProjectId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'dev_projects'
+                        ]
+                    ]
+                    , 'functionid' => [
+                        'preferred_name' => 'Function'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'Function'
+                            , 'preferred_local_key_name' => 'FunctionId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'adhocsoapservice'
+                        ]
                     ]
                 ]
             ]
