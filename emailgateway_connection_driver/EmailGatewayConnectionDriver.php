@@ -126,6 +126,7 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
     }
 
     public function getItemsInternal($entityBrowser, &$ews = null, array $select, $filter, $expands = [], $otherOptions = []){
+        set_time_limit(60);
         // Get a connection reference
         if (($ews = (!is_null($ews) ? $ews : $this->getConnectionToken()))) {
 
@@ -389,6 +390,7 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
     }
 
     private function getConnectionToken($sourceName = NULL) {
+        set_time_limit(60);
         try {
             $sourceLoader = $this->sourceLoader;
             $settings = $sourceLoader($sourceName);
