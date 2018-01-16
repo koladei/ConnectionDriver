@@ -371,7 +371,7 @@ function dynamics_connection_driver__get_entity_definitions() {
                 ]
                 , 'TRANSDATE' => [
                     'preferred_name' => 'TransactionDate'
-                    , 'type' => 'datetime'
+                    , 'type' => 'date'
                 ]
                 , 'CLOSED' => [
                     'preferred_name' => 'Closed'
@@ -442,6 +442,16 @@ function dynamics_connection_driver__get_entity_definitions() {
                     , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'OffsetTransactionId'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cust_invoice_line_transaction'
+                    ]
+                ] 
+                , '_LINE_TRANSACTIONS2' => [
+                    'preferred_name' => 'SettlementTransactionBreakdown'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'PaymentTransactionId'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'cust_invoice_line_transaction'
                     ]
@@ -710,7 +720,7 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_field' => 'TemplateId'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'cust_invoice_line'
-                        , 'filter' => 'CustomerProductId eq $blank$ and OpportunityId eq $blank$'
+                        , 'filter' => 'SCOMSRevisitRequired gt 0'
                     ]
                 ]
             ]
@@ -798,6 +808,17 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'cust_trans'
                     ]
                 ]
+                , 'INVOICEID' => [
+                    'preferred_name' => 'Invoice'
+                    , 'type' => 'int'
+                    , 'relationship' => [
+                        'local_field' => 'Invoice'
+                        , 'preferred_local_key_name' => 'InvoiceId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'cust_invoice_table'
+                    ]
+                ]
                 , 'SENTTOSCOMS' => [
                     'preferred_name' => 'SentToSCOMS'
                     , 'type' => 'int'
@@ -812,7 +833,19 @@ function dynamics_connection_driver__get_entity_definitions() {
                 ]
                 , 'AMOUNT' => [
                     'preferred_name' => 'Amount'
-                    , 'type' => 'int',
+                    , 'type' => 'decimal',
+                ]
+                , '_INFLOWS' => [
+                    'preferred_name' => 'Inflows'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'TransactionLineId'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cash_inflow'
+                        , 'remote_driver' => 'salesforce'
+                        // , 'filter' => 'StageName ne \'Opportunity Abandoned\' and StageName ne \'Closed/Lost\''
+                    ],
                 ]
             ]
         ]
