@@ -204,7 +204,8 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Amount__c' => [
                     'preferred_name' => 'Amount'
-                    , 'type' => 'string'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Commission__c' => [
                     'preferred_name' => 'Commission'
@@ -246,6 +247,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Quarter'
                     , 'type' => 'int'
                 ]
+                , 'Type__c' => [
+                    'preferred_name' => 'InflowType'
+                    , 'type' => 'int'
+                ]
                 , 'TransLineId__c' => [
                     'preferred_name' => 'TransactionLineId'
                     , 'type' => 'string'
@@ -253,6 +258,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Invoice__c' => [
                     'preferred_name' => 'InvoiceNumber'
+                    , 'type' => 'string'
+                ]
+                , 'Business_Entity__c' => [
+                    'preferred_name' => 'BusinessEntity'
                     , 'type' => 'string'
                 ]
                 , 'IsDeleted' => [
@@ -681,8 +690,13 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'type' => 'decimal'
                     , 'type_description' => '16,2'
                 ]
-                , 'Cash_Amount__c' => [
+                , 'Cash_Commission_Sum__c' => [
                     'preferred_name' => 'CashAmount'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
+                , 'Cash_Sum__c' => [
+                    'preferred_name' => 'CashSum'
                     , 'type' => 'decimal'
                     , 'type_description' => '16,2'
                 ]
@@ -719,6 +733,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Currency__c' => [
                     'preferred_name' => 'Currency'
+                    , 'type' => 'string'
+                ]
+                , 'Duplication_Control__c' => [
+                    'preferred_name' => 'DuplicationControl'
                     , 'type' => 'string'
                 ]
                 , 'Payment_Status__c' => [
@@ -760,6 +778,16 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'cash_inflow'
                     ]
+                ]
+                , '_Opportunities' => [
+                    'preferred_name' => 'Opportunities'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'PayableCommission'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'opportunity'
+                    ],
                 ]
             ]
         ]
@@ -918,6 +946,17 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'contact'
                     ],
                 ]
+                , '_ERPAccount' => [
+                    'preferred_name' => 'ERPAccount'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'GCID'
+                        , 'remote_field' => 'GCID'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'rootaccount'
+                        , 'remote_driver' => 'dynamics'
+                    ],
+                ]
             ]
         ]
         , 'opportunity' => [
@@ -943,9 +982,36 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
+                , 'Related_Payable_Commission__c' => [
+                    'preferred_name' => 'PayableCommission'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'PayableCommission'
+                        , 'preferred_local_key_name' => 'PayableCommissionId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'payable_commission'
+                    ],
+                ]
                 , 'Book_Status__c' => [
                     'preferred_name' => 'BookStatus'
                     , 'type' => 'string'
+                ]
+                , 'Book_Year__c' => [
+                    'preferred_name' => 'BookYear'
+                    , 'type' => 'int'
+                ]
+                , 'Book_Quarter__c' => [
+                    'preferred_name' => 'BookQuarter'
+                    , 'type' => 'int'
+                ]
+                , 'Book_Date_Time__c' => [
+                    'preferred_name' => 'BookDate'
+                    , 'type' => 'datetime'
+                ]
+                , 'Book_Value__c' => [
+                    'preferred_name' => 'BookValue'
+                    , 'type' => 'decimal'
                 ]
                 , 'Service_Order_ID__c' => [
                     'preferred_name' => 'ServiceOrderID'
@@ -966,6 +1032,18 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Commitment_Status__c' => [
                     'preferred_name' => 'CommitmentStatus'
                     , 'type' => 'string'
+                ]
+                , 'Committed_Year__c' => [
+                    'preferred_name' => 'CommitmentYear'
+                    , 'type' => 'int'
+                ]
+                , 'Committed_Quarter__c' => [
+                    'preferred_name' => 'CommitmentQuarter'
+                    , 'type' => 'int'
+                ]
+                , 'Committed_Date__c' => [
+                    'preferred_name' => 'CommitmentDate'
+                    , 'type' => 'datetime'
                 ]
                 , 'Network_Option__c' => [
                     'preferred_name' => 'NetworkOption'
@@ -1062,6 +1140,7 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'type' => 'string'
                     , 'relationship' => [
                         'local_field' => 'Owner'
+                        , 'preferred_local_key_name' => 'OwnerId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'user'
@@ -1078,6 +1157,7 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'mandatory' => 1
                     , 'relationship' => [
                         'local_field' => 'Account'
+                        , 'preferred_local_key_name' => 'AccountId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'account'
