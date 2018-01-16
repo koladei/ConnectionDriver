@@ -82,14 +82,14 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             $this->quote = (strlen($quote) > 0) ? '\'' : '';
         } else {
             if (!is_null($this->value)) {
-                if ($fieldInfo->getDataType() == 'int' && strlen($this->quote) > 0) {
-                    throw new \Exception("Field {$fieldInfo->getDisplayName()} is an integer field. Quotes are not allowed for integer fields.");
+                if (in_array($fieldInfo->getDataType(), ['int', 'decimal']) && strlen($this->quote) > 0) {
+                    throw new \Exception("Field {$fieldInfo->getDisplayName()} is either an integer or decimal field. Quotes are not allowed for integer fields.");
                 } else if ($fieldInfo->getDataType() == 'boolean' && strlen($this->quote) > 0) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} is a boolean field. Quotes are not allowed for boolean fields.");
                 } else if (!in_array($fieldInfo->getDataType(), ['int', 'boolean']) && strlen($this->quoteValue()) < 1) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} requires that it's values be quoted. {$value}");
-                } else if ((!in_array($fieldInfo->getDataType(), ['int', 'boolean']) && strlen($this->quote) > 1) || (!in_array($fieldInfo->getDataType(), ['int', 'boolean']) && ($this->quote != '"' && $this->quote != '\''))) {
-                    throw new \Exception("Field {$fieldInfo->getDisplayName()} only supports qoutes of type ''' or '\"'.");
+                } else if ((!in_array($fieldInfo->getDataType(), ['int', 'boolean', 'decimal']) && strlen($this->quote) > 1) || (!in_array($fieldInfo->getDataType(), ['int', 'boolean', 'decimal']) && ($this->quote != '"' && $this->quote != '\''))) {
+                    throw new \Exception("Field {$fieldInfo->getDisplayName()} {$fieldInfo->getDataType()} only supports qoutes of type ''' or '\"'.");
                 } else {
                     $this->quote = (strlen($this->quote) > 0) ? '\'' : '';
                 }
@@ -503,9 +503,20 @@ class MiddlewareFilter extends MiddlewareFilterBase {
 
         $value = $this->value;
         if ($value instanceof \DateTime) {
-            $value = "datetime'{$value->format('Y-m-d\\TH:i:s')}'";
+            if($this->fieldInfo->isDate()){
+                $value = "{$value->format('m\\Td\\TY')}";
+                $value = \str_replace('T', '\\', $value);
+            } else {
+                $value = "{$value->format('Y-m-d\\TH:i:s')}";
+            }
         } else if (is_null($value)) {
-            $value = '\'\'';
+            if($this->fieldInfo->isDate()){
+                $value = 'datenull()';
+            } else if($this->fieldInfo->isDateTime()){
+                $value = 'utcdatetimenull()';
+            } else {
+                $value = '\'\'';
+            }
         } else {
             $value = $this->quoteValue();
         }
