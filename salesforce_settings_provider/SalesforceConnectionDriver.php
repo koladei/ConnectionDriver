@@ -7,7 +7,7 @@ use com\mainone\middleware\MiddlewareFilter;
 use com\mainone\middleware\EntityDefinitionBrowser;
 
 /**
- * Description of LDAPConnectionDriver
+ * Description of SalesforceConnectionDriver
  *
  * @author Kolade.Ige
  */
