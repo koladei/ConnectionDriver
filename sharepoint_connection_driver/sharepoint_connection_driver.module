@@ -127,7 +127,7 @@ function sharepoint_connection_driver__get_entity_definitions_local(){
 function sharepoint_connection_driver__get_entity_definitions() {
     return ['sharepoint'=>[
         'performancereport' => [
-            'internal_name' => 'IT Shared Documents'
+            'internal_name' => 'Customer Performance Report'
             , 'fields' => [
                 'Id' => [
                     'preferred_name' => 'Id'
@@ -193,6 +193,10 @@ function sharepoint_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Unit'
                     , 'type' => 'string'
                 ]
+                , 'Level' => [
+                    'preferred_name' => 'Level'
+                    , 'type' => 'string'
+                ]
                 , 'Location' => [
                     'preferred_name' => 'Location'
                     , 'type' => 'string'
@@ -205,32 +209,38 @@ function sharepoint_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
-                , 'AuthorId' => [
-                    'preferred_name' => 'CreatedBy'
+                , 'Author/Name' => [
+                    'preferred_name' => 'CreatedById'
                     , 'type' => 'string'
-                    // , 'relationship' => [
-                    //     'local_field' => 'CreatedBy'
-                    //     , 'preferred_local_key_name' => 'CreatedById'
-                    //     , 'remote_field' => 'Id'
-                    //     , 'remote_type' => 'parent'
-                    //     , 'remote_entity' => 'sharepoint_user'
-                    // ]
+                ]
+                , 'Author/Title' => [
+                    'preferred_name' => 'CreatedByName'
+                    , 'type' => 'string'
+                ]
+                , 'Employee/Name' => [
+                    'preferred_name' => 'EmployeeId'
+                    , 'type' => 'string'
+                ]
+                , 'Employee/Title' => [
+                    'preferred_name' => 'EmployeeName'
+                    , 'type' => 'string'
+                ]
+                , 'Editor/Name' => [
+                    'preferred_name' => 'ModifiedById'
+                    , 'type' => 'string'
+                ]
+                , 'Editor/Title' => [
+                    'preferred_name' => 'ModifiedByName'
+                    , 'type' => 'string'
                 ]
                 , 'Modified' => [
                     'preferred_name' => 'Modified'
                     , 'type' => 'datetime'
                 ]
-                , 'EditorId' => [
-                    'preferred_name' => 'ModifiedBy'
+                , 'Employment_x0020_Status' => [
+                    'preferred_name' => 'Status'
                     , 'type' => 'string'
-                    // , 'relationship' => [
-                    //     'local_field' => 'ModifiedBy'
-                    //     , 'preferred_local_key_name' => 'ModifiedById'
-                    //     , 'remote_field' => 'Id'
-                    //     , 'remote_type' => 'parent'
-                    //     , 'remote_entity' => 'sharepoint_user'
-                    // ]
-                ]                              
+                ]                            
             ]
         ]
     ]
