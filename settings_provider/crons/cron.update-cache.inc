@@ -136,7 +136,9 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                 foreach ($newbies as $newbie) {
                     try {
                         // Create item if it does not exist.
-                        $destCopy = $destination->getItems($entity['internal_name'], 'Id', "Id eq '{$newbie->Id}'", '');
+                        $destCopy = $destination->getItems($entity['internal_name'], 'Id', "Id eq '{$newbie->Id}'", '', [
+                            '$includeDeleted' => 1
+                        ]);
                     
                         if (count($destCopy) < 1) {
                             try {
