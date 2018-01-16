@@ -133,7 +133,7 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
             $conjection = ($part[0] == self::FRAGMENT_OR) ? 'or': (($part[0] == self::FRAGMENT_AND) ? 'and' : '');
             $fragment = $part[1];
             // $ret .= ($index == 0) ? "({$fragment}" : " {$conjection} {$fragment}";
-            $ret .= ($index == 0) ? "{$fragment}" : " {$conjection} {$fragment}";
+            $ret .= ($index == 0) ? "({$fragment})" : " {$conjection} ({$fragment})";
         }
         // $ret .= (strlen($ret) > 0) ? ')' : '';
 
