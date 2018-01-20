@@ -38,7 +38,8 @@ function dynamics_ax_settings_provider__user_access($args) {
 }
 
 function dynamics_ax_settings_provider__get_entity_definitions_local(){
-    return dynamics_connection_driver__get_entity_definitions_local(...func_get_args());
+    // return dynamics_connection_driver__get_entity_definitions_local(...func_get_args());
+    return [];
 }
 
 /**
@@ -46,6 +47,6 @@ function dynamics_ax_settings_provider__get_entity_definitions_local(){
  * @return type
  */
 function dynamics_ax_settings_provider__get_entity_definitions() {
-    return dynamics_connection_driver__get_entity_definitions();
-    
+    // return dynamics_connection_driver__get_entity_definitions();
+    return [];    
 }
