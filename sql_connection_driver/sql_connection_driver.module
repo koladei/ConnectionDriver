@@ -398,7 +398,7 @@ function sql_connection_driver__get_entity_definitions()
                         , 'type_description' => '1024'
                     ]
                     , 'service_type' => [
-                        'preferred_name' => 'ServiceType'
+                        'preferred_name' => 'Type'
                         , 'type' => 'string'
                         , 'type_description' => '255'
                     ]
