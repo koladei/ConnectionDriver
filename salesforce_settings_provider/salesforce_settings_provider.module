@@ -1071,7 +1071,8 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Exchange_Rate__c' => [
                     'preferred_name' => 'ExchangeRate'
-                    , 'type' => 'string'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Feasibility_Outcome__c' => [
                     'preferred_name' => 'FeasibilityOutcome'
