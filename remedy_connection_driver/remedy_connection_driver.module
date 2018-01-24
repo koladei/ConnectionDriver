@@ -844,7 +844,6 @@ function remedy_connection_driver__get_entity_definitions() {
                 , 'Last_Modified_By' => [
                     'preferred_name' => 'ModifiedBy'
                     , 'type' => 'string'
-                    , 'mandatory' => 1
                     , 'relationship' => [
                         'local_field' => 'ModifiedBy'
                         , 'preferred_local_key_name' => 'ModifiedById'
@@ -922,6 +921,16 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'remote_field' => 'ServiceAccount'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'service'
+                    ],
+                ]
+                , '_Changes' => [
+                    'preferred_name' => 'Changes'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'ServiceAccount'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'change_management_affected_customers'
                     ],
                 ]
                 , '_DictionaryInformation' => [
@@ -1341,19 +1350,15 @@ function remedy_connection_driver__get_entity_definitions() {
                     ]
                 ]
                 , 'Change_Request_ID__c' => [
-                    'preferred_name' => 'ChangeRequestID'
+                    'preferred_name' => 'ChangeRequest'
                     , 'type' => 'string'
-                ]
-                , '_SalesforcePair' => [
-                    'preferred_name' => 'SalesforcePair'
-                    , 'type' => 'parent'
                     , 'relationship' => [
-                        'local_field' => 'Name'
-                        , 'remote_field' => 'Name'
+                        'local_field' => 'ChangeRequest'
+                        , 'preferred_local_key_name' => 'ChangeRequestId'
+                        , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'customer_product'
-                        , 'remote_driver' => 'salesforce'
-                    ],
+                        , 'remote_entity' => 'change_request'
+                    ]
                 ]
             ]
         ]
@@ -1364,14 +1369,14 @@ function remedy_connection_driver__get_entity_definitions() {
                 'query' => 'Change_QueryList_Service'
             ]
             , 'fields' => [
-                'Request_ID' => [
+                'Infrastructure_Change_ID' => [
                     'preferred_name' => 'Id'
-                    , 'preferred_query_name' => 'Request ID'
+                    , 'preferred_query_name' => 'Infrastructure Change ID'
                     , 'type' => 'string'
-                    , 'mandatory' => 1
                 ]
                 , 'Actual_Start_Date' => [
                     'preferred_name' => 'ActualStartDate'
+                    , 'preferred_query_name' => 'Actual Start Date'
                     , 'type' => 'datetime'
                     , 'mandatory' => 1
                 ]
@@ -1422,15 +1427,6 @@ function remedy_connection_driver__get_entity_definitions() {
                 , 'Change_Implementer' => [
                     'preferred_name' => 'Implementer'
                     , 'type' => 'string'
-                    // , 'relationship' => [
-                    //     'local_field' => 'Implementer'
-                    //     , 'preferred_local_key_name' => 'ImplementerId'
-                    //     , 'remote_field' => 'Id'
-                    //     , 'remote_type' => 'parent'
-                    //     , 'remote_entity' => 'objects'
-                    //     , 'remote_driver' => 'ldap'
-                    //     , 'filter' => 'ObjectClass eq \'person\''
-                    // ]
                 ]
                 , 'Chg_Implementer_Support_Company' => [
                     'preferred_name' => 'ImplementerSupportCompany'
@@ -1504,10 +1500,10 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'InProductionDate'
                     , 'type' => 'datetime'
                 ]
-                , 'Infrastructure_Change_ID' => [
-                    'preferred_name' => 'InfrastructureChangeID'
-                    , 'type' => 'string'
-                ]
+                // , 'Infrastructure_Change_ID' => [
+                //     'preferred_name' => 'InfrastructureChangeID'
+                //     , 'type' => 'string'
+                // ]
                 , 'Last_Name' => [
                     'preferred_name' => 'LastName'
                     , 'type' => 'string'
@@ -1659,6 +1655,17 @@ function remedy_connection_driver__get_entity_definitions() {
                 , 'Vendor_Ticket_Number' => [
                     'preferred_name' => 'VendorTicketNumber'
                     , 'type' => 'string'
+                ]
+                , '_ChangeRequest' => [
+                    'preferred_name' => 'ChangeRequest'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'preferred_local_key_name' => 'Id'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'change_request'
+                    ]
                 ]
             ]
         ]
