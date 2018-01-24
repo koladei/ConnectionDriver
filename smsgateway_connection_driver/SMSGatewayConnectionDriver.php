@@ -160,6 +160,12 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
 
                     $this->updateItem('smslog', "{$res->data->bulkId}-{$invalid}", $msg, []);
                 }
+            }  else {
+                $msg = new \stdClass();
+                $msg->Status = 'FAILED';
+                $msg->StatusDescription = print_r($res, true);
+                // $this->updateItem('smslog', "{$res->data->bulkId}-{$invalid}", $msg, []);
+                WATCHDOG('SMS SEND ERROR', print_r($res, true)."UN: PW: = {$connectionToken->username}:{$connectionToken->password}");
             }
 
             // Return the status of the SMS.                    
@@ -170,6 +176,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
             throw new \Exception('There was a problem getting the connection token');
         }
     }    
+
     function updateDeliveryStatus($objects = [], $connectionToken = NULL, $otherOptions = []){
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
             $now = new \DateTime();
@@ -258,7 +265,7 @@ class SMSGatewayConnectionDriver extends MiddlewareConnectionDriver
     {
         $obj = new \stdClass;
         $obj->username = 'licensemanager@mainone.net';
-        $obj->password = 'wELCOME@123';
+        $obj->password = 'Welcome@123';
         $obj->sendUrl = 'https://api.ozinta.com/v3/sms/simple';
         $obj->reportUrl = 'https://api.ozinta.com/v3/reports';
         $obj->defaultSenderId = 'MAINONE';
