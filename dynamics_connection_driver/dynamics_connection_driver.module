@@ -466,6 +466,17 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'cust_trans'
                         , 'filter' => 'TransactionType eq 15'
                     ]
+                ]      
+                , '_SETTLEMENTS2' => [
+                    'preferred_name' => 'Settlements2'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'OffsetTransactionId'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'cust_trans'
+                        , 'filter' => 'TransactionType eq 24'
+                    ]
                 ]                
                 , '_TAX_TRANSACTIONS' => [
                     'preferred_name' => 'TaxTransactions'
@@ -835,13 +846,13 @@ function dynamics_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Amount'
                     , 'type' => 'decimal',
                 ]
-                , '_INFLOWS' => [
-                    'preferred_name' => 'Inflows'
+                , '_INFLOW' => [
+                    'preferred_name' => 'Inflow'
                     , 'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'TransactionLineId'
-                        , 'remote_type' => 'child'
+                        , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cash_inflow'
                         , 'remote_driver' => 'salesforce'
                         // , 'filter' => 'StageName ne \'Opportunity Abandoned\' and StageName ne \'Closed/Lost\''
