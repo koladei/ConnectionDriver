@@ -1446,6 +1446,7 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Description__c' => [
                     'preferred_name' => 'Description'
                     , 'type' => 'string'
+                    , 'type_description' => 'MAX'
                 ]
                 , 'IsGeneric__c' => [
                     'preferred_name' => 'IsGeneric'
@@ -1915,6 +1916,17 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'type' => 'string'
                     , 'mandatory' => 1
                 ]
+                , 'User_Extension_ID__c' => [
+                    'preferred_name' => 'UserExtension'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'UserExtension'
+                        , 'preferred_local_key_name' => 'UserExtensionId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user_extension'
+                    ]
+                ]
                 , '_Accounts' => [
                     'preferred_name' => 'Accounts'
                     , 'type' => 'detail'
@@ -1923,7 +1935,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_field' => 'Owner'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'account'
-                    ],
+                    ]
                 ]
                 , '_Opportunities' => [
                     'preferred_name' => 'Opportunities'
@@ -1935,6 +1947,51 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'opportunity'
                     ],
                 ],
+            ],
+        ]
+        , 'user_extension' => [
+            'internal_name' => 'UserExtension__c'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 7200
+            , 'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Outstanding__c' => [
+                    'preferred_name' => 'Outstanding'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
+                , 'Total_Outstanding__c' => [
+                    'preferred_name' => 'TotalOutstanding'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
+                , 'User__c' => [
+                    'preferred_name' => 'User'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'User'
+                        , 'preferred_local_key_name' => 'UserId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                    ]
+                ]
             ],
         ]
         , 'sales_target' => [
