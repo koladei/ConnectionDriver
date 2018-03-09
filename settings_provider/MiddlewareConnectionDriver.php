@@ -116,6 +116,16 @@ abstract class MiddlewareConnectionDriver
                     $date = $now->format('Y-m-d');
                     break;
                 }
+                case '$1HR$':{
+                    $interval = new \DateInterval("PT1H");
+                    $date = ($now->sub($interval))->format('Y-m-d');
+                    break;
+                }
+                case '$6HR$':{
+                    $interval = new \DateInterval("PT6H");
+                    $date = ($now->sub($interval))->format('Y-m-d');
+                    break;
+                }
                 case '$24HR$':{
                     $interval = new \DateInterval("PT24H");
                     $date = ($now->sub($interval))->format('Y-m-d');
@@ -482,6 +492,7 @@ abstract class MiddlewareConnectionDriver
         $implosion = '';
         $type = $entityField->getDataType();
         switch ($type) {
+            case 'bigint':
             case 'int': {
                     $implosion = implode(',', $values);
                     break;
@@ -1075,6 +1086,7 @@ abstract class MiddlewareConnectionDriver
 
                         // Mark for pending update so that irrespective of the created or modified time, this record will be updated.
                         $updateItemArgs[2]->{'_IsUpdated'} = FALSE;
+                        $updateItemArgs[3]['$cacheOnly'] = '1';
                         try {
                             $cacheDriver->updateItem(...$updateItemArgs);
                             $this->syncByRecordIds($entityBrowser, [$id]);
@@ -1264,6 +1276,7 @@ abstract class MiddlewareConnectionDriver
     public function deleteItem($entityBrowser, $id, array $otherOptions = [], &$deleteCount = 0)
     {        
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        $deleteItemArgs = func_get_args();
         if (is_string($entityBrowser) || is_null($entityBrowser)) {
             throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
         }
@@ -1298,6 +1311,29 @@ abstract class MiddlewareConnectionDriver
         
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']: 0;
         $otherOptions['retryCount'] = $retryCount + 1;
+
+        // If there is need to specifically update the cache copy alone
+        $cacheOnly = (isset($otherOptions['$cacheOnly']) && $otherOptions['$cacheOnly'] == '1')?TRUE:FALSE;
+        if (
+            $entityBrowser->shouldCacheData() && 
+            ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && 
+            $cacheOnly
+        ) {
+            // Load the driver instead
+            $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
+            
+            // Refactor the arguments to target the cache.
+            $deleteItemArgs[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+
+            try {
+                return $cacheDriver->deleteItem(...$deleteItemArgs);
+            } 
+            // May be the datastructure is faulty
+            catch(\Exception $exc){
+                $cacheDriver->ensureDataStructure($deleteItemArgs[0]);
+                return $cacheDriver->deleteItem(...$deleteItemArgs);
+            }
+        }
 
         try {
             $deleteResult = $this->deleteItemInternal($entityBrowser, $this->connectionToken, $id, $otherOptions);
