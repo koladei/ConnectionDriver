@@ -76,7 +76,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
             $badLastRun = ($lastSyncInfo['time'] != $lastSyncInfo['continue_from'])?TRUE:FALSE;
                             
             if ($interval || ($badLastRun && $lastSyncInfo['failure_count'] < 10) || $bypass) {
-                
+                set_time_limit (900); //avoid timeouts
                 try {
                     $destination->ensureDataStructure($entity['internal_name']);
                 } catch (\Exception $exe){}
