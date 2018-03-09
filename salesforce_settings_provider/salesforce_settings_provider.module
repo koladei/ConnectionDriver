@@ -249,16 +249,27 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Type__c' => [
                     'preferred_name' => 'InflowType'
-                    , 'type' => 'int'
+                    , 'type' => 'string'
                 ]
                 , 'TransLineId__c' => [
-                    'preferred_name' => 'TransactionLineId'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1
+                    'preferred_name' => 'TransactionLine'
+                    , 'type' => 'bigint'
+                    , 'relationship' => [
+                        'local_field' => 'TransactionLine'
+                        , 'preferred_local_key_name' => 'TransactionLineId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'cust_invoice_line_transaction'
+                        , 'remote_driver' => 'dynamics'
+                    ]
                 ]
                 , 'Invoice__c' => [
                     'preferred_name' => 'InvoiceNumber'
                     , 'type' => 'string'
+                ]
+                , 'Confirmed__c' => [
+                    'preferred_name' => 'Confirmed'
+                    , 'type' => 'int'
                 ]
                 , 'Business_Entity__c' => [
                     'preferred_name' => 'BusinessEntity'
@@ -305,7 +316,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'opportunity'
-                    ],
+                    ]
                 ]
                 , 'Related_Customer_Product__c' => [
                     'preferred_name' => 'CustomerProduct'
@@ -453,6 +464,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'State__c' => [
                     'preferred_name' => 'State'
+                    , 'type' => 'string'
+                ]
+                , 'Service_Order_ID__c' => [
+                    'preferred_name' => 'ServiceOrderID'
                     , 'type' => 'string'
                 ]
                 , 'Suspended__c' => [
@@ -625,6 +640,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Status'
                     , 'type' => 'string'
                 ]
+                , 'Service_Order_ID__c' => [
+                    'preferred_name' => 'ServiceOrderID'
+                    , 'type' => 'string'
+                ]
                 , 'Tenure__c' => [
                     'preferred_name' => 'Tenure'
                     , 'type' => 'int'
@@ -756,6 +775,17 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'user'
+                    ]
+                ]
+                , 'Account_Manager_Extension__c' => [
+                    'preferred_name' => 'AccountManagerExtension'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AccountManagerExtension'
+                        , 'preferred_local_key_name' => 'AccountManagerExtensionId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user_extension'
                     ]
                 ]
                 , 'Carried_To__c' => [
@@ -892,6 +922,17 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'relationship' => [
                         'local_field' => 'Owner'
                         , 'preferred_local_key_name' => 'OwnerId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                    ]
+                ]
+                , 'Service_Management_Officer__c' => [
+                    'preferred_name' => 'ServiceManagementOfficer'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'ServiceManagementOfficer'
+                        , 'preferred_local_key_name' => 'ServiceManagementOfficerId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'user'
@@ -1053,9 +1094,19 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'SaleType'
                     , 'type' => 'string'
                 ]
+                , 'Computed_Sale_Type__c' => [
+                    'preferred_name' => 'ComputedSaleType'
+                    , 'type' => 'string'
+                ]
+                , 'Security_Deposit__c' => [
+                    'preferred_name' => 'SecurityDeposit'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
                 , 'Amount__c' => [
                     'preferred_name' => 'Amount'
-                    , 'type' => 'string'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Currency_of_Payment__c' => [
                     'preferred_name' => 'CurrencyOfPayment'
@@ -1081,26 +1132,52 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'MRC__c' => [
                     'preferred_name' => 'MRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'NRC__c' => [
                     'preferred_name' => 'NRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Computed_MRC__c' => [
                     'preferred_name' => 'ComputedMRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Computed_NRC__c' => [
                     'preferred_name' => 'ComputedNRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
+                , 'Aggregated_MRC__c' => [
+                    'preferred_name' => 'AggregatedMRC'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
+                , 'Aggregated_NRC__c' => [
+                    'preferred_name' => 'AggregatedNRC'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
+                , 'Aggregated_3rd_Party_MRC__c' => [
+                    'preferred_name' => 'Aggregated3rdPartyMRC'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
+                , 'Aggregated_3rd_Party_NRC__c' => [
+                    'preferred_name' => 'Aggregated3rdPartyNRC'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Computed_3rd_Party_MRC__c' => [
                     'preferred_name' => 'ComputedThirdPartyMRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Computed_3rd_Party_NRC__c' => [
                     'preferred_name' => 'ComputedThirdPartyNRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Additional_Payment_Details__c' => [
                     'preferred_name' => 'AdditionalPaymentDetails'
@@ -1184,6 +1261,17 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'customer_product'
                     ],
                 ]
+                , '_ProductContract' => [
+                    'preferred_name' => 'ProductContracts'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'ServiceOrderID'
+                        , 'remote_field' => 'ServiceOrderID'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'customer_product_contract'
+                        , 'filter' => 'Status eq \'Active\''
+                    ],
+                ]
                 , '_CashInflows' => [
                     'preferred_name' => 'CashInflows'
                     , 'type' => 'detail'
@@ -1213,29 +1301,44 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_field' => 'OpportunityId'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'sale_contract_term'
+                        , 'remote_driver' => 'sql'
                         , 'filter' => 'IsDeleted eq $false$ and Type eq \'Additional\''
                     ],
                 ]
-                , '_ContractTerms' => [
-                    'preferred_name' => 'ContractTerms'
+                , '_Schedule1' => [
+                    'preferred_name' => 'Schedule1Terms'
                     , 'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'OpportunityId'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'sale_contract_term'
-                        , 'filter' => 'IsDeleted eq $false$ and Type eq \'Standard\''
+                        , 'remote_driver' => 'sql'
+                        , 'filter' => 'IsDeleted eq $false$ and Type eq \'Schedule1\''
                     ],
                 ]
-                , '_SLATerms' => [
-                    'preferred_name' => 'SLATerms'
+                , '_Schedule2' => [
+                    'preferred_name' => 'Schedule2Terms'
                     , 'type' => 'detail'
                     , 'relationship' => [
                         'local_field' => 'Id'
                         , 'remote_field' => 'OpportunityId'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'sale_contract_term'
-                        , 'filter' => 'IsDeleted eq $false$ and Type eq \'SLA\''
+                        , 'remote_driver' => 'sql'
+                        , 'filter' => 'IsDeleted eq $false$ and Type eq \'Schedule2\''
+                    ],
+                ]
+                , '_Schedule3' => [
+                    'preferred_name' => 'Schedule3Terms'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'OpportunityId'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'sale_contract_term'
+                        , 'remote_driver' => 'sql'
+                        , 'filter' => 'IsDeleted eq $false$ and Type eq \'Schedule3\''
                     ],
                 ]
             ],
@@ -1253,6 +1356,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'LastModifiedDate' => [
                     'preferred_name' => 'Modified'
                     , 'type' => 'datetime'
+                ]
+                , 'IP_Address_Package__c' => [
+                    'preferred_name' => 'IPAddressPackage'
+                    , 'type' => 'string'
                 ]
                 , 'CreatedDate' => [
                     'preferred_name' => 'Created'
@@ -1286,21 +1393,25 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'MRC__c' => [
                     'preferred_name' => 'MRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'NRC__c' => [
                     'preferred_name' => 'NRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
+                , 'X3rd_Party_MRC__c' => [
+                    'preferred_name' => 'ThirdPartyMRC'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
+                , 'X3rd_Party_NRC__c' => [
+                    'preferred_name' => 'ThirdPartyNRC'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'Quantity' => [
                     'preferred_name' => 'Quantity'
-                    , 'type' => 'decimal'
-                ]
-                , 'CIR_Capacity__c' => [
-                    'preferred_name' => 'CIRCapacity'
-                    , 'type' => 'decimal'
-                ]
-                , 'Port_Capacity__c' => [
-                    'preferred_name' => 'PortCapacity'
                     , 'type' => 'decimal'
                 ]
                 , 'Bursting__c' => [
@@ -1310,6 +1421,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Access_Type__c' => [
                     'preferred_name' => 'AccessType'
                     , 'type' => 'string'
+                ]
+                , 'Service_Term__c' => [
+                    'preferred_name' => 'ServiceTerm'
+                    , 'type' => 'int'
                 ]
                 , 'UnitPrice' => [
                     'preferred_name' => 'SalesPrice'
@@ -1384,186 +1499,6 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'opportunity'
-                        , 'remote_driver' => 'salesforce'
-                    ]
-                ]
-                , 'CreatedById' => [
-                    'preferred_name' => 'CreatedBy'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'CreatedBy'
-                        , 'preferred_local_key_name' => 'CreatedById'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'user'
-                    ]
-                ]
-                , 'LastModifiedById' => [
-                    'preferred_name' => 'ModifiedBy'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'ModifiedBy'
-                        , 'preferred_local_key_name' => 'ModifiedById'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'user'
-                    ]
-                ]
-            ]
-        ]
-        , 'contract_term' => [
-            'internal_name' => 'Contract_Term__c'
-            , 'cache_to' => 'sql'
-            , 'cache_freq' => 60
-            , 'fields' => [
-                'Name' => [
-                    'preferred_name' => 'Name'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Title__c' => [
-                    'preferred_name' => 'Title'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Type__c' => [
-                    'preferred_name' => 'Type'
-                    , 'type' => 'string'
-                ]
-                , 'LastModifiedDate' => [
-                    'preferred_name' => 'Modified'
-                    , 'type' => 'datetime'
-                ]
-                , 'CreatedDate' => [
-                    'preferred_name' => 'Created'
-                    , 'type' => 'datetime'
-                ]
-                , 'Id' => [
-                    'preferred_name' => 'Id'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Description__c' => [
-                    'preferred_name' => 'Description'
-                    , 'type' => 'string'
-                    , 'type_description' => 'MAX'
-                ]
-                , 'IsGeneric__c' => [
-                    'preferred_name' => 'IsGeneric'
-                    , 'type' => 'boolean',
-                ]
-                , 'IsDeleted' => [
-                    'preferred_name' => 'IsDeleted'
-                    , 'type' => 'boolean',
-                ]
-                , 'Parent_Term__c' => [
-                    'preferred_name' => 'ParentTerm'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'ParentTerm'
-                        , 'preferred_local_key_name' => 'ParentTermId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'contract_term'
-                        , 'remote_driver' => 'salesforce'
-                    ]
-                ]
-                , 'CreatedById' => [
-                    'preferred_name' => 'CreatedBy'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'CreatedBy'
-                        , 'preferred_local_key_name' => 'CreatedById'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'user'
-                    ]
-                ]
-                , 'LastModifiedById' => [
-                    'preferred_name' => 'ModifiedBy'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'ModifiedBy'
-                        , 'preferred_local_key_name' => 'ModifiedById'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'user'
-                    ]
-                ]
-                , '_SubTerms' => [
-                    'preferred_name' => 'SubTerms'
-                    , 'type' => 'detail'
-                    , 'relationship' => [
-                        'local_field' => 'Id'
-                        , 'remote_field' => 'ParentTermId'
-                        , 'remote_type' => 'child'
-                        , 'remote_entity' => 'contract_term'
-                        , 'filter' => 'IsDeleted eq $false$'
-                    ],
-                ]
-            ]
-        ]
-        , 'sale_contract_term' => [
-            'internal_name' => 'Sale_Contract_Term__c'
-            , 'cache_to' => 'sql'
-            , 'cache_freq' => 60
-            , 'fields' => [
-                'Name' => [
-                    'preferred_name' => 'Name'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Type__c' => [
-                    'preferred_name' => 'Type'
-                    , 'type' => 'string'
-                ]
-                , 'LastModifiedDate' => [
-                    'preferred_name' => 'Modified'
-                    , 'type' => 'datetime'
-                ]
-                , 'CreatedDate' => [
-                    'preferred_name' => 'Created'
-                    , 'type' => 'datetime'
-                ]
-                , 'Id' => [
-                    'preferred_name' => 'Id'
-                    , 'type' => 'string'
-                    , 'mandatory' => 1,
-                ]
-                , 'Custom_Description__c' => [
-                    'preferred_name' => 'AdditionalDescription'
-                    , 'type' => 'string'
-                    , 'type_description' => 'MAX'
-                ]
-                , 'Weight__c' => [
-                    'preferred_name' => 'Weight'
-                    , 'type' => 'int'
-                ]
-                , 'IsDeleted' => [
-                    'preferred_name' => 'IsDeleted'
-                    , 'type' => 'boolean',
-                ]
-                , 'Opportunity__c' => [
-                    'preferred_name' => 'Opportunity'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'Opportunity'
-                        , 'preferred_local_key_name' => 'OpportunityId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'opportunity'
-                        , 'remote_driver' => 'salesforce'
-                    ]
-                ]
-                , 'Contract_Term__c' => [
-                    'preferred_name' => 'ReferencedContractTerm'
-                    , 'type' => 'string'
-                    , 'relationship' => [
-                        'local_field' => 'ReferencedContractTerm'
-                        , 'preferred_local_key_name' => 'ReferencedContractTermId'
-                        , 'remote_field' => 'Id'
-                        , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'contract_term'
                         , 'remote_driver' => 'salesforce'
                     ]
                 ]

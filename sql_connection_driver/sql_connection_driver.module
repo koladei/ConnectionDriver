@@ -694,6 +694,174 @@ function sql_connection_driver__get_entity_definitions()
                         , 'type' => 'datetime'
                     ]
                 ]
+            ]        
+            , 'contract_term' => [
+                'internal_name' => 'Contract_Term'
+                , 'manage_timestamps' => TRUE
+                // , 'delegate_to' => 'sql'
+                // , 'cache_freq' => 60
+                , 'fields' => [
+                    'Title__c' => [
+                        'preferred_name' => 'Title'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'Type__c' => [
+                        'preferred_name' => 'Type'
+                        , 'type' => 'string'
+                    ]
+                    , 'LastModifiedDate' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'CreatedDate' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1
+                    ]
+                    , 'Description__c' => [
+                        'preferred_name' => 'Description'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
+                    , 'Weight__c' => [
+                        'preferred_name' => 'Weight'
+                        , 'type' => 'int'
+                    ]
+                    , 'IsGeneric__c' => [
+                        'preferred_name' => 'IsGeneric'
+                        , 'type' => 'boolean',
+                    ]
+                    , 'IsDeleted' => [
+                        'preferred_name' => 'IsDeleted'
+                        , 'type' => 'boolean',
+                    ]
+                    , 'CreatedById' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'user'
+                        ]
+                    ]
+                    , 'LastModifiedById' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'user'
+                        ]
+                    ]
+                    , '_SubTerms' => [
+                        'preferred_name' => 'SubTerms'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'Id'
+                            , 'remote_field' => 'ParentTermId'
+                            , 'remote_type' => 'child'
+                            , 'remote_entity' => 'contract_term'
+                            , 'filter' => 'IsDeleted eq $false$'
+                        ],
+                    ]
+                ]
+            ]
+            , 'sale_contract_term' => [
+                'internal_name' => 'Sale_Contract_Term'
+                , 'manage_timestamps' => TRUE
+                // , 'delegate_to' => 'sql'
+                // , 'cache_freq' => 60
+                , 'fields' => [
+                    'Title__c' => [
+                        'preferred_name' => 'Title'
+                        , 'type' => 'string'
+                    ]
+                    , 'Type__c' => [
+                        'preferred_name' => 'Type'
+                        , 'type' => 'string'
+                    ]
+                    , 'LastModifiedDate' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'CreatedDate' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'Custom_Description__c' => [
+                        'preferred_name' => 'AdditionalDescription'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
+                    , 'Weight__c' => [
+                        'preferred_name' => 'Weight'
+                        , 'type' => 'int'
+                    ]
+                    , 'IsDeleted' => [
+                        'preferred_name' => 'IsDeleted'
+                        , 'type' => 'boolean',
+                    ]
+                    , 'Opportunity__c' => [
+                        'preferred_name' => 'Opportunity'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'Opportunity'
+                            , 'preferred_local_key_name' => 'OpportunityId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'opportunity'
+                            , 'remote_driver' => 'salesforce'
+                        ]
+                    ]
+                    , 'Contract_Term__c' => [
+                        'preferred_name' => 'ReferencedContractTerm'
+                        , 'type' => 'int'
+                        , 'relationship' => [
+                            'local_field' => 'ReferencedContractTerm'
+                            , 'preferred_local_key_name' => 'ReferencedContractTermId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'contract_term'
+                            , 'remote_driver' => 'sql'
+                        ]
+                    ]
+                    , 'CreatedById' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'user'
+                        ]
+                    ]
+                    , 'LastModifiedById' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'user'
+                        ]
+                    ]
+                ]
             ]
         ]
     ];

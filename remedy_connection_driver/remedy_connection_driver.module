@@ -1323,6 +1323,7 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Start_Date__c' => [
                     'preferred_name' => 'StartDate'
+                    , 'preferred_query_name' => 'Start Date__c'
                     , 'type' => 'datetime'
                 ]
                 , 'PoP_Location' => [

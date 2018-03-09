@@ -710,8 +710,15 @@ function dynamics_connection_driver__get_entity_definitions() {
                     , 'type' => 'string',
                 ]
                 , 'CUSTINVOICELINETEMPLATE' => [
-                    'preferred_name' => 'TemplateId'
-                    , 'type' => 'int',
+                    'preferred_name' => 'Template'
+                    , 'type' => 'int'
+                    , 'relationship' => [
+                        'local_field' => 'Template'
+                        , 'preferred_local_key_name' => 'TemplateId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'cust_invoice_standard_line_template'
+                    ]
                 ]
                 , '_TRANSACTIONS' => [
                     'preferred_name' => 'Transactions'
@@ -795,7 +802,7 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cust_invoice_line'
-                    ],
+                    ]
                 ]
                 , 'OFFSETTRANSACTIONID' => [
                     'preferred_name' => 'OffsetTransaction'
@@ -846,6 +853,105 @@ function dynamics_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Amount'
                     , 'type' => 'decimal',
                 ]
+                , 'NAME' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string',
+                ]
+                , 'ACCOUNT' => [
+                    'preferred_name' => 'Account'
+                    , 'type' => 'string',
+                ]
+                , 'PAYABLECOMMISSION' => [
+                    'preferred_name' => 'PayableCommission'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'PayableCommission'
+                        , 'preferred_local_key_name' => 'PayableCommissionId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'payable_commission'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'ACCOUNTMANAGER' => [
+                    'preferred_name' => 'AccountManager'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AccountManager'
+                        , 'preferred_local_key_name' => 'AccountManagerId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'ACCOUNTMANAGEREXTENSION' => [
+                    'preferred_name' => 'AccountManagerExtension'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'AccountManagerExtension'
+                        , 'preferred_local_key_name' => 'AccountManagerExtensionId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user_extension'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'CUSTOMERPRODUCT' => [
+                    'preferred_name' => 'CustomerProduct'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CustomerProduct'
+                        , 'preferred_local_key_name' => 'CustomerProductId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'OPPORTUNITY' => [
+                    'preferred_name' => 'Opportunity'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Opportunity'
+                        , 'preferred_local_key_name' => 'OpportunityId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'opportunity'
+                        , 'remote_driver' => 'salesforce'
+                    ]
+                ]
+                , 'INFLOWTYPE' => [
+                    'preferred_name' => 'InflowType'
+                    , 'type' => 'string',
+                ]
+                , 'NARRATIVE' => [
+                    'preferred_name' => 'Narrative'
+                    , 'type' => 'string'
+                    , 'type_description' => 'max'
+                ]
+                , 'INVOICENUMBER' => [
+                    'preferred_name' => 'InvoiceNumber'
+                    , 'type' => 'string',
+                ]
+                , 'CONVERSIONRATE' => [
+                    'preferred_name' => 'ConversionRate'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '14,4'
+                ]
+                , 'EXCHANGERATE' => [
+                    'preferred_name' => 'ExchangeRate'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '14,4'
+                ]
+                , 'VALUEDATE' => [
+                    'preferred_name' => 'ValueDate'
+                    , 'type' => 'date',
+                ]
+                , 'DUEDATE' => [
+                    'preferred_name' => 'DueDate'
+                    , 'type' => 'date',
+                ]
                 , '_INFLOW' => [
                     'preferred_name' => 'Inflow'
                     , 'type' => 'detail'
@@ -856,7 +962,7 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'cash_inflow'
                         , 'remote_driver' => 'salesforce'
                         // , 'filter' => 'StageName ne \'Opportunity Abandoned\' and StageName ne \'Closed/Lost\''
-                    ],
+                    ]
                 ]
             ]
         ]
