@@ -248,7 +248,7 @@ class EntityFieldDefinition {
      * @return boolean
      */
     public function isInteger() {
-        if ($this->dataType == 'int') {
+        if ($this->dataType == 'int' || $this->dataType == 'bigint') {
             return true;
         }
         return false;

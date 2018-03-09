@@ -91,7 +91,7 @@ class LDAPConnectionDriver extends MiddlewareConnectionDriver
             unset($user_entries['count']);
             $user_entries = \json_decode(json_encode($user_entries));
 
-            return $user_entries;
+            return is_null($user_entries)?[]:$user_entries;
         }
 
         return [];

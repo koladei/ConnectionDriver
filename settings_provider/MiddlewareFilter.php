@@ -82,13 +82,13 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             $this->quote = (strlen($quote) > 0) ? '\'' : '';
         } else {
             if (!is_null($this->value)) {
-                if (in_array($fieldInfo->getDataType(), ['int', 'decimal']) && strlen($this->quote) > 0) {
+                if (in_array($fieldInfo->getDataType(), ['int', 'bigint', 'decimal']) && strlen($this->quote) > 0) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} is either an integer or decimal field. Quotes are not allowed for integer fields.");
                 } else if ($fieldInfo->getDataType() == 'boolean' && strlen($this->quote) > 0) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} is a boolean field. Quotes are not allowed for boolean fields.");
-                } else if (!in_array($fieldInfo->getDataType(), ['int', 'boolean']) && strlen($this->quoteValue()) < 1) {
+                } else if (!in_array($fieldInfo->getDataType(), ['int', 'bigint', 'boolean']) && strlen($this->quoteValue()) < 1) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} requires that it's values be quoted. {$value}");
-                } else if ((!in_array($fieldInfo->getDataType(), ['int', 'boolean', 'decimal']) && strlen($this->quote) > 1) || (!in_array($fieldInfo->getDataType(), ['int', 'boolean', 'decimal']) && ($this->quote != '"' && $this->quote != '\''))) {
+                } else if ((!in_array($fieldInfo->getDataType(), ['int', 'bigint', 'boolean', 'decimal']) && strlen($this->quote) > 1) || (!in_array($fieldInfo->getDataType(), ['int', 'bigint', 'boolean', 'decimal']) && ($this->quote != '"' && $this->quote != '\''))) {
                     throw new \Exception("Field {$fieldInfo->getDisplayName()} {$fieldInfo->getDataType()} only supports qoutes of type ''' or '\"'.");
                 } else {
                     $this->quote = (strlen($this->quote) > 0) ? '\'' : '';
@@ -168,7 +168,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
     protected function LDAPStringer(MiddlewareFilterBase &$context) {
         $ret = '';
 
-        $value = $this->value;
+        $value = str_replace("\\'", "'", EncoderDecoder::unescape($this->value));
         if ($value instanceof \DateTime) {
             // $value = $value->format('Y-m-d\\TH:i:s');
             $epoch = new \DateTime('1601-01-01');
@@ -285,6 +285,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         if(!is_null($this->fieldInfo)){
             switch($this->fieldInfo->getDataType()){
                 case 'int':
+                case 'bigint':
                 case 'boolean':
                 case 'decimal': {
                     $q = '';
@@ -504,7 +505,7 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         $value = $this->value;
         if ($value instanceof \DateTime) {
             if($this->fieldInfo->isDate()){
-                $value = "{$value->format('m\\Td\\TY')}";
+                $value = "{$value->format('d\\Tm\\TY')}";
                 $value = \str_replace('T', '\\', $value);
             } else {
                 $value = "{$value->format('Y-m-d\\TH:i:s')}";

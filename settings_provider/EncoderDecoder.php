@@ -4,7 +4,7 @@ namespace com\mainone\middleware;
 
 class EncoderDecoder{
     public static function escape($value){
-        return str_replace(['\\(', '\\)', '\\\''], ['_y0028_','_y0029_', '_y0027_'], $value);
+        return str_replace(['\\(', '\\)', "\\'"], ['_y0028_','_y0029_', '_y0027_'], $value);
     }
 
     public static function unescape($value, $niddle = [], $replacement = [], $enforce = FALSE){
