@@ -266,7 +266,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             // Prepare the set commands
             $counter = 0;
             $count = count($updatedFieldNames);
-
+            $sql = "";
             try {
                 $pdo = new \PDO($connectionToken->DSN, $connectionToken->Username, $connectionToken->Password);
                 $pdo->exec('SET CHARACTER SET utf8');
@@ -306,7 +306,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 // Execute the update
                 $statement->execute();
             } catch (\Exception $e) {
-                throw new \Exception('Connection failed: ' . $e->getMessage());
+                throw new \Exception("STATEMENT: $sql ERROR:" . $e->getMessage());
             }            
 
             // Get the resulting data afresh
@@ -358,6 +358,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
 
             $idField = $entityBrowser->getIdField();
             $updatedFields = $entityBrowser->getFieldsByInternalNames($updatedFieldNames);
+            $sql = "";
 
             // Prepare the query
             try {
@@ -409,11 +410,11 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                     return $d;
                 }  catch (\Exception $e) {
                     $info = print_r($statement->errorInfo(), true);
-                    throw new \Exception("Error: {$e->getMessage()} | {$info}");
+                    throw new \Exception("CREATE STATEMENT 1: {$sql} ERROR: {$e->getMessage()} | {$info}");
                 }
 
             } catch (\Exception $e) {
-                throw new \Exception('Connection failed: ' . $e->getMessage());
+                throw new \Exception("CREATE STATEMENT 2: {$sql} ERROR: {$e->getMessage()}");
             }
 
         }  else {
@@ -539,7 +540,6 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 
                 return array_values($rs);
             } catch (\Exception $e) {
-                watchdog('SQL_CONNECTION_DRIVER', '{0} : {1}', [$e->getMessage(), $e->getTraceAsString()], WATCHDOG_ERROR);
                 throw new \Exception('Connection failed: ' . $e->getMessage());
             }
         } else {
