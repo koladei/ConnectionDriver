@@ -159,7 +159,7 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $response = $ews->FindItem($request);            
     
             // Check if the response from exchange contains email messages
-            if (property_exists($response->ResponseMessages->FindItemResponseMessage->RootFolder->Items, 'Message')) {
+            if ((!is_null($response->ResponseMessages->FindItemResponseMessage) && (!is_null($response->ResponseMessages->FindItemResponseMessage->RootFolder))) && property_exists($response->ResponseMessages->FindItemResponseMessage->RootFolder->Items, 'Message')) {
     
                 // If the search returns only a single mail, convert it into an array with only one item.
                 if (!is_array($response->ResponseMessages->FindItemResponseMessage->RootFolder->Items->Message)) {
