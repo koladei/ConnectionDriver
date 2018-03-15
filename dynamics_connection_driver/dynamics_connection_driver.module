@@ -526,6 +526,10 @@ function dynamics_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Description'
                     , 'type' => 'string'
                 ]
+                , 'LEDGERDIMENSION' => [
+                    'preferred_name' => 'LedgerDimension'
+                    , 'type' => 'bigint'
+                ]
                 , 'INVOICEACCOUNT' => [
                     'preferred_name' => 'InvoiceAccount'
                     , 'type' => 'string'
@@ -613,6 +617,100 @@ function dynamics_connection_driver__get_entity_definitions() {
                 ]
             ]
         ]
+        , 'dimension_attribute_value_combination' => [
+            'internal_name' => 'DimensionAttributeValueCombination'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                ]
+                , 'ACCOUNTSTRUCTURE' => [
+                    'preferred_name' => 'AccountStructure'
+                    , 'type' => 'datetime',
+                ]
+                , 'DISPLAYVALUE' => [
+                    'preferred_name' => 'DisplayValue'
+                    , 'type' => 'datetime',
+                ]
+                , 'LEDGERDIMENSIONTYPE' => [
+                    'preferred_name' => 'LedgerDimensionType'
+                    , 'type' => 'int',
+                ]
+                , 'MAINACCOUNT' => [
+                    'preferred_name' => 'MainAccount'
+                    , 'type' => 'bigint'
+                    , 'relationship' => [
+                        'local_field' => 'MainAccount'
+                        , 'preferred_local_key_name' => 'MainAccountId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'main_account'
+                    ]
+                ]
+                , '_ACCOUNTING_DISTRIBUTION' => [
+                    'preferred_name' => 'AccountingDistribution'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'LedgerDimension'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'accounting_distribution'
+                    ]
+                ]
+            ]
+        ]
+        , 'accounting_distribution' => [
+            'internal_name' => 'AccountingDistribution'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'LEDGERDIMENSION' => [
+                    'preferred_name' => 'LedgerDimension'
+                    , 'type' => 'bigint',
+                ]
+                , 'ACCOUNTINGDATE' => [
+                    'preferred_name' => 'AccountingDate'
+                    , 'type' => 'date',
+                ]
+                , 'MONETARYAMOUNT' => [
+                    'preferred_name' => 'MonetaryAmount'
+                    , 'type' => 'int',
+                ]
+                , 'TRANSACTIONCURRENCY' => [
+                    'preferred_name' => 'TransactionCurrency'
+                    , 'type' => 'string'
+                ]
+                , 'SOURCEDOCUMENTLINE' => [
+                    'preferred_name' => 'SourceDocumentLine'
+                    , 'type' => 'bigint'
+                ]
+            ]
+        ]
+        , 'main_account' => [
+            'internal_name' => 'MainAccount'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'MAINACCOUNTID' => [
+                    'preferred_name' => 'MainAccount'
+                    , 'type' => 'string',
+                ]
+                , 'NAME' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string',
+                ]
+                , 'TYPE' => [
+                    'preferred_name' => 'Type'
+                    , 'type' => 'int',
+                ]
+            ]
+        ]
         , 'cust_invoice_line' => [
             'internal_name' => 'CustInvoiceLine'
             , 'fields' => [
@@ -670,7 +768,7 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'opportunity'
                         , 'remote_driver' => 'salesforce'
-                    ],
+                    ]
                 ]
                 , 'SCOMSLINKINGPENDING' => [
                     'preferred_name' => 'SCOMSRevisitRequired'
@@ -680,6 +778,17 @@ function dynamics_connection_driver__get_entity_definitions() {
                 , 'DATAAREAID' => [
                     'preferred_name' => 'DataArea'
                     , 'type' => 'string',
+                ]
+                , 'LEDGERDIMENSION' => [
+                    'preferred_name' => 'LedgerDimension'
+                    , 'type' => 'bigint'
+                    , 'relationship' => [
+                        'local_field' => 'LedgerDimension'
+                        , 'preferred_local_key_name' => 'LedgerDimensionId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'dimension_attribute_value_combination'
+                    ]
                 ]
                 , 'AMOUNTCUR' => [
                     'preferred_name' => 'Amount'
@@ -961,7 +1070,6 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'cash_inflow'
                         , 'remote_driver' => 'salesforce'
-                        // , 'filter' => 'StageName ne \'Opportunity Abandoned\' and StageName ne \'Closed/Lost\''
                     ]
                 ]
             ]

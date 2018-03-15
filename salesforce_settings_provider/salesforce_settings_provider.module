@@ -1034,6 +1034,11 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'payable_commission'
                     ],
                 ]
+                // Number_Of_Lines
+                , 'Number_Of_Lines__c' => [
+                    'preferred_name' => 'NumberOfLines'
+                    , 'type' => 'int'
+                ]
                 , 'Book_Status__c' => [
                     'preferred_name' => 'BookStatus'
                     , 'type' => 'string'
@@ -1056,6 +1061,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Service_Order_ID__c' => [
                     'preferred_name' => 'ServiceOrderID'
+                    , 'type' => 'string'
+                ]
+                , 'Computed_Service_Type__c' => [
+                    'preferred_name' => 'ComputedServiceType'
                     , 'type' => 'string'
                 ]
                 , 'Feasibility_Status__c' => [
@@ -1290,7 +1299,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_field' => 'OpportunityId'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'opportunity_product'
-                        , 'filter' => 'IsDeleted eq $false$'
+                        // , 'filter' => 'IsDeleted eq $false$'
                     ],
                 ]
                 , '_AdditionalTerms' => [
@@ -1683,6 +1692,10 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
                 , 'Company__c' => [
                     'preferred_name' => 'Company'
+                    , 'type' => 'string'
+                ]
+                , 'Company_Name__c' => [
+                    'preferred_name' => 'CompanyName'
                     , 'type' => 'string'
                 ]
                 , 'CreatedById' => [
