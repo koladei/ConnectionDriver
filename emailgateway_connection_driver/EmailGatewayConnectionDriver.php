@@ -156,8 +156,8 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $request->SortOrder->FieldOrder[] = $order;
     
             // Bind the Inbox folder to the service object.
-            $response = $ews->FindItem($request);            
-    
+            $response = $ews->FindItem($request);   
+			//return $response;
             // Check if the response from exchange contains email messages
             if ((!is_null($response->ResponseMessages->FindItemResponseMessage) && (!is_null($response->ResponseMessages->FindItemResponseMessage->RootFolder))) && property_exists($response->ResponseMessages->FindItemResponseMessage->RootFolder->Items, 'Message')) {
     
@@ -211,7 +211,9 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
                     }
                 }
                 return $messages;
-            } else {
+            } 
+			
+			else {
                 return [];
             }
         }
