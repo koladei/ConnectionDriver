@@ -65,6 +65,10 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                             $createSQL = "{$createSQL}, {$name} int {$nullable}";
                             break;
                         }
+                        case 'bigint':{
+                            $createSQL = "{$createSQL}, {$name} bigint {$nullable}";
+                            break;
+                        }
                         case 'decimal':{
                             $createSQL = "{$createSQL}, {$name} decimal({$field->getFieldDescription()}) {$nullable}";
                             break;
@@ -109,6 +113,16 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                             }
                             case 'bit':{
                                 $re[$column['COLUMN_NAME']]['type'] = 'boolean';
+                                break;
+                            }
+                            case 'int':{
+                                $re[$column['COLUMN_NAME']]['type'] = 'int';
+                                // $re[$column['COLUMN_NAME']]['type_description'] = "{$column['NUMERIC_PRECISION']},{$column['NUMERIC_SCALE']}";
+                                break;
+                            }
+                            case 'bigint':{
+                                $re[$column['COLUMN_NAME']]['type'] = 'bigint';
+                                // $re[$column['COLUMN_NAME']]['type_description'] = "{$column['NUMERIC_PRECISION']},{$column['NUMERIC_SCALE']}";
                                 break;
                             }
                             case 'decimal':{
@@ -174,6 +188,10 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                         }
                         case 'int':{
                             $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} ADD {$name} int {$nullable}");
+                            break;
+                        }
+                        case 'bigint':{
+                            $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} ADD {$name} bigint {$nullable}");
                             break;
                         }
                         case 'decimal':{
