@@ -331,7 +331,7 @@ function sql_connection_driver__get_entity_definitions()
                 , 'fields' => [
                     'id' => [
                         'preferred_name' => 'Id'
-                        , 'type' => 'string'
+                        , 'type' => 'int'
                         , 'mandatory' => 1,
                     ]
                     , 'created' => [
@@ -419,6 +419,87 @@ function sql_connection_driver__get_entity_definitions()
                             , 'remote_type' => 'child'
                             , 'remote_entity' => 'dev_projects_function_map'
                         ]
+                    ]
+                ]
+            ]
+            , 'scoms_inflow_staging_area' => [
+                'internal_name' => 'scoms_inflow_staging'
+                , 'manage_timestamps' => TRUE
+                , 'fields' => [
+                    'id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'createdby' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'modifiedby' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'sales_id' => [
+                        'preferred_name' => 'SalesId'
+                        , 'type' => 'string'
+                    ]
+                    , 'invoice_id' => [
+                        'preferred_name' => 'InvoiceId'
+                        , 'type' => 'string'
+                    ]
+                    , 'customer_id' => [
+                        'preferred_name' => 'CustomerId'
+                        , 'type' => 'string'
+                    ]
+                    , 'payment_date' => [
+                        'preferred_name' => 'PaymentDate'
+                        , 'type' => 'date'
+                    ]
+                    , 'due_date' => [
+                        'preferred_name' => 'DueDate'
+                        , 'type' => 'date'
+                    ]
+                    , 'amount' => [
+                        'preferred_name' => 'Amount'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '16,2'
+                    ]
+                    , 'currency' => [
+                        'preferred_name' => 'Currency'
+                        , 'type' => 'string'
+                    ]
+                    , 'exchange_rate' => [
+                        'preferred_name' => 'ExchangeRate'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '16,2'
+                    ]
+                    , 'sent_to_scoms' => [
+                        'preferred_name' => 'SentToSCOMS'
+                        , 'type' => 'int'
                     ]
                 ]
             ]

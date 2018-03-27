@@ -1145,6 +1145,7 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Infrastructure_Change_ID' => [
                     'preferred_name' => 'InfrastructureChangeID'
+                    , 'preferred_query_name' => 'Infrastructure Change ID'
                     , 'type' => 'string'
                 ]
                 , 'InternalNotificationMessage' => [
@@ -1223,15 +1224,18 @@ function remedy_connection_driver__get_entity_definitions() {
                     'preferred_name' => 'Urgency'
                     , 'type' => 'string'
                 ]
-                , '_SalesforcePair' => [
-                    'preferred_name' => 'SalesforcePair'
+                , 'CHGGUID' => [
+                    'preferred_name' => 'CHGGUID'
+                    , 'type' => 'string'
+                ]
+                , '_AffectedCustomerInformation' => [
+                    'preferred_name' => 'AffectedCustomerInformation'
                     , 'type' => 'parent'
                     , 'relationship' => [
-                        'local_field' => 'Name'
-                        , 'remote_field' => 'Name'
+                        'local_field' => 'CHGGUID'
+                        , 'remote_field' => 'CHGGUID'
                         , 'remote_type' => 'parent'
-                        , 'remote_entity' => 'customer_product'
-                        , 'remote_driver' => 'salesforce'
+                        , 'remote_entity' => 'change_management_affected_customers'
                     ],
                 ]
             ]
@@ -1554,7 +1558,7 @@ function remedy_connection_driver__get_entity_definitions() {
                     , 'type' => 'string'
                 ]
                 , 'Product_Model_Version' => [
-                    'preferred_name' => 'Product_Model_Version'
+                    'preferred_name' => 'ProductModelVersion'
                     , 'type' => 'string'
                 ]
                 , 'Product_Name' => [
@@ -1578,7 +1582,7 @@ function remedy_connection_driver__get_entity_definitions() {
                     , 'type' => 'datetime'
                 ]
                 , 'Risk_Level' => [
-                    'preferred_name' => 'Risk_Level'
+                    'preferred_name' => 'RiskLevel'
                     , 'type' => 'string'
                 ]
                 , 'Scheduled_End_Date' => [
@@ -1663,7 +1667,7 @@ function remedy_connection_driver__get_entity_definitions() {
                     , 'relationship' => [
                         'local_field' => 'Id'
                         , 'preferred_local_key_name' => 'Id'
-                        , 'remote_field' => 'Id'
+                        , 'remote_field' => 'InfrastructureChangeID'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'change_request'
                     ]

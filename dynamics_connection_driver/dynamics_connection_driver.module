@@ -946,6 +946,10 @@ function dynamics_connection_driver__get_entity_definitions() {
                         , 'remote_entity' => 'cust_invoice_table'
                     ]
                 ]
+                , 'UNIQUELINEID' => [
+                    'preferred_name' => 'UniqueLineId'
+                    , 'type' => 'string'
+                ]
                 , 'SENTTOSCOMS' => [
                     'preferred_name' => 'SentToSCOMS'
                     , 'type' => 'int'
