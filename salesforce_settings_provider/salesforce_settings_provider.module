@@ -124,6 +124,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
+                , 'IsActive' => [
+                    'preferred_name' => 'IsActive'
+                    , 'type' => 'boolean'
+                ]
                 , 'CreatedById' => [
                     'preferred_name' => 'CreatedBy'
                     , 'type' => 'string'
