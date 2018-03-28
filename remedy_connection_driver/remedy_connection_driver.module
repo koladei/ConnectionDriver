@@ -1419,6 +1419,7 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Change_Request_Status' => [
                     'preferred_name' => 'RequestStatus'
+                    , 'preferred_query_name' => 'Change Request Status'
                     , 'type' => 'string'
                 ]
                 , 'Change_Type' => [
@@ -1587,10 +1588,12 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Scheduled_End_Date' => [
                     'preferred_name' => 'ScheduledEndDate'
+                    , 'preferred_query_name' => 'Scheduled End Date'
                     , 'type' => 'datetime'
                 ]
                 , 'Scheduled_Start_Date' => [
-                    'preferred_name' => 'ScheduledStateDate'
+                    'preferred_name' => 'ScheduledStartDate'
+                    , 'preferred_query_name' => 'Scheduled Start Date'
                     , 'type' => 'datetime'
                 ]
                 , 'Region' => [
