@@ -1570,24 +1570,16 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Created'
                     , 'type' => 'datetime'
                 ]
-                , 'ServiceDate' => [
-                    'preferred_name' => 'ServiceDate'
-                    , 'type' => 'date'
-                ]
                 , 'Id' => [
                     'preferred_name' => 'Id'
                     , 'type' => 'string'
                     , 'mandatory' => 1,
                 ]
-                , 'Description' => [
-                    'preferred_name' => 'LineDescription'
-                    , 'type' => 'string'
-                ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
                     , 'type' => 'boolean',
                 ]
-                , 'Opportunity' => [
+                , 'Opportunity__c' => [
                     'preferred_name' => 'Opportunity'
                     , 'type' => 'string'
                     , 'relationship' => [
@@ -1598,6 +1590,124 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'opportunity'
                         , 'remote_driver' => 'salesforce'
                     ]
+                ]
+                , 'Account__c' => [
+                    'preferred_name' => 'Account'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Account'
+                        , 'preferred_local_key_name' => 'AccountId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'account'
+                    ]
+                ]
+                , 'Actual_RFS_Date__c' => [
+                    'preferred_name' => 'ActualRFSDate'
+                    , 'type' => 'date'
+                ]
+                , 'CA_Date__c' => [
+                    'preferred_name' => 'CommercialApprovalDate'
+                    , 'type' => 'date'
+                ]
+                , 'CSB_Certificate_sent_to_Client__c' => [
+                    'preferred_name' => 'CSBCertificateSentToClient'
+                    , 'type' => 'boolean'
+                ]
+                , 'CSB_sent_to_CSD__c' => [
+                    'preferred_name' => 'CSBSentToCSD'
+                    , 'type' => 'boolean'
+                ]
+                , 'Client_Accepts_Solution__c' => [
+                    'preferred_name' => 'ClientAcceptedSolution'
+                    , 'type' => 'boolean'
+                ]
+                , 'Commercial_Approval_Status__c' => [
+                    'preferred_name' => 'CommercialApprovalStatus'
+                    , 'type' => 'string'
+                ]
+                , 'Commercial_Approved__c' => [
+                    'preferred_name' => 'CommercialApproved'
+                    , 'type' => 'boolean'
+                ]
+                , 'Contract_Created__c' => [
+                    'preferred_name' => 'ContractCreated'
+                    , 'type' => 'boolean'
+                ]
+                , 'Contract_Drafted__c' => [
+                    'preferred_name' => 'ContractDrafted'
+                    , 'type' => 'boolean'
+                ]
+                , 'Contract_Drafted__c' => [
+                    'preferred_name' => 'ContractDrafted'
+                    , 'type' => 'boolean'
+                ]
+                , 'Contract_Drafted__c' => [
+                    'preferred_name' => 'ContractDrafted'
+                    , 'type' => 'boolean'
+                ]
+                , 'Contract_Signed_By_Client__c' => [
+                    'preferred_name' => 'ContractSignedByClient'
+                    , 'type' => 'boolean'
+                ]
+                , 'Contract_Signed_By_MainOne__c' => [
+                    'preferred_name' => 'ContractSignedByMainOne'
+                    , 'type' => 'boolean'
+                ]
+                , 'Customer_Credit_Rating_Confirmed_Technic__c' => [
+                    'preferred_name' => 'CustomerCreditRatingConfirmedTechnical'
+                    , 'type' => 'boolean'
+                ]
+                , 'Customer_Credit_Rating_Confirmed__c' => [
+                    'preferred_name' => 'CustomerCreditRatingConfirmed'
+                    , 'type' => 'boolean'
+                ]
+                , 'Customer_Rating__c' => [
+                    'preferred_name' => 'CustomerRating'
+                    , 'type' => 'boolean'
+                ]
+                , 'Delivery_Remark__c' => [
+                    'preferred_name' => 'DeliveryRemark'
+                    , 'type' => 'string'
+                    , 'type_description' => 'MAX'
+                ]
+                , 'Documents_Validated__c' => [
+                    'preferred_name' => 'DocumentsValidated'
+                    , 'type' => 'boolean'
+                ]
+                , 'Finance_Approved__c' => [
+                    'preferred_name' => 'FinanceApproved'
+                    , 'type' => 'boolean'
+                ]
+                , 'Handover_Approved__c' => [
+                    'preferred_name' => 'HandoverApproved'
+                    , 'type' => 'boolean'
+                ]
+                , 'Handover_Status__c' => [
+                    'preferred_name' => 'HandoverStatus'
+                    , 'type' => 'string'
+                ]
+                , 'Handover_Approved__c' => [
+                    'preferred_name' => 'HandoverApproved'
+                    , 'type' => 'boolean'
+                ]
+                , 'Legal_Approved__c' => [
+                    'preferred_name' => 'LegalApproved'
+                    , 'type' => 'boolean'
+                ]
+                , 'Invoicing_Remarks__c' => [
+                    'preferred_name' => 'InvoicingRemarks'
+                    , 'type' => 'string'
+                    , 'type_description' => 'MAX'
+                ]
+                , 'Invoicing_Status__c' => [
+                    'preferred_name' => 'InvoicingStatus'
+                    , 'type' => 'string'
+                ]
+                , 'Issues_Challenges__c' => [
+                    'preferred_name' => 'IssuesAndChallenges'
+                    , 'type' => 'string'
+                    , 'type_description' => 'MAX'
                 ]
                 , 'RecordTypeId' => [
                     'preferred_name' => 'Type'
@@ -1611,21 +1721,34 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_driver' => 'salesforce'
                     ]
                 ]
-                , 'CreatedBy' => [
+                , 'CreatedById' => [
                     'preferred_name' => 'CreatedBy'
                     , 'type' => 'string'
                     , 'relationship' => [
-                        'local_field' => 'Owner'
+                        'local_field' => 'CreatedBy'
+                        , 'preferred_local_key_name' => 'CreatedById'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'user'
                     ]
                 ]
-                , 'ModifiedBy' => [
+                , 'LastModifiedById' => [
                     'preferred_name' => 'ModifiedBy'
                     , 'type' => 'string'
                     , 'relationship' => [
+                        'local_field' => 'ModifiedBy'
+                        , 'preferred_local_key_name' => 'ModifiedById'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                    ]
+                ]
+                , 'OwnerId' => [
+                    'preferred_name' => 'Owner'
+                    , 'type' => 'string'
+                    , 'relationship' => [
                         'local_field' => 'Owner'
+                        , 'preferred_local_key_name' => 'OwnerId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'user'
