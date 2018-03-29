@@ -1456,21 +1456,48 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'ServiceTerm'
                     , 'type' => 'int'
                 ]
+                , 'Rack_Type__c' => [
+                    'preferred_name' => 'RackType'
+                    , 'type' => 'string'
+                ]
+                , 'Baseline_Utility_Allocation_Units__c' => [
+                    'preferred_name' => 'BaselineUtilityAllocationUnits'
+                    , 'type' => 'string'
+                ]
+                , 'Baseline_Utility_Allocation__c' => [
+                    'preferred_name' => 'BaselineUtilityAllocation'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '15,3'
+                ]
+                , 'Power_Rating__c' => [
+                    'preferred_name' => 'PowerRating'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '15,3'
+                ]
+                , 'Line_Total__c' => [
+                    'preferred_name' => 'LineTotal'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
+                ]
                 , 'UnitPrice' => [
                     'preferred_name' => 'SalesPrice'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'TotalPrice' => [
                     'preferred_name' => 'TotalPrice'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'X3rd_Party_MRC__c' => [
                     'preferred_name' => 'ThirdPartyMRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'X3rd_Party_NRC__c' => [
                     'preferred_name' => 'ThirdPartyNRC'
                     , 'type' => 'decimal'
+                    , 'type_description' => '16,2'
                 ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
