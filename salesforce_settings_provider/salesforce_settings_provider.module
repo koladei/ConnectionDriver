@@ -559,6 +559,17 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'cash_inflow'
                     ]
                 ]
+                , '_NetBossInterface' => [
+                    'preferred_name' => 'NetBossInterface'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Name'
+                        , 'remote_field' => 'CustomerProduct'
+                        , 'remote_type' => 'child'
+                        , 'remote_entity' => 'netboss_circuit_interface_mapping'
+                        , 'remote_driver' => 'sql'
+                    ]
+                ]
             ]
         ]
         , 'customer_product_contract' => [
