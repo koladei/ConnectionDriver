@@ -1202,6 +1202,12 @@ abstract class MiddlewareConnectionDriver
         // If a duplicate exists, pretend the record was just created.
         if(count($duplicates) > 0){
             $res->d = $duplicates[0]->Id;
+
+            // Silently do an update if requested
+            $updateMatches = isset($otherOptions['$updateMatches'])?$otherOptions['$updateMatches']: FALSE;
+            if($updateMatches){ 
+                $this->updateItemInternal($entityBrowser, $this->connectionToken, $res->d, $obj, $otherOptions);
+            }
             $res->success = true;
         } 
 
