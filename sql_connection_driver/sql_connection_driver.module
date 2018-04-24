@@ -406,6 +406,28 @@ function sql_connection_driver__get_entity_definitions()
                         'preferred_name' => 'Version'
                         , 'type' => 'string'
                     ]
+                    , 'frequency' => [
+                        'preferred_name' => 'Frequency'
+                        , 'type' => 'int'
+                    ]
+                    , 'enable_scheduling' => [
+                        'preferred_name' => 'EnableScheduling'
+                        , 'type' => 'boolean'
+                    ]
+                    , 'next_run' => [
+                        'preferred_name' => 'NextRun'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'default_parameter' => [
+                        'preferred_name' => 'DefaultParameter'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
+                    , 'default_parameter_type' => [
+                        'preferred_name' => 'DefaultParameterType'
+                        , 'type' => 'string'
+                        , 'type_description' => '255'
+                    ]
                     , 'api_name' => [
                         'preferred_name' => 'APIName'
                         , 'type' => 'string'
@@ -500,6 +522,92 @@ function sql_connection_driver__get_entity_definitions()
                     , 'sent_to_scoms' => [
                         'preferred_name' => 'SentToSCOMS'
                         , 'type' => 'int'
+                    ]
+                ]
+            ]
+            , 'netboss_circuit_interface_mapping' => [
+                'internal_name' => 'NetBoss_Circuit_Interface_Mapping'
+                , 'manage_timestamps' => TRUE
+                , 'fields' => [
+                    'id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'created' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'modified' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'createdby' => [
+                        'preferred_name' => 'CreatedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CreatedBy'
+                            , 'preferred_local_key_name' => 'CreatedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'modifiedby' => [
+                        'preferred_name' => 'ModifiedBy'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ModifiedBy'
+                            , 'preferred_local_key_name' => 'ModifiedById'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'objects'
+                            , 'remote_driver' => 'ldap'
+                        ]
+                    ]
+                    , 'DeviceName' => [
+                        'preferred_name' => 'DeviceName'
+                        , 'type' => 'string'
+                    ]
+                    , 'ObjectName' => [
+                        'preferred_name' => 'ObjectName'
+                        , 'type' => 'string'
+                    ]
+                    , 'ObjectDescription' => [
+                        'preferred_name' => 'ObjectDescription'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
+                    , 'CircuitID' => [
+                        'preferred_name' => 'CustomerProduct'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CustomerProduct'
+                            , 'preferred_local_key_name' => 'CircuitID'
+                            , 'remote_field' => 'Name'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'customer_product'
+                            , 'remote_driver' => 'salesforce'
+                        ]
+                    ]
+                    , 'TrafficInMax' => [
+                        'preferred_name' => 'MaxTrafficIn'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '16,2'
+                    ]
+                    , 'TrafficOutMax' => [
+                        'preferred_name' => 'MaxTrafficOut'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '16,2'
+                    ]
+                    , 'CIRMbps' => [
+                        'preferred_name' => 'CIR'
+                        , 'type' => 'string'
+                    ]
+                    , 'PIRMbps' => [
+                        'preferred_name' => 'PIR'
+                        , 'type' => 'string'
                     ]
                 ]
             ]
