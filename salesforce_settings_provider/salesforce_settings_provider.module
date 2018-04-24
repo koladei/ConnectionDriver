@@ -1827,7 +1827,11 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
                     , 'type' => 'boolean',
-                ]                
+                ]           
+                , 'Is_Addon__c' => [
+                    'preferred_name' => 'IsAddon'
+                    , 'type' => 'boolean',
+                ]         
                 , 'RecordTypeId' => [
                     'preferred_name' => 'Type'
                     , 'type' => 'string'
