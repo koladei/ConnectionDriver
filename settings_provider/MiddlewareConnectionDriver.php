@@ -1120,6 +1120,206 @@ abstract class MiddlewareConnectionDriver
         }
     }
 
+    public function createItems($entityBrowser, array $objects, array $otherOptions = []){
+        // Don't bother if the array is empty
+        if(count($objects) < 1){ 
+            throw new \Exception('List of items to create cannot be empty.');
+        }
+
+        $entityBrowser = $this->getEntityBrowser($entityBrowser);
+        if (is_string($entityBrowser) || is_null($entityBrowser)) {
+            throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
+        }        
+
+        // Handle method redirection
+        if($entityBrowser->shouldRedirectCreate()){
+            $providerInfo = $entityBrowser->getCreateProviderInfo();
+            $driver = $this;
+            if($providerInfo->driver != $this->getIdentifier()) {
+                $driver = $this->loadDriver($providerInfo->driver);
+            }
+
+            // Execute the provider's create method.
+            $args = func_get_args();
+            $args[0] = $providerInfo->entity;
+            $return = $driver->createItems(...$args);
+            return $return;
+        }
+
+        // Handle storage delegation
+        if ($entityBrowser->delegatesStorage() && ($this->getIdentifier() != $entityBrowser->getDelegateDriverName())) {
+
+            // Load the driver instead
+            $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
+            
+            // Return the results from the cache driver.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+            $args[2]['$setId'] = '1';
+            $return = $delegateDriver->createItems(...$args);
+            return $return;
+        }
+                
+        $entityBrowser = $this->setStrategies($entityBrowser);
+        $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
+        $otherOptions['retryCount'] = $retryCount + 1;
+
+        // Strip-out invalid fields
+        $otherOptions['processedItems'] = isset($otherOptions['processedItems'])?$otherOptions['processedItems']:[];
+        $reses = &$otherOptions['processedItems'];
+        foreach($objects as $objId => &$object){    
+            if(property_exists($object,'__Created_Internal') && $object->__Created_Internal = true) {
+                continue;
+            }
+
+            $object = (object)$object;    
+            set_time_limit(20);   
+            $setFields = $entityBrowser->getValidFieldsByDisplayName(array_keys(get_object_vars($object)));
+
+            $obj = new \stdClass();
+            foreach ($setFields as $setField) {
+                // avoid objects
+                if (!is_object($object->{$setField->getDisplayName()}) && !is_array($object->{$setField->getDisplayName()})) {
+                    $obj->{$setField->getDisplayName()} = $object->{$setField->getDisplayName()};
+                }
+            }
+
+            // If timestamp management is enabled on the entity, set it.
+            if($entityBrowser->shouldManageTimestamps()){
+                $now = new \DateTime();
+                $obj->Created = $now->format('Y-m-d\TH:i:s');
+                $obj->Modified = $now->format('Y-m-d\TH:i:s');
+            }
+
+            // Prepare the selected fields for the return
+            if (!isset($otherOptions['$select'])) {
+                $otherOptions['$select'] = EntityFieldDefinition::getDisplayNames($setFields);
+            } else {
+                $abccd = is_string($otherOptions['$select']) ? explode(',', $otherOptions['$select']) : (is_array($otherOptions['$select']) ? $otherOptions['$select'] : []);
+                $abccc = array_merge($abccd, EntityFieldDefinition::getDisplayNames($setFields));
+                $otherOptions['$select'] = array_unique($abccc);
+            }
+
+            // Prepare the expanded fields for the returned value
+            if (!isset($otherOptions['$expand'])) {
+                $otherOptions['$expand'] = '';
+            }
+
+            // Check for duplicates
+            $res = new \stdClass();            
+            $duplicateFilter = isset($otherOptions['$duplicateFilter'])?$otherOptions['$duplicateFilter']:'';
+            if(strlen($duplicateFilter) > 0){
+                // Try getting the item first
+                $duplicateFilter = preg_replace_callback(
+                    '|(\{\}\->)([\w]+[\w\d]*)|',
+                    function ($matches) use($object) {
+                        if(is_object($object) && property_exists($object, $matches[2])) {
+                            return $object->{$matches[2]};
+                        } 
+                        else if(is_array($object) && isset($object[$matches[2]])){
+                            return $object[$matches[2]];
+                        } else {
+
+                            throw new \Exception("The requested arrow property '{$matches[2]}' could not be found");
+                        }
+                    },
+                    $duplicateFilter
+                );
+
+                $duplicates = $this->getItems($entityBrowser, "{$entityBrowser->getIdField()->getDisplayName()}", $duplicateFilter);
+            }
+
+            // If a duplicate exists, pretend the record was just created.
+            if(count($duplicates) > 0){
+                $res->d = $duplicates[0]->Id;
+
+                // Silently do an update if requested
+                $updateMatches = isset($otherOptions['$updateMatches'])?$otherOptions['$updateMatches']: FALSE;
+                if($updateMatches){ 
+                    $this->updateItemInternal($entityBrowser, $this->connectionToken, $res->d, $obj, $otherOptions);
+                }
+                $res->success = true;
+            } 
+
+            // Invoke the internal create method.
+            else {
+                $res = $this->createItemInternal($entityBrowser, $this->connectionToken, $obj, $otherOptions);
+            }
+            
+            // Requery and return the created object.
+            if (property_exists($res, 'd') && $res->success == true) {
+                $args = func_get_args();
+                $object->__Created_Internal = true;
+
+                // Try to write the update to the cache also
+                try {
+                    if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && count($duplicates) < 1) {
+                        // Load the driver instead
+                        $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
+                        
+                        // Refactor the arguments to target the cache.
+                        $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+                        $args[1] = $args[1][$objId];
+                        $args[1]->Id = $res->d;
+
+                        // Since we ommit items that are deleted, set this one as not deleted
+                        if($entityBrowser->hasField('IsDeleted')){
+                            $args[1]->IsDeleted = FALSE;
+                        }
+
+                        // Set record as pending update. It is possible that some fields will be calculated by the remote source
+                        $args[1]->_IsUpdated = FALSE;
+
+                        $args[2]['$setId'] = '1';
+                        $now = (new \DateTime())->format('Y-m-d');
+                        try {
+                            $cacheDriver->createItem(...$args);
+                            $this->syncFromDate($entityBrowser, $now);
+                        } 
+
+                        // May be the datastructure is faulty
+                        catch(\Exception $exc){
+                            $cacheDriver->ensureDataStructure($args[0]);
+                            $cacheDriver->createItem(...$args);
+                            $this->syncFromDate($entityBrowser, $now);
+                        }
+                    }
+                } 
+                // Fail silently
+                catch(\Exception $exp){}
+
+                // The $autoFetch parameter determines whether to fetch the just inserted record or its Id alone.
+                // The default is to fetch the inserted record but may be overridden by an implementing cl
+                if(isset($otherOptions['$autoFetch']) && (''.$otherOptions['$autoFetch']) == '1'){
+                    $this->autoFetch = TRUE;
+                }
+
+                if($this->autoFetch){
+                    $reses[] = $this->getItemById($entityBrowser, $res->d, $otherOptions['$select'], $otherOptions['$expand'], $otherOptions);
+                } else {
+                    $reses[] = $res->d;
+                }
+            }
+            
+            // Otherwise, if something is wrong, retry
+            else {
+                if ($retryCount < $this->maxRetries) {
+                    $otherOptions['processedItems'] = $reses;
+                    $reses[] = $this->createItems($entityBrowser, $objects, $otherOptions);
+                } else {
+                    throw new \Exception("Unable to create a new record in {$entityBrowser->getDisplayName()} of ".__CLASS__);
+                }
+            }
+        }
+
+        return $reses;
+    }
+
+    public function createItem2($entityBrowser, \stdClass $object, array $otherOptions = [])
+    {
+        $resp = $this->createItems($entityBrowser, [$object], $otherOptions);
+    }
+
     public function createItem($entityBrowser, \stdClass $object, array $otherOptions = [])
     {
         $entityBrowser = $this->getEntityBrowser($entityBrowser);
@@ -1192,19 +1392,21 @@ abstract class MiddlewareConnectionDriver
 
         // Check for duplicates
         $res = new \stdClass();
+        $updateMatches = isset($otherOptions['$updateMatches'])?$otherOptions['$updateMatches']: FALSE;
         $duplicateFilter = isset($otherOptions['$duplicateFilter'])?$otherOptions['$duplicateFilter']:'';
         $duplicates = [];
+
+        // Check for conflicts.
         if(strlen($duplicateFilter) > 0){
-            // Try getting the item first
             $duplicates = $this->getItems($entityBrowser, "{$entityBrowser->getIdField()->getDisplayName()}", $duplicateFilter);
         }
 
-        // If a duplicate exists, pretend the record was just created.
+        // If a duplicate exists.
         if(count($duplicates) > 0){
+            // pretend the record was just created.
             $res->d = $duplicates[0]->Id;
 
             // Silently do an update if requested
-            $updateMatches = isset($otherOptions['$updateMatches'])?$otherOptions['$updateMatches']: FALSE;
             if($updateMatches){ 
                 $this->updateItemInternal($entityBrowser, $this->connectionToken, $res->d, $obj, $otherOptions);
             }
@@ -1218,7 +1420,8 @@ abstract class MiddlewareConnectionDriver
         
         // Requery and return the created object.
         if (property_exists($res, 'd') && $res->success == true) {
-            // Try to write the update to the cache also
+
+            // Try to write the creation data to the cache also
             try {
                 if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && count($duplicates) < 1) {
                     // Load the driver instead
@@ -1272,7 +1475,7 @@ abstract class MiddlewareConnectionDriver
         // Otherwise, if something is wrong, retry
         else {
             if ($retryCount < $this->maxRetries) {
-                return $this->createItem($entityBrowser, $object, $otherOptions);
+                return $this->createItem($entityBrowser, $objects, $otherOptions);
             } else {
                 throw new \Exception("Unable to create a new record in {$entityBrowser->getDisplayName()} of ".__CLASS__);
             }
