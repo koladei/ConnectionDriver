@@ -283,7 +283,7 @@ abstract class MiddlewareConnectionDriver
      */
     public function storeValue($key, $value)
     {
-        variable_set("MW__{$key}", $value);
+        variable_set("mw__{$key}", $value);
         return $this;
     }
 
@@ -296,7 +296,7 @@ abstract class MiddlewareConnectionDriver
      */
     public function retrieveValue($key, $default = null)
     {
-        return variable_get("MW__{$key}", $default);
+        return variable_get("mw__{$key}", $default);
     }
 
     /**
@@ -1001,7 +1001,7 @@ abstract class MiddlewareConnectionDriver
 
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
         $otherOptions['retryCount'] = $retryCount + 1;
-        if(!isset($updateItemArgs[3])){
+        if(!isset($updateItemArgs[\])){
             $updateItemArgs[3] = [];
         }
         $updateItemArgs[3]['retryCount'] = $otherOptions['retryCount'];
