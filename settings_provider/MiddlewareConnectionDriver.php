@@ -1001,7 +1001,7 @@ abstract class MiddlewareConnectionDriver
 
         $retryCount = isset($otherOptions['retryCount'])?$otherOptions['retryCount']:0;
         $otherOptions['retryCount'] = $retryCount + 1;
-        if(!isset($updateItemArgs[\])){
+        if(!isset($updateItemArgs[3])){
             $updateItemArgs[3] = [];
         }
         $updateItemArgs[3]['retryCount'] = $otherOptions['retryCount'];
