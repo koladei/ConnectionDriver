@@ -1206,7 +1206,8 @@ abstract class MiddlewareConnectionDriver
             }
 
             // Check for duplicates
-            $res = new \stdClass();            
+            $res = new \stdClass();     
+            $duplicates = [];
             $duplicateFilter = isset($otherOptions['$duplicateFilter'])?$otherOptions['$duplicateFilter']:'';
             if(strlen($duplicateFilter) > 0){
                 // Try getting the item first

@@ -494,8 +494,40 @@ function sql_connection_driver__get_entity_definitions()
                         , 'type' => 'string'
                     ]
                     , 'customer_id' => [
-                        'preferred_name' => 'CustomerId'
+                        'preferred_name' => 'Customer'
                         , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'Customer'
+                            , 'preferred_local_key_name' => 'CustomerId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'account'
+                            , 'remote_driver' => 'salesforce'
+                        ]
+                    ]
+                    , 'year' => [
+                        'preferred_name' => 'Year'
+                        , 'type' => 'int'
+                    ]
+                    , 'quarter' => [
+                        'preferred_name' => 'Quarter'
+                        , 'type' => 'int'
+                    ]
+                    , 'status_comment' => [
+                        'preferred_name' => 'StatusComment'
+                        , 'type' => 'int'
+                    ]
+                    , 'cash_inflow_id' => [
+                        'preferred_name' => 'CashInflow'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CashInflow'
+                            , 'preferred_local_key_name' => 'CashInflowId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'cash_inflow'
+                            , 'remote_driver' => 'salesforce'
+                        ]
                     ]
                     , 'payment_date' => [
                         'preferred_name' => 'PaymentDate'
@@ -916,6 +948,16 @@ function sql_connection_driver__get_entity_definitions()
                         'preferred_name' => 'Description'
                         , 'type' => 'string'
                         , 'type_description' => 'MAX'
+                    ]
+                    , 'ServiceGroup' => [
+                        'preferred_name' => 'ServiceGroup'
+                        , 'type' => 'string'
+                        , 'type_description' => '255'
+                    ]
+                    , 'BusinessEntity' => [
+                        'preferred_name' => 'BusinessEntity'
+                        , 'type' => 'string'
+                        , 'type_description' => '255'
                     ]
                     , 'Weight__c' => [
                         'preferred_name' => 'Weight'
