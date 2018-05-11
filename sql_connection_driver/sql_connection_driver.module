@@ -505,6 +505,10 @@ function sql_connection_driver__get_entity_definitions()
                             , 'remote_driver' => 'salesforce'
                         ]
                     ]
+                    , 'customer_name' => [
+                        'preferred_name' => 'CustomerName'
+                        , 'type' => 'string'
+                    ]
                     , 'year' => [
                         'preferred_name' => 'Year'
                         , 'type' => 'int'
@@ -516,6 +520,11 @@ function sql_connection_driver__get_entity_definitions()
                     , 'status_comment' => [
                         'preferred_name' => 'StatusComment'
                         , 'type' => 'int'
+                    ]
+                    , 'narrative' => [
+                        'preferred_name' => 'Narrative'
+                        , 'type' => 'string'
+                        , 'type_description' => 'max'
                     ]
                     , 'cash_inflow_id' => [
                         'preferred_name' => 'CashInflow'
