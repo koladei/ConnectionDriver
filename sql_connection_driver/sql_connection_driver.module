@@ -519,7 +519,8 @@ function sql_connection_driver__get_entity_definitions()
                     ]
                     , 'status_comment' => [
                         'preferred_name' => 'StatusComment'
-                        , 'type' => 'int'
+                        , 'type' => 'string'
+                        , 'type_description' => 'max'
                     ]
                     , 'narrative' => [
                         'preferred_name' => 'Narrative'

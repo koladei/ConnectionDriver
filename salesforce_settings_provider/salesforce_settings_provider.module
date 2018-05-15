@@ -1057,7 +1057,6 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'payable_commission'
                     ],
                 ]
-                // Number_Of_Lines
                 , 'Number_Of_Lines__c' => [
                     'preferred_name' => 'NumberOfLines'
                     , 'type' => 'int'
@@ -1233,6 +1232,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'SOFRequestComments'
                     , 'type' => 'string'
                     , 'type_description' => 'MAX'
+                ]
+                , 'Unit_Of_Measure' => [
+                    'preferred_name' => 'UnitOfMeasure'
+                    , 'type' => 'string'
                 ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
