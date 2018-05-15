@@ -1233,7 +1233,7 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'type' => 'string'
                     , 'type_description' => 'MAX'
                 ]
-                , 'Unit_Of_Measure' => [
+                , 'Unit_Of_Measure__c' => [
                     'preferred_name' => 'UnitOfMeasure'
                     , 'type' => 'string'
                 ]
