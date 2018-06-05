@@ -217,6 +217,7 @@ function remedy_connection_driver__get_entity_definitions() {
                 , 'Assignee_Login_ID' => [
                     'preferred_name' => 'AssignedTo'
                     , 'type' => 'string'
+                    , 'preferred_query_name' => 'Assignee Login ID'
                     , 'relationship' => [
                         'local_field' => 'AssignedTo'
                         , 'preferred_local_key_name' => 'AssigneeId'
@@ -419,14 +420,16 @@ function remedy_connection_driver__get_entity_definitions() {
             ]
         ]
         , 'incidentworklog' => [
-            'internal_name' => 'MainOne_ShowIncidentWorkLogWebService'
+            'internal_name' => 'MainOne_IncidentWorkLogWebService'
             , 'soap_methods' => [
-                'query' => 'New_GetList_Operation_0'
+                'create' => 'AddWorkLog'
+                , 'query' => 'New_GetList_Operation_0'
             ]
             , 'fields' => [
                 'Work_Log_ID' => [
                     'preferred_name' => 'Id'
                     , 'type' => 'string'
+                    , 'preferred_query_name' => 'Work Log ID'
                     , 'mandatory' => 1,
                 ]
                 , 'Incident_Number' => [
@@ -454,6 +457,19 @@ function remedy_connection_driver__get_entity_definitions() {
                         , 'remote_driver' => 'ldap'
                     ]
                 ]
+                , 'Work_Log_Submitter' => [
+                    'preferred_name' => 'WorklogSubmittedBy'
+                    , 'preferred_create_name' => 'WorkLogSubmitter'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'WorklogSubmittedBy'
+                        , 'preferred_local_key_name' => 'WorklogSubmitterId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'objects'
+                        , 'remote_driver' => 'ldap'
+                    ]
+                ]
                 , 'Submit_Date' => [
                     'preferred_name' => 'Created'
                     , 'type' => 'string'
@@ -468,10 +484,12 @@ function remedy_connection_driver__get_entity_definitions() {
                 ]
                 , 'Detailed_Description' => [
                     'preferred_name' => 'DetailedDescription'
+                    , 'preferred_create_name' => 'DetailedDescription'
                     , 'type' => 'string'
                 ]
                 , 'Work_Log_Type' => [
                     'preferred_name' => 'Type'
+                    , 'preferred_create_name' => 'WorkLogType'
                     , 'type' => 'string'
                 ]
                 , 'IncidentStartTime' => [

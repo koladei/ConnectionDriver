@@ -2,6 +2,8 @@
 
 namespace com\mainone\middleware;
 
+require_once 'vendor/autoload.php';
+
 use com\mainone\middleware\MiddlewareConnectionDriver;
 use com\mainone\middleware\MiddlewareFilter;
 use com\mainone\middleware\EntityDefinitionBrowser;
@@ -30,6 +32,23 @@ use EWSType_NonEmptyArrayOfAllItemsType;
 use EWSType_UpdateItemType;
 use EWSType_ItemChangeType;
 use EWSType_SetItemFieldType;
+
+
+use \jamesiarmes\PhpEws\Client;
+use \jamesiarmes\PhpEws\Request\CreateItemType;
+use \jamesiarmes\PhpEws\ArrayType\ArrayOfRecipientsType;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfAllItemsType;
+use \jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfAttachmentsType;
+use \jamesiarmes\PhpEws\Enumeration\BodyTypeType;
+use \jamesiarmes\PhpEws\Enumeration\MessageDispositionType;
+use \jamesiarmes\PhpEws\Enumeration\ResponseClassType;
+use \jamesiarmes\PhpEws\Type\BodyType;
+use \jamesiarmes\PhpEws\Type\EmailAddressType;
+use \jamesiarmes\PhpEws\Type\FileAttachmentType;
+use \jamesiarmes\PhpEws\Type\MessageType;
+use \jamesiarmes\PhpEws\Type\SingleRecipientType;
+use \SplFileObject;
+
 use \PDO;
 
 /**
@@ -81,6 +100,11 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
 
                 case 'sendEmailMessage': {
                     return $this->sendEmail($objects, $connectionToken, $otherOptions);
+                    break;
+                }
+                case 'sendEmailMessage2': {
+                    return $this->sendEmail2($objects, $connectionToken, $otherOptions);
+                    break;
                 }
                 default:{
                     throw new \Exception("Sorry! the function '{$functionName}' is not supported yet.");
@@ -253,6 +277,110 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
         return NULL;
     }
 
+    private function sendEmail2($message = [], $ews = NULL){
+        // var_dump($message);
+        if(!isset($message['to'])){
+            throw new \Exception('Parameter \'to\' is required');
+        }
+        $tos = is_string($message['to'])?explode(',', $message['to']):$message['to'];
+
+        if(!isset($message['subject'])){
+            throw new \Exception('Parameter \'subject\' is required');
+        }
+        $subject = $message['subject'];
+
+        if(!isset($message['body'])){
+            throw new \Exception('Parameter \'body\' is required');
+        }
+        $body = $message['body'];
+
+        $ccs = isset($message['cc'])?(is_string($message['cc'])?explode(',', $message['cc']):$message['cc']):[];
+        $bccs = isset($message['bc'])?(is_string($message['bc'])?explode(',', $message['bc']):$message['bc']):[];
+        $attachments = isset($message['attachments'])?(is_string($message['attachments'])?explode(',', $message['attachments']):$message['attachments']):[];
+
+        if (($ews = (!is_null($ews) ? $ews : $this->getConnectionToken2()))) {
+
+            // Build the request.
+            $request = new CreateItemType();
+            $request->Items = new NonEmptyArrayOfAllItemsType();
+
+            // Save the message, but do not send it.
+            $request->MessageDisposition = MessageDispositionType::SEND_AND_SAVE_COPY;
+
+            // Create the message.
+            $message = new MessageType();
+            $message->Subject = $subject;
+            $message->ToRecipients = new ArrayOfRecipientsType();
+            $message->CcRecipients = new ArrayOfRecipientsType();
+            $message->BccRecipients = new ArrayOfRecipientsType();
+            $message->Attachments = new NonEmptyArrayOfAttachmentsType();
+
+            // // Set the sender.
+            // $message->From = new SingleRecipientType();
+            // $message->From->Mailbox = new EmailAddressType();
+            // $message->From->Mailbox->EmailAddress = $username;
+
+            // Set the recipient(s)    
+            foreach($tos as $to){
+                $recipient = new EmailAddressType();
+                // $recipient->Name = $recpient_name;
+                $recipient->EmailAddress = $to;
+                $message->ToRecipients->Mailbox[] = $recipient;
+            }
+            
+            foreach($ccs as $cc){
+                $recipient = new EmailAddressType();
+                // $recipient->Name = $recpient_name;
+                $recipient->EmailAddress = $cc;
+                $message->CcRecipients->Mailbox[] = $recipient;
+            }
+            
+            foreach($bccs as $cc){
+                $recipient = new EmailAddressType();
+                // $recipient->Name = $recpient_name;
+                $recipient->EmailAddress = $cc;
+                $message->BccRecipients->Mailbox[] = $recipient;
+            }
+
+
+            // Set the message body.
+            $message->Body = new BodyType();
+            $message->Body->BodyType = BodyTypeType::HTML;
+            $message->Body->_ = $body;
+
+            // Build the file attachment.            
+            foreach($attachments as $att){
+                $attachment = new FileAttachmentType();
+                $attachment->Content = base64_decode($att->Content);
+                $attachment->Name = $att->Filename;
+                $attachment->IsInline = property_exists($att, 'IsInline')?$att->IsInline: false;
+                $attachment->ContentType = $att->ContentType;
+                $attachment->ContentId = $att->Filename;;
+                $message->Attachments->FileAttachment[] = $attachment;
+            }
+
+            // Add the message to the request.
+            $request->Items->Message[] = $message;
+            $response = $ews->CreateItem($request);
+
+            // Iterate over the results, printing any error messages.
+            // $response_messages = $response->ResponseMessages->CreateItemResponseMessage;
+            // foreach ($response_messages as $response_message) {
+            //     // Make sure the request succeeded.
+            //     if ($response_message->ResponseClass != ResponseClassType::SUCCESS) {
+            //         $code = $response_message->ResponseCode;
+            //         $message = $response_message->MessageText;
+            //         fwrite(STDERR, "Message failed to create with \"$code: $message\"\n");
+            //         continue;
+            //     }
+            //     fwrite(STDOUT, "Message sent successfully.\n");
+            // }
+
+            return $response;
+        }
+    }
+
+    
     private function sendEmail($message = [], $ews = NULL){
         // var_dump($message);
         if(!isset($message['to'])){
@@ -272,7 +400,6 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
 
         $ccs = isset($message['cc'])?(is_string($message['cc'])?explode(',', $message['cc']):$message['cc']):[];
         $bccs = isset($message['bc'])?(is_string($message['bc'])?explode(',', $message['bc']):$message['bc']):[];
-
 
         if (($ews = (!is_null($ews) ? $ews : $this->getConnectionToken()))) {
 
@@ -321,6 +448,9 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $msgRequest->Items->Message = $msg;
             $msgRequest->MessageDisposition = 'SendAndSaveCopy';
             $msgRequest->MessageDispositionSpecified = true;
+
+            // Add the message to the request.
+            $request->Items->Message[] = $message;
                     
             $response = $ews->CreateItem($msgRequest);
             return $response;
@@ -398,6 +528,21 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $settings = $sourceLoader($sourceName);
 
             $ews = new ExchangeWebServices($settings->server, $settings->username, $settings->password, ExchangeWebServices::VERSION_2010_SP2);
+            $this->serviceRef = $ews;
+            return $ews;
+            // return $settings;            
+        } catch (Exception $x) {
+            return FALSE;
+        }
+    }   
+
+    private function getConnectionToken2($sourceName = NULL) {
+        set_time_limit(60);
+        try {
+            $sourceLoader = $this->sourceLoader;
+            $settings = $sourceLoader($sourceName);
+
+            $ews = new Client($settings->server, $settings->username, $settings->password, Client::VERSION_2010_SP2);
             $this->serviceRef = $ews;
             return $ews;
             // return $settings;            

@@ -70,7 +70,10 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
             if (!is_null($methods) && property_exists($methods, 'create')) {
                 $uri = "{$connectionToken->URL}/{$entityBrowser->getInternalName()}";
 
-                $client = new \SoapClient("$uri"); //TODO: uptimize performance by caching the WSDL.
+                $client = new \SoapClient("$uri", [
+                    // 'trace' => 1
+                    // , 'cache_wsdl' => WSDL_CACHE_NONE
+                ]); //TODO: uptimize performance by caching the WSDL.
                 $authenticationInfo = new \stdClass();
                 $authenticationInfo->userName = $connectionToken->Username;
                 $authenticationInfo->password = $connectionToken->Password;
@@ -92,7 +95,7 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                     $ld->success = TRUE;
                     return $ld;            
                 } catch (\SoapFault $sf) {
-                    throw new \Exception("{$sf->getMessage()}");
+                    throw new \Exception("ERO: {$sf->getMessage()}");
                 } 
             } else {
                 throw new \Exception("The data dictionary is missing the soap method 'create' for entity {$entityBrowser->getDisplayName()}");
@@ -141,7 +144,7 @@ class BMCRemedyConnectionDriver extends MiddlewareConnectionDriver {
                 $header = new \SOAPHeader($ns, 'AuthenticationInfo', $authenticationInfo);
                 $client->__setSoapHeaders($header);
                 $getListInputMap = new \stdClass();
-                
+                // echo $filter;
                 $getListInputMap->Qualification = "{$filter}";
                 $getListInputMap->maxLimit = $otherOptions['$pageSize'];
                 $getListInputMap->startRecord = ($otherOptions['$pageSize'] * ($otherOptions['$pageNumber'] - 1)) + $otherOptions['$skip'];
