@@ -1314,18 +1314,16 @@ abstract class MiddlewareConnectionDriver
             $abccc = array_merge($abccd, EntityFieldDefinition::getDisplayNames($setFields));
             $otherOptions['$select'] = array_unique($abccc);
         }
-        // $otherOptions['$select'] = array_keys($otherOptions['$select']);
-        // return 'CCC';//array_keys($otherOptions['$select']);
+        
         $updateItemArgs[3]['$select'] = $otherOptions['$select'];
-        // return $otherOptions['$select'];
-
+        
         if (!isset($otherOptions['$expand'])) {
             $otherOptions['$expand'] = '';
         }
         $updateItemArgs[3]['$expand'] = $otherOptions['$expand'];
 
         // If there is need to specifically update the cache copy alone
-        $cacheOnly = (isset($otherOptions['$cacheOnly']) && $otherOptions['$cacheOnly'] == '1')?TRUE:FALSE;
+        $cacheOnly = (isset($otherOptions['$cacheOnly']) && $otherOptions['$cacheOnly'] == '1')? TRUE:FALSE;
         if (
             $entityBrowser->shouldCacheData() && 
             ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && 
@@ -1663,6 +1661,43 @@ abstract class MiddlewareConnectionDriver
             $args[2]['$setId'] = '1';
             $return = $delegateDriver->createItem(...$args);
             return $return;
+        }
+
+        // If there is need to specifically update the cache copy alone
+        $cacheOnly = (isset($otherOptions['$cacheOnly']) && $otherOptions['$cacheOnly'] == '1')? TRUE:FALSE;
+        if (
+            $entityBrowser->shouldCacheData() && 
+            ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && 
+            $cacheOnly
+        ) {
+            // Load the driver instead
+            $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
+
+            // Refactor the arguments to target the cache.
+            $args = func_get_args();
+            $args[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
+
+            // Since we ommit items that are deleted, set this one as not deleted
+            if($entityBrowser->hasField('IsDeleted')){
+                $args[1]->IsDeleted = FALSE;
+            }
+
+            // Set record as pending update. It is possible that some fields will be calculated by the remote source
+            $args[1]->_IsUpdated = FALSE;
+
+            $args[2]['$setId'] = '1';
+            $now = (new \DateTime())->format('Y-m-d');
+            try {
+                return $cacheDriver->createItem(...$args);
+                // $this->syncFromDate($entityBrowser, $now);
+            } 
+
+            // May be the datastructure is faulty
+            catch(\Exception $exc){
+                $cacheDriver->ensureDataStructure($args[0]);
+                $cacheDriver->createItem(...$args);
+                $this->syncFromDate($entityBrowser, $now);
+            }
         }
                 
         $entityBrowser = $this->setStrategies($entityBrowser);
