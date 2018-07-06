@@ -1489,6 +1489,11 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'BaselineUtilityAllocationUnits'
                     , 'type' => 'string'
                 ]
+                , 'Additional_BUA_Charge__c' => [
+                    'preferred_name' => 'AdditionalBUACharge'
+                    , 'type' => 'decimal'
+                    , 'type_description' => '15,3'
+                ]
                 , 'Baseline_Utility_Allocation__c' => [
                     'preferred_name' => 'BaselineUtilityAllocation'
                     , 'type' => 'decimal'
