@@ -313,7 +313,9 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $message->ToRecipients = new ArrayOfRecipientsType();
             $message->CcRecipients = new ArrayOfRecipientsType();
             $message->BccRecipients = new ArrayOfRecipientsType();
-            $message->Attachments = new NonEmptyArrayOfAttachmentsType();
+            if(count($attachments) > 0){
+                $message->Attachments = new NonEmptyArrayOfAttachmentsType();
+            }
 
             // // Set the sender.
             // $message->From = new SingleRecipientType();
