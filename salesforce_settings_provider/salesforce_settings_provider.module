@@ -1132,12 +1132,12 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Security_Deposit__c' => [
                     'preferred_name' => 'SecurityDeposit'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Amount__c' => [
                     'preferred_name' => 'Amount'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Currency_of_Payment__c' => [
                     'preferred_name' => 'CurrencyOfPayment'
@@ -1168,52 +1168,52 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'MRC__c' => [
                     'preferred_name' => 'MRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'NRC__c' => [
                     'preferred_name' => 'NRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Computed_MRC__c' => [
                     'preferred_name' => 'ComputedMRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Computed_NRC__c' => [
                     'preferred_name' => 'ComputedNRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Aggregated_MRC__c' => [
                     'preferred_name' => 'AggregatedMRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Aggregated_NRC__c' => [
                     'preferred_name' => 'AggregatedNRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Aggregated_3rd_Party_MRC__c' => [
                     'preferred_name' => 'Aggregated3rdPartyMRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Aggregated_3rd_Party_NRC__c' => [
                     'preferred_name' => 'Aggregated3rdPartyNRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Computed_3rd_Party_MRC__c' => [
                     'preferred_name' => 'ComputedThirdPartyMRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Computed_3rd_Party_NRC__c' => [
                     'preferred_name' => 'ComputedThirdPartyNRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Additional_Payment_Details__c' => [
                     'preferred_name' => 'AdditionalPaymentDetails'
@@ -1269,6 +1269,17 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'type' => 'string'
                     , 'lookup_entity' => 'opportunity'
                 ]
+                , 'Business_Entity__c' => [
+                    'preferred_name' => 'BusinessEntity'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'BusinessEntity'
+                        , 'preferred_local_key_name' => 'BusinessEntityId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'business_entity'
+                    ]
+                ]
                 , 'AccountId' => [
                     'preferred_name' => 'Account'
                     , 'type' => 'string'
@@ -1279,7 +1290,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'account'
-                    ],
+                    ]
                 ]
                 , '_Opportunities' => [
                     'preferred_name' => 'Opportunities'
@@ -1437,22 +1448,22 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'MRC__c' => [
                     'preferred_name' => 'MRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'NRC__c' => [
                     'preferred_name' => 'NRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'X3rd_Party_MRC__c' => [
                     'preferred_name' => 'ThirdPartyMRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'X3rd_Party_NRC__c' => [
                     'preferred_name' => 'ThirdPartyNRC'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'Quantity' => [
                     'preferred_name' => 'Quantity'
@@ -1491,7 +1502,7 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'Line_Total__c' => [
                     'preferred_name' => 'LineTotal'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
                 , 'UnitPrice' => [
                     'preferred_name' => 'SalesPrice'
@@ -1501,18 +1512,18 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'TotalPrice' => [
                     'preferred_name' => 'TotalPrice'
                     , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
+                    , 'type_description' => '14,4'
                 ]
-                , 'X3rd_Party_MRC__c' => [
-                    'preferred_name' => 'ThirdPartyMRC'
-                    , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
-                ]
-                , 'X3rd_Party_NRC__c' => [
-                    'preferred_name' => 'ThirdPartyNRC'
-                    , 'type' => 'decimal'
-                    , 'type_description' => '16,2'
-                ]
+                // , 'X3rd_Party_MRC__c' => [
+                //     'preferred_name' => 'ThirdPartyMRC'
+                //     , 'type' => 'decimal'
+                //     , 'type_description' => '14,4'
+                // ]
+                // , 'X3rd_Party_NRC__c' => [
+                //     'preferred_name' => 'ThirdPartyNRC'
+                //     , 'type' => 'decimal'
+                //     , 'type_description' => '16,2'
+                // ]
                 , 'IsDeleted' => [
                     'preferred_name' => 'IsDeleted'
                     , 'type' => 'boolean',
@@ -1895,6 +1906,10 @@ function salesforce_settings_provider__get_entity_definitions()
                     'preferred_name' => 'Website'
                     , 'type' => 'string'
                 ]
+                , 'Currency__c' => [
+                    'preferred_name' => 'Currency'
+                    , 'type' => 'string'
+                ]
                 , 'CreatedById' => [
                     'preferred_name' => 'CreatedBy'
                     , 'type' => 'string'
@@ -2132,6 +2147,62 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'relationship' => [
                         'local_field' => 'User'
                         , 'preferred_local_key_name' => 'UserId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'user'
+                    ]
+                ]
+            ],
+        ]
+        , 'business_entity' => [
+            'internal_name' => 'Business_Entity__c'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 7200
+            , 'fields' => [
+                'Name' => [
+                    'preferred_name' => 'Name'
+                    , 'type' => 'string'
+                ]
+                , 'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'Address__c' => [
+                    'preferred_name' => 'Address'
+                    , 'type' => 'string'
+                    , 'type_description' => 'MAX'
+                ]
+                , 'Currency__c' => [
+                    'preferred_name' => 'Currency'
+                    , 'type' => 'string'
+                ]
+                , 'Email__c' => [
+                    'preferred_name' => 'Email'
+                    , 'type' => 'string'
+                ]
+                , 'Short_Name__c' => [
+                    'preferred_name' => 'ShortName'
+                    , 'type' => 'string'
+                ]
+                , 'Website__c' => [
+                    'preferred_name' => 'Website'
+                    , 'type' => 'string'
+                ]
+                , 'OwnerId' => [
+                    'preferred_name' => 'Owner'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Owner'
+                        , 'preferred_local_key_name' => 'OwnerId'
                         , 'remote_field' => 'Id'
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'user'
