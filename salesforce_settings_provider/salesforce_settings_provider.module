@@ -245,7 +245,7 @@ function salesforce_settings_provider__get_entity_definitions()
                 , 'ExchangeRate__c' => [
                     'preferred_name' => 'ExchangeRate'
                     , 'type' => 'decimal'
-                    , 'type_description' => '14,4'
+                    , 'type_description' => '19,14'
                 ]
                 , 'Quarter__c' => [
                     'preferred_name' => 'Quarter'
@@ -1333,6 +1333,17 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_entity' => 'cash_inflow'
                     ],
                 ]
+                , '_PrimaryContactReference' => [
+                    'preferred_name' => 'PrimaryContactReference'
+                    , 'type' => 'detail'
+                    , 'relationship' => [
+                        'local_field' => 'Id'
+                        , 'remote_field' => 'OpportunityId'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'opportunity_contact_role'
+                        , 'filter' => 'IsPrimary eq $true$'
+                    ]
+                ]
                 , '_Lines' => [
                     'preferred_name' => 'Lines'
                     , 'type' => 'detail'
@@ -1341,7 +1352,6 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_field' => 'OpportunityId'
                         , 'remote_type' => 'child'
                         , 'remote_entity' => 'opportunity_product'
-                        // , 'filter' => 'IsDeleted eq $false$'
                     ],
                 ]
                 , '_AdditionalTerms' => [
@@ -2212,6 +2222,56 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'remote_type' => 'parent'
                         , 'remote_entity' => 'user'
                     ]
+                ]
+            ],
+        ]
+        , 'opportunity_contact_role' => [
+            'internal_name' => 'OpportunityContactRole'
+            , 'cache_to' => 'sql'
+            , 'cache_freq' => 7200
+            , 'fields' => [
+                'LastModifiedDate' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime'
+                ]
+                , 'CreatedDate' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime'
+                ]
+                , 'Id' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'string'
+                    , 'mandatory' => 1
+                ]
+                , 'OpportunityId' => [
+                    'preferred_name' => 'Opportunity'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Opportunity'
+                        , 'preferred_local_key_name' => 'OpportunityId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'opportunity'
+                    ]
+                ]
+                , 'ContactId' => [
+                    'preferred_name' => 'Contact'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'Contact'
+                        , 'preferred_local_key_name' => 'ContactId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'contact'
+                    ]
+                ]
+                , 'Role' => [
+                    'preferred_name' => 'Role'
+                    , 'type' => 'string'
+                ]
+                , 'IsPrimary' => [
+                    'preferred_name' => 'IsPrimary'
+                    , 'type' => 'boolean'
                 ]
             ],
         ]
