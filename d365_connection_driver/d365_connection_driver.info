@@ -1,5 +1,5 @@
-name = Salesforce Settings Provider
-description = Implements a webservice API that can be queried to get certain information about a customer from Dynamics AX.
+name = D365 Connection Driver
+description = Implements a webservice API that can be queried to get certain information about a customer from Dynamics AX 365.
 configure = admin/config/administration/settings_provider
 dependencies[] = settings_provider
 package = MainOne
