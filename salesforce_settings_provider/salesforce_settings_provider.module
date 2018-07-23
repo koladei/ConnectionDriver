@@ -636,7 +636,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'Expiration'
                         , 'type' => 'datetime'
                     ]
-                    , 'Description__c' => [
+                    , 'Contract_Description__c' => [
                         'preferred_name' => 'Description'
                         , 'type' => 'string'
                         , 'type_description' => 'MAX'
