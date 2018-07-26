@@ -102,7 +102,7 @@ function salesforce_settings_provider__get_entity_definitions()
 {
     $in_store = variable_get('SALESFORCE_DRIVER_OBJECTS');
 
-    if(is_null($in_store)){ 
+    if(!is_null($in_store)){ 
         $in_store =  ['salesforce'=>[
             'record_types' => [
                 'internal_name' => 'RecordType'
