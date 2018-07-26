@@ -1,0 +1,164 @@
+<?php
+
+module_load_include('module', 'settings_provider');
+$module_path = drupal_get_path('module', 'd365_connection_driver');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/forms/admin.inc');
+include_once str_replace('/', DIRECTORY_SEPARATOR, $module_path . '/D365ConnectionDriver.php');
+
+use com\mainone\middleware\D365ConnectionDriver;
+
+/**
+ * Implements hook_permission
+ * @return array
+ */
+function d365_connection_driver_permission()
+{
+    $permission = [];
+    return $permission;
+}
+
+function d365_connection_driver_connection_driver_d365_alter(&$container)
+{
+    $connection_settings = d365_connection_driver__get_settings();
+    $driver = new D365ConnectionDriver(function ($x) {
+        return mware_connection_driver__get_driver($x);
+    }, function () {
+    }, 'd365', $connection_settings);
+
+    $defs = d365_connection_driver__get_entity_definitions_local();
+    $driver->setEntities(($defs));
+    $driver->addUtilityFunction('date_sync_util', function(){
+            $args = func_get_args();
+            $return = module_invoke('settings_provider', '_update_cache', ...$args);
+    });
+    $container['d365'] = $driver;
+}
+
+function d365_connection_driver__user_access($args)
+{
+    return true;
+}
+
+/**
+ * Returns the connection settings with which to connect to d365.
+ * @return \stdClass
+ */
+function d365_connection_driver__get_settings($settings = 'default')
+{
+    $d365_settings = variable_get('d365_settings', [
+        'authentication_url' => ''
+        , 'resource' => ''
+        , 'grant_type' => ''
+        , 'client_id' => ''
+        , 'client_secret' => ''
+    ]);
+
+    return $d365_settings;
+}
+
+/**
+ * Returns entity definitions that have been marked as cacheable to the specified entity.
+ *
+ * @param String $targetDriver the connection driver to use to retrieve the cache.
+ * @return void
+ */
+function d365_connection_driver__get_cached_entity_definitions($targetDriver)
+{
+    return settings_provider__format_cached_definition('d365', $targetDriver, function(){
+        $args = func_get_args();
+        $return = d365_connection_driver__get_entity_definitions_local(...$args);
+        return $return;
+    });
+}
+
+function d365_connection_driver__get_entity_definitions_local(){
+    return d365_connection_driver__get_entity_definitions(...func_get_args())['d365'];
+}
+
+/**
+ * Returns the full definition of an entity or the definition of the specified component.
+ * Components include: fields, internal_name
+ * @param string $entity_name
+ * @param string $component
+ * @return array
+ */
+function d365_connection_driver__get_entity_definitions()
+{
+    $in_store = variable_get('D365_DRIVER_OBJECTS');
+
+    if(!is_null($in_store)){      
+
+        $in_store = ['d365'=> [
+            'customer' => [
+                'internal_name' => 'Customers'
+                , 'fields' => [
+                    'RECID' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'int'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'MODIFIEDDATETIME' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime',
+                    ]
+                    , 'CREATEDDATETIME' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime',
+                    ]
+                    , 'PARTY' => [
+                        'preferred_name' => 'RootAccount'
+                        , 'type' => 'int'
+                        // , 'relationship' => [
+                        //     'local_field' => 'RootAccount'
+                        //     , 'remote_field' => 'Id'
+                        //     , 'remote_type' => 'parent'
+                        //     , 'preferred_local_key_name' => 'RootAccountId'
+                        //     , 'remote_entity' => 'rootaccount'
+                        // ]
+                    ]
+                    , 'Name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                    ]
+                    , 'CustomerAccount' => [
+                        'preferred_name' => 'AccountNumber'
+                        , 'type' => 'string'
+                    ]
+                    , 'PartyType' => [
+                        'preferred_name' => 'PartyType'
+                        , 'type' => 'string'
+                    ]
+                    , 'dataAreaId' => [
+                        'preferred_name' => 'BusinessEntity'
+                        , 'type' => 'string',
+                    ]
+                    // , '_TRANSACTIONS' => [
+                    //     'preferred_name' => 'Transactions'
+                    //     , 'type' => 'detail'
+                    //     , 'lookup_entity' => 'cust_trans'
+                    //     , 'relationship' => [
+                    //         'local_field' => 'AccountNumber'
+                    //         , 'remote_field' => 'AccountNumber'
+                    //         , 'remote_type' => 'child'
+                    //     ],
+                    // ]
+                    // , '_INVOICES' => [
+                    //     'preferred_name' => 'Invoices'
+                    //     , 'type' => 'detail'
+                    //     , 'relationship' => [
+                    //         'local_field' => 'AccountNumber'
+                    //         , 'remote_field' => 'AccountNumber'
+                    //         , 'remote_type' => 'child'
+                    //         , 'remote_entity' => 'cust_invoice_table'
+                    //         , 'filter' => ' and IsPosted eq 1'
+                    //     ],
+                    // ]
+                ]
+            ]
+        ]];
+
+        variable_set('D365_DRIVER_OBJECTS', $in_store);
+    }    
+
+    return $in_store;
+}
