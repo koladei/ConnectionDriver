@@ -23,6 +23,8 @@ class EntityFieldDefinition {
     private $expandable = false;
     private $isAnArray = 0;
     private $description = '255';
+    private $formula = NULL;
+    private $formula_type = NULL;
 
     public function __construct($name, array $fieldDefinition, EntityDefinitionBrowser &$parent) {
         $this->parent = $parent;
@@ -31,14 +33,28 @@ class EntityFieldDefinition {
         $this->preferredQueryName = isset($fieldDefinition['preferred_query_name']) ? $fieldDefinition['preferred_query_name'] : $name;
         $this->preferredCreateName = isset($fieldDefinition['preferred_create_name']) ? $fieldDefinition['preferred_create_name'] : $name;
         $this->preferredUpdateName = isset($fieldDefinition['preferred_update_name']) ? $fieldDefinition['preferred_update_name'] : $name;
+        $this->formula = isset($fieldDefinition['formula']) ? $fieldDefinition['formula'] : NULL;
+        $this->formula_type = isset($fieldDefinition['formula_type']) ? $fieldDefinition['formula_type'] : NULL;
         $this->displayName = $fieldDefinition['preferred_name'];
         $this->type = $fieldDefinition['type'];
         $this->dataType = $fieldDefinition['type'];
+
+        if($this->dataType == 'formula'){
+            if(is_null($this->formula_type)){
+                throw new \Exception("'formula_type' is required for fields of type '{$this->dataType}'");
+            }
+
+            if(is_null($this->formula)){
+                throw new \Exception("'formula' is required for fields of type '{$this->dataType}'");
+            }
+        }
+
         switch($this->dataType){
             case 'decimal':{
                 $this->description = '16,2';
             }
         }
+
         $this->description = (isset($fieldDefinition['type_description']) ? $fieldDefinition['type_description']: $this->description);
 
         $this->isAnArray = isset($fieldDefinition['is_array']) ? $fieldDefinition['is_array'] : 0;
@@ -170,7 +186,41 @@ class EntityFieldDefinition {
      * @return void
      */
     public function getDataType() {
-        return $this->dataType;
+        $type = $this->dataType;
+        return $type;
+    }
+
+    /**
+     * Returns the data type of this field if it is a formula field.
+     *
+     * @return void
+     */
+    public function getFormulaDataType() {
+        $type = $this->dataType;
+        if($type == 'formula'){
+            $type = $this->formula_type;
+        }
+        return $type;
+    }
+
+    public function getFormula() {
+        return is_null($this->formula)?null:$this->formula;
+    }
+
+    public function setFormulaProcessor(FormulaProcessor $evaluator) {
+        $this->formular_evaluator = $evaluator;
+        return $this;
+    }
+
+    public function getFormulaProcessor() {
+        if(is_null($this->formular_evaluator)){
+            throw new \Exception("Formular evaluator has not been set for formular field '{$this->getDisplayName()}'");
+        }
+        return $this->formular_evaluator;
+    }
+
+    public function evaluate(\stdClass $record) {
+        return $this->getFormulaProcessor()->evaluate($record);
     }
 
     /**
@@ -237,6 +287,18 @@ class EntityFieldDefinition {
 
     public function isPhoto() {
         if ($this->dataType == 'photo') {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Returns true if the return data type of this field is integer.
+     *
+     * @return boolean
+     */
+    public function isFormula() {
+        if ($this->dataType == 'formula') {
             return true;
         }
         return false;

@@ -7,12 +7,14 @@ include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/MiddlewareODataFi
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EntityDefinitionBrowser.php');
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EncoderDecoder.php');
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/Exceptions.php');
+include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/FormulaProcessor.php');
 
 use com\mainone\middleware\MiddlewareFilter;
 use com\mainone\middleware\MiddlewareODataFilterProcessor;
 use com\mainone\middleware\EntityDefinitionBrowser;
 use com\mainone\middleware\EncoderDecoder;
 use com\mainone\middleware\InvalidFieldSelectedException;
+use com\mainone\middleware\FormulaProcessor;
 
 /**
  * Description of MiddlewareConnectionDriver
@@ -752,6 +754,10 @@ abstract class MiddlewareConnectionDriver
                     $implosion = implode(',', $values);
                     break;
             }
+            case 'compound': {
+                throw new \Exception("Field {$entityField->getDisplayName()} is of type 'compound' and you cannot query 'compound' fields directly.");
+                break;
+            }
             default: {
                     $implosion = implode("_x0027_,_x0027_", $values);
                     $implosion = EncoderDecoder::escape($implosion);
@@ -831,12 +837,6 @@ abstract class MiddlewareConnectionDriver
             throw new \Exception("Invalid entity '{$entityBrowser}' could not be found in {$this->getIdentifier()}");
         }       
         
-        // if($entityBrowser->getDisplayName() == 'customer_product'){
-        //     // echo __CLASS__." {$this->maxRetries}";
-        //     // watchdog("getItems: ". current_path(), print_r($otherOptions, true));
-        //     throw new \Exception("Invalid entity 2");
-        //     // return [];
-        // }
         $scope = $this;
         $entityBrowser = $this->setStrategies($entityBrowser);
         
@@ -845,9 +845,6 @@ abstract class MiddlewareConnectionDriver
         $otherOptions['retryCount'] = $retryCount;
         $getItemArgs[4] = &$otherOptions;
         
-        // watchdog('retryCount X', print_r( $otherOptions['retryCount'] , true));
-        // watchdog('OLD DATA', print_r($args[4], true));
-
         // Handle method redirection
         if($entityBrowser->shouldRedirectRead()){
             $providerInfo = $entityBrowser->getReadProviderInfo();
@@ -857,9 +854,7 @@ abstract class MiddlewareConnectionDriver
             }
             
             // Execute the update provider's update method.
-            // $args = func_get_args();
             $getItemArgs[0] = $providerInfo->entity;
-            // $getItemArgs[4]['retryCount'] = $retryCount;
             $return = NULL;
             
             try {
@@ -874,7 +869,7 @@ abstract class MiddlewareConnectionDriver
             return $return;
         }
 
-        // If this entity is cached to another driver
+        // If this entity is cached to another driver, Handle caching
         $skipCache = isset($otherOptions['$skipCache'])?''.$otherOptions['$skipCache']:'0';
         $skipCache = $skipCache == '1'?TRUE:FALSE;
         if ($entityBrowser->shouldCacheData() && ($this->getIdentifier() != $entityBrowser->getCachingDriverName()) && $skipCache == FALSE) {
@@ -882,9 +877,7 @@ abstract class MiddlewareConnectionDriver
             $cacheDriver = $this->loadDriver($entityBrowser->getCachingDriverName());
             
             // Return the results from the cache driver.
-            // $args = func_get_args();
             $getItemArgs[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
-            // $getItemArgs[4]['retryCount'] = $retryCount;
             $return = NULL;
             
             try {
@@ -918,10 +911,9 @@ abstract class MiddlewareConnectionDriver
             // Load the driver instead
             $delegateDriver = $this->loadDriver($entityBrowser->getDelegateDriverName());
             $return = NULL;
+
             // Return the results from the cache driver.
-            // $args = func_get_args();
             $getItemArgs[0] = strtolower("{$this->getIdentifier()}__{$entityBrowser->getInternalName()}");
-            // $getItemArgs[4]['retryCount'] = $retryCount;
             
             try {
                 $return = $delegateDriver->getItems(...$getItemArgs);
@@ -1047,8 +1039,6 @@ abstract class MiddlewareConnectionDriver
             if ($fieldInfo->isExpandable()) {
                 // Get a reference to the remote driver
                 $remoteDriver = $fieldInfo->getRemoteDriver();
-
-                // $remoteEntityBrowser = $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()];
                 $remoteEntityBrowser = isset($remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()])? $remoteDriver->entitiesByDisplayName[$fieldInfo->getRemoteEntityName()]:null;
 
                 // TODO: Review this later. Problem is because of cached entities
@@ -1074,7 +1064,6 @@ abstract class MiddlewareConnectionDriver
                     }
                 } else {
                     throw new \Exception("Referenced entity '{$fieldInfo->getRemoteEntityName()}' in field '{$fieldInfo->getDisplayName()}' of '{$fieldInfo->getParent()->getDisplayName()}' could not be found in {$fieldInfo->getRemoteDriver()->getIdentifier()}.");
-                    // var_dump('ULL REMOTE', $fieldInfo->getRemoteEntityName(), $fieldInfo->getDisplayName(), $fieldInfo->getParent()->getParent()->getIdentifier(), $fieldInfo->getRemoteDriver()->getIdentifier(), $fieldInfo->getParent()->getDisplayName());
                 }
             } else {
                 throw new \Exception("Field {$expand} can not be expanded.");
@@ -1084,16 +1073,18 @@ abstract class MiddlewareConnectionDriver
         // Fetch the data of matching records
         $select = array_unique($entityBrowser->getFieldInternalNames($select));
         $dateFields = $entityBrowser->getFieldsOfTypeByInternalName(['date', 'datetime'], $select);
-        // if($entityBrowser->getDisplayName() == 'salesforce__customer_products__c') {
-        //     $fieldsBeforeManipulation = is_array($fieldsBeforeManipulation)?implode(',', array_values($fieldsBeforeManipulation)):$fieldsBeforeManipulation;
-        //     watchdog('DDDD7', $entityBrowser->getDisplayName().' '. $fieldsBeforeManipulation.' '.implode(',', array_values($select)));
-        // }
+        $formulaFields = $entityBrowser->getFieldsOfTypeByInternalName(['formula'], $select);
+
+        // Automatically include fields used in the formula to avoid evaluation errors.
+        foreach($formulaFields as &$formulaField) {
+            $formularProcessor = new FormulaProcessor($formulaField);
+            $select = $formularProcessor->getFields($select);
+        }
 
         $result = NULL;
         try {
             $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, EncoderDecoder::unescapeall("{$filterExpression}"), $expands, $otherOptions);
         } catch(\Exception $giiExc) {
-            // watchdog("OUTDATED AAAA", "abc: {$giiExc->getMessage()}");
             throw $giiExc;
         }
         
@@ -1102,14 +1093,12 @@ abstract class MiddlewareConnectionDriver
             $dataIsOld = FALSE;
             $oldRecords = [];
 
-            // DeterminE if this is the cache
-            // echo $entityBrowser->getDisplayName();
+            // Determine if this is the cache
             $hasField = $entityBrowser->hasField('_IsUpdated');
             $isACache = !is_null($hasField);
             
-            foreach($result as $key => &$record) { //use ($entityBrowser, $select_map, &$expands, $dateFields, &$dataIsOld, $isACache) {
+            foreach($result as $key => &$record) {
                 // Try to update the cache before fetching the data if it is old.
-                // $record = &$result[$key];
                 if($isACache && $retryCount < $this->maxRetries){
                     if($retryCount < ($this->maxRetries / 2)){
                         if(is_object($record) && property_exists($record, '_IsUpdated') && $record->_IsUpdated != TRUE){
@@ -1135,6 +1124,8 @@ abstract class MiddlewareConnectionDriver
                 }
 
                 $record = $entityBrowser->renameFields($record, $select_map);
+
+                // Format date fields appropriately.
                 foreach ($dateFields as $dateField) {
                     $dateFieldName = $dateField->getDisplayName();
 
@@ -1214,7 +1205,42 @@ abstract class MiddlewareConnectionDriver
             });
 
             // Attach the fetched values to their corresponding parents
-            array_walk($result, function (&$record, $recordIndex) use ($entityBrowser, $expands) {
+            array_walk($result, function (&$record, $recordIndex) use ($entityBrowser, $expands, $formulaFields) {
+                
+                // Compute formula fields
+                foreach($formulaFields as $formulaField){
+                    $formulaFieldName = $formulaField->getDisplayName();
+                    $formulaContent =  explode('|', $formulaField->getFormula());
+
+                    if (is_object($record) && !is_null($record)) {
+                        $record = $formulaField->evaluate($record);
+                        // foreach($formulaContent as $comVal){
+                        //     if(strpos($comVal, '{') == 0){
+                        //         $comVal = \substr($comVal, 1, (strlen($comVal) - 2));
+                        //         $comVal = $record->{$comVal};
+                        //     }
+                        //     $prev = is_null($record->{$formulaFieldName})?'':$record->{$formulaFieldName};
+                        //     $record->{$formulaFieldName} = "{$prev}{$comVal}";
+                        // }
+                    } elseif (is_array($record)) {
+                        foreach ($record as &$innerRecord) {
+                            if (is_object($innerRecord) && !is_null($innerRecord)) {
+                                $innerRecord = $formulaField->evaluate($innerRecord);
+                                // foreach($formulaContent as $comVal){
+                                //     if(strpos($comVal, '{') == 0){
+                                //         $comVal = \substr($comVal, 1, (strlen($comVal) - 2));
+                                //         $comVal = $innerRecord->{$comVal};
+                                //     }
+                                //     $prev = is_null($innerRecord->{$formulaFieldName})?'':$innerRecord->{$formulaFieldName};
+                                //     $innerRecord->{$formulaFieldName} = "{$prev}{$comVal}";
+                                // }
+                            } else {
+                                throw new \Exception('Error on date field');
+                            }
+                        }
+                    }
+                }
+
                 // Prepare to fetch expanded data
                 foreach ($expands as $expand_key => &$expand_val) {
                     $fieldInfo = &$expand_val['info'];

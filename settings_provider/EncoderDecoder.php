@@ -31,6 +31,14 @@ class EncoderDecoder{
         return str_replace(['_x0028_','_x0029_', '_x0027_', '_y007B_','_y007D_'], ['(', ')', "'", '{', '}'], $value);
     }
 
+    // public static function unquote($value){
+    //     return str_replace(["'"], ['_x0027_'], $value);
+    // }
+
+    // public static function requote($value){
+    //     return str_replace(['_x0027_'], ["'"], $value);
+    // }
+
     public static function unescapeall($value){
         $ret = self::unescape($value);
         $ret = self::decode($ret);
