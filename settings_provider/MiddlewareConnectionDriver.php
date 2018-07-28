@@ -1035,7 +1035,7 @@ abstract class MiddlewareConnectionDriver
             }
             $fieldInfo = $entityBrowser->getFieldByDisplayName($expand);
 
-            //check if this field can be expaanded
+            //check if this field can be expanded
             if ($fieldInfo->isExpandable()) {
                 // Get a reference to the remote driver
                 $remoteDriver = $fieldInfo->getRemoteDriver();
@@ -1044,6 +1044,7 @@ abstract class MiddlewareConnectionDriver
                 // TODO: Review this later. Problem is because of cached entities
                 if (!is_null($remoteEntityBrowser)) {
                     $remoteField = $remoteEntityBrowser->getFieldByDisplayName($fieldInfo->getRelatedForeignFieldName());
+                    // echo $fieldInfo->getDisplayName().' :';
 
                     // Get the selected subfields of this expanded field
                     $expandX = self::getCurrentExpansions($entityBrowser, $expand, $fields);
@@ -1074,16 +1075,19 @@ abstract class MiddlewareConnectionDriver
         $select = array_unique($entityBrowser->getFieldInternalNames($select));
         $dateFields = $entityBrowser->getFieldsOfTypeByInternalName(['date', 'datetime'], $select);
         $formulaFields = $entityBrowser->getFieldsOfTypeByInternalName(['formula'], $select);
+        $se = $select;
 
         // Automatically include fields used in the formula to avoid evaluation errors.
         foreach($formulaFields as &$formulaField) {
-            $formularProcessor = new FormulaProcessor($formulaField);
-            $select = $formularProcessor->getFields($select);
+            $se = FormulaProcessor::initialize($formulaField)->getFields($se);
+            if(($k = array_search($formulaField->getInternalName(), $se)) != FALSE){
+                unset($se[$k]);
+            }
         }
 
         $result = NULL;
         try {
-            $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $select, EncoderDecoder::unescapeall("{$filterExpression}"), $expands, $otherOptions);
+            $result = $this->getItemsInternal($entityBrowser, $this->connectionToken, $se, EncoderDecoder::unescapeall("{$filterExpression}"), $expands, $otherOptions);
         } catch(\Exception $giiExc) {
             throw $giiExc;
         }
@@ -1214,26 +1218,10 @@ abstract class MiddlewareConnectionDriver
 
                     if (is_object($record) && !is_null($record)) {
                         $record = $formulaField->evaluate($record);
-                        // foreach($formulaContent as $comVal){
-                        //     if(strpos($comVal, '{') == 0){
-                        //         $comVal = \substr($comVal, 1, (strlen($comVal) - 2));
-                        //         $comVal = $record->{$comVal};
-                        //     }
-                        //     $prev = is_null($record->{$formulaFieldName})?'':$record->{$formulaFieldName};
-                        //     $record->{$formulaFieldName} = "{$prev}{$comVal}";
-                        // }
                     } elseif (is_array($record)) {
                         foreach ($record as &$innerRecord) {
                             if (is_object($innerRecord) && !is_null($innerRecord)) {
                                 $innerRecord = $formulaField->evaluate($innerRecord);
-                                // foreach($formulaContent as $comVal){
-                                //     if(strpos($comVal, '{') == 0){
-                                //         $comVal = \substr($comVal, 1, (strlen($comVal) - 2));
-                                //         $comVal = $innerRecord->{$comVal};
-                                //     }
-                                //     $prev = is_null($innerRecord->{$formulaFieldName})?'':$innerRecord->{$formulaFieldName};
-                                //     $innerRecord->{$formulaFieldName} = "{$prev}{$comVal}";
-                                // }
                             } else {
                                 throw new \Exception('Error on date field');
                             }

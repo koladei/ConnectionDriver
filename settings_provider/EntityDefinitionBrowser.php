@@ -384,7 +384,11 @@ class EntityDefinitionBrowser
 
     public function setField(EntityFieldDefinition $fieldDef)
     {
+        // echo $fieldDef->getDisplayName(). '; ';
         $internalName = $fieldDef->getInternalName(false);
+        // if($fieldDef->isFormula()){
+        //     // FormulaProcessor::initialize($fieldDef);
+        // }
         $this->fieldsByInternalName[$internalName] = $fieldDef;
         $this->fieldsByDisplayName[$fieldDef->getDisplayName()] = &$this->fieldsByInternalName[$internalName];
         if (isset($field['mandatory']) && ($field['mandatory'] == 1 || $field['mandatory'] == true)) {
@@ -414,7 +418,7 @@ class EntityDefinitionBrowser
                 $fieldInfo = $this->fieldsByDisplayName[$fieldName];
                 if ($fieldInfo->isExpandable()) {
                     $fieldNames2[] = $fieldInfo->getRelatedLocalField()->getInternalName();
-                } else {
+                } else {//if(!$fieldInfo->isFormula()){
                     $fieldNames2[] = $fieldInfo->getInternalName();
                 }
             } 

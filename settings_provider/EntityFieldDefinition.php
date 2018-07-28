@@ -2,6 +2,10 @@
 
 namespace com\mainone\middleware;
 
+include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/FormulaProcessor.php');
+
+use com\mainone\middleware\FormulaProcessor;
+
 /**
  * Description of EntityFieldDefinition
  *
@@ -58,8 +62,8 @@ class EntityFieldDefinition {
         $this->description = (isset($fieldDefinition['type_description']) ? $fieldDefinition['type_description']: $this->description);
 
         $this->isAnArray = isset($fieldDefinition['is_array']) ? $fieldDefinition['is_array'] : 0;
-        if ($this->type != 'detail' && isset($fieldDefinition['relationship'])) {
-            if ($this->localField = $fieldDefinition['relationship']['local_field'] == $fieldDefinition['preferred_name']) {
+        if (!in_array($this->type, ['detail']) && isset($fieldDefinition['relationship'])) {
+            if (($this->localField = $fieldDefinition['relationship']['local_field']) == $fieldDefinition['preferred_name']) {
                 $idName = isset($fieldDefinition['relationship']['preferred_local_key_name']) ? $fieldDefinition['relationship']['preferred_local_key_name'] : "{$fieldDefinition['relationship']['local_field']}Key";
                 $fieldDefinition['relationship']['local_field'] = $idName;
                 $this->internalName = "{$name}_\$LOOKUP\$";
@@ -67,7 +71,9 @@ class EntityFieldDefinition {
                 $this->type = 'detail';
                 $x = $fieldDefinition;
                 $x['preferred_name'] = $fieldDefinition['relationship']['local_field'];
-                $x['preferred_query_name'] = isset($fieldDefinition['preferred_query_name']) ? $fieldDefinition['preferred_query_name'] : $name;
+                if($x['type'] != 'formula'){
+                    $x['preferred_query_name'] = isset($fieldDefinition['preferred_query_name']) ? $fieldDefinition['preferred_query_name'] : $name;
+                }
                 unset($x['relationship']);
 
                 $fieldDef = new EntityFieldDefinition($name, $x, $parent);
@@ -88,7 +94,7 @@ class EntityFieldDefinition {
                 $this->remoteDriver = $this->parent->getParent()->getDriver($this->remoteDriverName);//$this->parent->getParent()->loadDriver($this->remoteDriverName);
             }
             $this->expandable = true;
-        } else if ($this->type == 'detail') {
+        } else if (in_array($this->type, ['detail'])) {
             $this->localField = $fieldDefinition['relationship']['local_field'];
             $this->remoteField = $fieldDefinition['relationship']['remote_field'];
             $this->remoteEntityRelationship = $fieldDefinition['relationship']['remote_type'];
@@ -102,6 +108,9 @@ class EntityFieldDefinition {
                 $this->remoteDriver = $this->parent->getParent()->getDriver($this->remoteDriverName);//$this->parent->getParent()->loadDriver($this->remoteDriverName);
             }
             $this->expandable = true;
+        } else if($fieldDefinition['type'] == 'formula'){            
+            // FormulaProcessor::initialize($this);
+            // var_dump($fieldDefinition);
         }
 
         return $this;

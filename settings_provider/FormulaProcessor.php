@@ -47,24 +47,10 @@ class FormulaProcessor {
         }
 
         $record->{"{$this->field->getDisplayName()}"} = eval($formula);
-
-
-        // var_dump($formula);
-
-
-        // $formulaContent =  explode('|', $this->field->getFormula());
-
-        // foreach($formulaContent as $comVal){
-        //     if(strpos($comVal, '{') == 0){
-        //         $comVal = \substr($comVal, 1, (strlen($comVal) - 2));
-        //         $comVal = $record->{$comVal};
-        //     }
-
-        //     $prev = is_null($record->{$formulaFieldName})?'':$record->{$formulaFieldName};
-        //     $record->{$formulaFieldName} = "{$prev}{$comVal}";
-        // }
-
-        // $fields = get_object_vars($record);
         return $record;
+    }
+
+    public static function initialize(EntityFieldDefinition $field){        
+        return new FormulaProcessor($field);
     }
 }
