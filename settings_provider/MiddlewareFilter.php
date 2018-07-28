@@ -130,6 +130,16 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             return "{$this->quote}{$this->value}{$this->quote}";
         }
     }
+
+    private function getORString($field){
+        // Implement checking if field is meant to be a string or otherwise
+        if (is_array($this->value) && count($this->value) > 0) {
+            $im = implode("{$this->quote} or {$field} eq {$this->quote}", $this->value);
+            $im = str_replace('\'\',', '', $im);
+            $im = str_replace('\'\'', '', $im);
+            return $im != '\'\''? "{$field} eq {$this->quote}{$im}{$this->quote}":'';
+        }
+    }
     
     private function getDateTime($value) {
         $type_1 = '/^(([\d]{4})\-([\d]{2})\-([\d]{2})(T([\d]{2})\:([\d]{2})(\:([\d]{2}))?)?)$/';
@@ -353,6 +363,83 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         return $ret;
     }
 
+    protected function ODATAStringer(MiddlewareFilterBase &$scope) {
+        $ret = '';
+
+        $value = $this->value;
+        $q = "'";
+
+        if(!is_null($this->fieldInfo)){
+            switch($this->fieldInfo->getDataType()){
+                case 'int':
+                case 'bigint':
+                case 'boolean':
+                case 'decimal': {
+                    $q = '';
+                    break;
+                }
+            }
+        }
+
+        if ($value instanceof \DateTime) {
+            $value = $value->format('Y-m-d\\TH:i:s\\Z');
+        } else if (is_null($value)) {
+            $value = 'NULL';
+        } else if (is_bool($value)) {
+            $q = '';
+            $value = $value ? 'TRUE':'FALSE';
+        }
+
+        switch ($this->operator) {
+            case self::STARTS_WITH: {
+                    $ret = "{$this->field} LIKE {$q}{$value}%{$q}";
+                    break;
+                }
+            case self::ENDS_WITH: {
+                    $ret = "{$this->field} LIKE {$q}%{$value}{$q}";
+                    break;
+                }
+            case self::SUBSTRING_OF: {
+                    $ret = "{$this->field} LIKE {$q}%{$value}%{$q}";
+                    break;
+                }
+            case self::NOT_EQUAL_TO: {
+                    $ret = "{$this->field} ne {$q}{$value}{$q}";
+                    break;
+                }
+            case self::EQUAL_TO: {
+                    $ret = "{$this->field} eq {$q}{$value}{$q}";
+                    break;
+                }
+            case self::GREATER_THAN: {
+                    $ret = "{$this->field} gt {$q}{$value}{$q}";
+                    break;
+                }
+            case self::GREATER_THAN_EQUAL_TO: {
+                    $ret = "{$this->field} ge {$value}";
+                    break;
+                }
+            case self::LESS_THAN: {
+                    $ret = "{$this->field} lt {$value}";
+                    break;
+                }
+            case self::LESS_THAN_EQUAL_TO: {
+                    $ret = "{$this->field} le {$value}";
+                    break;
+                }
+            case self::IN: {
+                    $ret = $this->getORString($this->field);
+                    break;
+                }
+            default: {
+                    throw new \Exception('Unknown query operand encountered.');
+                }
+        }
+        $ret = EncoderDecoder::unescape($ret);
+
+        return $ret;
+    }
+
     protected function BMCStringer(MiddlewareFilterBase &$scope) {
         $ret = '';
 
@@ -526,37 +613,25 @@ class MiddlewareFilter extends MiddlewareFilterBase {
             case self::STARTS_WITH:
             case self::ENDS_WITH:
             case self::SUBSTRING_OF: {
-                    $ret = "{$this->operator}({$this->field},{$value})";
-                    break;
-                }
-            // case self::STARTS_WITH: {
-            //         $ret = "{$this->field} LIKE '{$this->value}*'";
-            //         break;
-            //     }
-            // case self::ENDS_WITH: {
-            //         $ret = "{$this->field} LIKE '*{$this->value}'";
-            //         break;
-            //     }
-            // case self::SUBSTRING_OF: {
-            //         $ret = "{$this->field} LIKE '*{$this->value}*'";
-            //         break;
-            //     }
+                $ret = "{$this->operator}({$this->field},{$value})";
+                break;
+            }
             case self::NOT_EQUAL_TO:
             case self::EQUAL_TO:
             case self::GREATER_THAN:
             case self::GREATER_THAN_EQUAL_TO:
             case self::LESS_THAN:
             case self::LESS_THAN_EQUAL_TO: {
-                    $ret = "{$this->field} {$this->operator} {$value}";
-                    break;
-                }
+                $ret = "{$this->field} {$this->operator} {$value}";
+                break;
+            }
             case self::IN: {
-                    $ret = "{$this->field} {$this->operator}({$this->quoteValue()})";
-                    break;
-                }
+                $ret = "{$this->field} {$this->operator}({$this->quoteValue()})";
+                break;
+            }
             default: {
-                    throw new \Exception('Unknown query operand encountered.');
-                }
+                throw new \Exception('Unknown query operand encountered.');
+            }
         }
 
         // Restore excaped quotes

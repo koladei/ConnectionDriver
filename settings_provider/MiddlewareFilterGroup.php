@@ -37,14 +37,14 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
             if($partCount > 1){
                 for($index = 0; $index < $partCount; $index++){
                     $part = $context->parts[$index];
-                    $conjection = ($part[0] == MiddlewareFilterGroup::FRAGMENT_OR) ? '|': (($part[0] == MiddlewareFilterGroup::FRAGMENT_AND) ? '&' : '');
+                    $conjunction = ($part[0] == MiddlewareFilterGroup::FRAGMENT_OR) ? '|': (($part[0] == MiddlewareFilterGroup::FRAGMENT_AND) ? '&' : '');
                     $fragment = $part[1];
                     
                     if($index == 1){
-                        $prev = $conjection;
+                        $prev = $conjunction;
                     }
 
-                    if($conjection == $prev){
+                    if($conjunction == $prev){
                         $x .= substr($fragment, 0, 1) == '('? $fragment: "({$fragment})";
 
                         // There a no further part components
@@ -58,11 +58,11 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
                     else{
                         $ret = ($y > 1)?"({$prev}{$ret}{$x})":"{$x}";
                         $x = "({$fragment})";
-                        $prev = $conjection;
+                        $prev = $conjunction;
                         $y += 1;
 
                         if(($index + 1) >= $partCount){
-                            $ret = ($y > 0)?"({$conjection}{$ret}{$x})":"{$x}";
+                            $ret = ($y > 0)?"({$conjunction}{$ret}{$x})":"{$x}";
                             $y = 0;
                         } else {
                             $y += 1;
@@ -81,9 +81,9 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
     protected function DEFAULTStringer(MiddlewareFilterBase &$context){
         $ret = '';
         foreach($this->parts as $index => $part){
-            $conjection = ($part[0] == self::FRAGMENT_OR) ? 'or': (($part[0] == self::FRAGMENT_AND) ? 'and' : '');
+            $conjunction = ($part[0] == self::FRAGMENT_OR) ? 'or': (($part[0] == self::FRAGMENT_AND) ? 'and' : '');
             $fragment = $part[1];
-            $ret .= ($index == 0) ? "({$fragment}" : " {$conjection} {$fragment}";
+            $ret .= ($index == 0) ? "({$fragment}" : " {$conjunction} {$fragment}";
         }
         $ret .= (strlen($ret) > 0) ? ')' : '';
 
@@ -94,9 +94,21 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
         $ret = '';
 
         foreach($this->parts as $index => $part){
-            $conjection = ($part[0] == self::FRAGMENT_OR) ? 'OR': (($part[0] == self::FRAGMENT_AND) ? 'AND' : '');
+            $conjunction = ($part[0] == self::FRAGMENT_OR) ? 'OR': (($part[0] == self::FRAGMENT_AND) ? 'AND' : '');
             $fragment = $part[1];
-            $ret .= ($index == 0) ? "({$fragment})" : " {$conjection} ({$fragment})";
+            $ret .= ($index == 0) ? "({$fragment})" : " {$conjunction} ({$fragment})";
+        }
+
+        return $ret;
+    }
+
+    protected function ODATAStringer(MiddlewareFilterBase &$scope){
+        $ret = '';
+
+        foreach($this->parts as $index => $part){
+            $conjunction = ($part[0] == self::FRAGMENT_OR) ? 'OR': (($part[0] == self::FRAGMENT_AND) ? 'AND' : '');
+            $fragment = $part[1];
+            $ret .= ($index == 0) ? "({$fragment})" : " {$conjunction} ({$fragment})";
         }
 
         return $ret;
@@ -106,9 +118,9 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
         $ret = '';
 
         foreach($this->parts as $index => $part){
-            $conjection = ($part[0] == self::FRAGMENT_OR) ? 'OR': (($part[0] == self::FRAGMENT_AND) ? 'AND' : '');
+            $conjunction = ($part[0] == self::FRAGMENT_OR) ? 'OR': (($part[0] == self::FRAGMENT_AND) ? 'AND' : '');
             $fragment = $part[1];
-            $ret .= ($index == 0) ? "({$fragment})" : " {$conjection} ({$fragment})";
+            $ret .= ($index == 0) ? "({$fragment})" : " {$conjunction} ({$fragment})";
         }
 
         return $ret;
@@ -118,9 +130,9 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
         $ret = '';
 
         foreach($this->parts as $index => $part){
-            $conjection = ($part[0] == self::FRAGMENT_OR) ? 'OR': (($part[0] == self::FRAGMENT_AND) ? 'AND' : '');
+            $conjunction = ($part[0] == self::FRAGMENT_OR) ? 'OR': (($part[0] == self::FRAGMENT_AND) ? 'AND' : '');
             $fragment = $part[1];
-            $ret .= ($index == 0) ? "({$fragment})" : " {$conjection} ({$fragment})";
+            $ret .= ($index == 0) ? "({$fragment})" : " {$conjunction} ({$fragment})";
         }
 
         return $ret;
@@ -130,10 +142,10 @@ class MiddlewareFilterGroup extends MiddlewareFilterBase implements IMiddlewareF
         $ret = '';
 
         foreach($this->parts as $index => $part){
-            $conjection = ($part[0] == self::FRAGMENT_OR) ? 'or': (($part[0] == self::FRAGMENT_AND) ? 'and' : '');
+            $conjunction = ($part[0] == self::FRAGMENT_OR) ? 'or': (($part[0] == self::FRAGMENT_AND) ? 'and' : '');
             $fragment = $part[1];
-            // $ret .= ($index == 0) ? "({$fragment}" : " {$conjection} {$fragment}";
-            $ret .= ($index == 0) ? "({$fragment})" : " {$conjection} ({$fragment})";
+            // $ret .= ($index == 0) ? "({$fragment}" : " {$conjunction} {$fragment}";
+            $ret .= ($index == 0) ? "({$fragment})" : " {$conjunction} ({$fragment})";
         }
         // $ret .= (strlen($ret) > 0) ? ')' : '';
 

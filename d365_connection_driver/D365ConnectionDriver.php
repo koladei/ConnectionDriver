@@ -21,6 +21,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
         $this->connection_settings = $connection_settings;
     }
 
+    
     /**
      * @override
      * Overrides the default implementation.
@@ -29,13 +30,13 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
      * @return void
      */
     protected function parseDateValue($value) {
-        $type_1 = '/^([\d]{4})\-([\d]{2})\-([\d]{2})T([\d]{2})\:([\d]{2})\:([\d]{2})\.([\d\+]+)$/';
+        $type_1 = '/^([\d]{4})\-([\d]{2})\-([\d]{2})T([\d]{2})\:([\d]{2})\:([\d]{2})(Z)$/';
         $type_3 = '/^([\d]{4})\\-([\d]{2})\-([\d]{2})$/';
 
         if (preg_match($type_3, $value) == 1) {
             return \DateTime::createFromFormat('Y-m-d', $value);
         } else if (preg_match($type_1, $value) == 1) {
-            $value = substr($value, 0, strpos($value, '.'));
+            $value = substr($value, 0, strpos($value, 'Z'));
             return \DateTime::createFromFormat('Y-m-d\TH:i:s', $value);
         }
 
@@ -358,22 +359,27 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
             $lastResult = [];
             $counter = 0;
 
-            // Generate the SOQL query to send in the POST request
-            // $query_url =  'SELECT ' . implode(',', $select)
-            //     . " FROM {$entityBrowser->getInternalName()}"
-            //     . (strlen($filter) > 0 ? "  WHERE {$filter} " : '');
-            $query_url =  '?cross-company=true&$top=3';
-            // $query_url = urlencode(trim($query_url));
+            $invoice_params = [
+                '$select' => implode(',', $select)
+                , '$top' => $otherOptions['$pageSize']
+                , '$skip' => ($otherOptions['$pageSize'] * ($otherOptions['$pageNumber'] - 1)) //+ $otherOptions['$skip']
+                , '$cross-company' => 'true'
+            ];
+
+            if(strlen($filter) > 0){
+                $invoice_params['$filter'] = $filter;
+            }
 
             // Execute the POST request.
+            $query_string = drupal_http_build_query($invoice_params);
             $res = new \stdClass();              
-            $res->nextRecordsUrl = "/data/Customers{$query_url}";         
-            do {                
+            $res->nextRecordsUrl = "/data/{$entityBrowser->getInternalName()}?{$query_string}";
+
+            do {   
                 $feed = mware_blocking_http_request("{$connectionToken->resource}{$res->nextRecordsUrl}", ['options' => $options]);
 
                 // Process the request
                 $content =$feed->getContent();
-
                 $res = json_decode($content);
 
                 if (is_object($res) && property_exists($res, 'value')) {
@@ -386,7 +392,6 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
 
             return $result;
         } else {
-            var_dump( $connectionToken); 
             throw new \Exception('Unable to connect to D365 online');
         }
     }
@@ -396,7 +401,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
      * @return type
      */
     public function getStringer() {
-        return MiddlewareFilter::SOQL;
+        return MiddlewareFilter::ODATA;
     }
 
     /**
