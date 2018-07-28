@@ -125,6 +125,28 @@ function d365_connection_driver__get_entity_definitions()
                             , 'remote_type' => 'child'
                         ]
                     ]
+                    , '_PostedInvoices' => [
+                        'preferred_name' => 'PostedInvoices'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'AccountNumber'
+                            , 'remote_field' => 'InvoiceAccount'
+                            , 'remote_entity' => 'invoice'
+                            , 'remote_type' => 'child'
+                            , 'filter' => "InvoiceNumber ne 'Not posted'"
+                        ]
+                    ]
+                    , '_UnpostedInvoices' => [
+                        'preferred_name' => 'UnpostedInvoices'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'AccountNumber'
+                            , 'remote_field' => 'InvoiceAccount'
+                            , 'remote_entity' => 'invoice'
+                            , 'remote_type' => 'child'
+                            , 'filter' => "InvoiceNumber eq 'Not posted'"
+                        ]
+                    ]
                 ]
             ]
             , 'invoice' => [

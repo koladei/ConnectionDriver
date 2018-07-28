@@ -386,7 +386,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
                     $lastResult = $res->value;
                     $result = array_merge($result, $lastResult);  
                 } else {
-                    throw new \Exception("An empty response was received from D365 online. Please retry later. {$query_url}\n{$content}");
+                    throw new \Exception("An empty response was received from D365 online. Please retry later. {$query_string}\n{$content}");
                 }
             } while(false);// (\property_exists($res, 'nextRecordsUrl'));
 
