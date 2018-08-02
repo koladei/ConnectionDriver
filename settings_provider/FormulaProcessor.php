@@ -43,7 +43,8 @@ class FormulaProcessor {
         $formulaFieldName = $this->field->getDisplayName();
         $formula = "return ({$this->field->getFormula()});";
         foreach($this->fields as $display => $internal){
-            $formula = str_replace("{{$display}}", $record->{$display}, $formula);
+            $newValue = property_exists($record, $display)? $record->{$display} : '';
+            $formula = str_replace("{{$display}}", $newValue, $formula);
         }
 
         $record->{"{$this->field->getDisplayName()}"} = eval($formula);
