@@ -899,10 +899,6 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'Email'
                         , 'type' => 'string',
                     ]
-                    , 'BillingAddress' => [
-                        'preferred_name' => 'BillingAddress'
-                        , 'type' => 'string',
-                    ]
                     , 'BillingStreet' => [
                         'preferred_name' => 'BillingStreet'
                         , 'type' => 'string',
@@ -919,8 +915,20 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'BillingCountry'
                         , 'type' => 'string',
                     ]
-                    , 'ShippingAddress' => [
-                        'preferred_name' => 'ShippingAddress'
+                    , 'ShippingStreet' => [
+                        'preferred_name' => 'ShippingStreet'
+                        , 'type' => 'string',
+                    ]
+                    , 'ShippingCity' => [
+                        'preferred_name' => 'ShippingCity'
+                        , 'type' => 'string',
+                    ]
+                    , 'ShippingState' => [
+                        'preferred_name' => 'ShippingState'
+                        , 'type' => 'string',
+                    ]
+                    , 'ShippingCountry' => [
+                        'preferred_name' => 'ShippingCountry'
                         , 'type' => 'string',
                     ]
                     , 'Phone' => [
@@ -1135,12 +1143,12 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'Security_Deposit__c' => [
                         'preferred_name' => 'SecurityDeposit'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Amount__c' => [
                         'preferred_name' => 'Amount'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Currency_of_Payment__c' => [
                         'preferred_name' => 'CurrencyOfPayment'
@@ -1171,52 +1179,56 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'MRC__c' => [
                         'preferred_name' => 'MRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'NRC__c' => [
                         'preferred_name' => 'NRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Computed_MRC__c' => [
                         'preferred_name' => 'ComputedMRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Computed_NRC__c' => [
                         'preferred_name' => 'ComputedNRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Aggregated_MRC__c' => [
                         'preferred_name' => 'AggregatedMRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Aggregated_NRC__c' => [
                         'preferred_name' => 'AggregatedNRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Aggregated_3rd_Party_MRC__c' => [
                         'preferred_name' => 'Aggregated3rdPartyMRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Aggregated_3rd_Party_NRC__c' => [
                         'preferred_name' => 'Aggregated3rdPartyNRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Computed_3rd_Party_MRC__c' => [
                         'preferred_name' => 'ComputedThirdPartyMRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Computed_3rd_Party_NRC__c' => [
                         'preferred_name' => 'ComputedThirdPartyNRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
+                    ]
+                    , 'Number_Of_Voice_Lines__c' => [
+                        'preferred_name' => 'NumberOfVoiceLines'
+                        , 'type' => 'int'
                     ]
                     , 'Additional_Payment_Details__c' => [
                         'preferred_name' => 'AdditionalPaymentDetails'
@@ -1461,22 +1473,22 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'MRC__c' => [
                         'preferred_name' => 'MRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'NRC__c' => [
                         'preferred_name' => 'NRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'X3rd_Party_MRC__c' => [
                         'preferred_name' => 'ThirdPartyMRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'X3rd_Party_NRC__c' => [
                         'preferred_name' => 'ThirdPartyNRC'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Quantity' => [
                         'preferred_name' => 'Quantity'
@@ -1520,7 +1532,7 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'Line_Total__c' => [
                         'preferred_name' => 'LineTotal'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
                     ]
                     , 'UnitPrice' => [
                         'preferred_name' => 'SalesPrice'
@@ -1530,12 +1542,39 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'TotalPrice' => [
                         'preferred_name' => 'TotalPrice'
                         , 'type' => 'decimal'
-                        , 'type_description' => '14,4'
+                        , 'type_description' => '19,14'
+                    ]
+                    , 'Number_Of_DOD_Lines__c' => [
+                        'preferred_name' => 'NumberOfDODLines'
+                        , 'type' => 'int'
+                    ]
+                    , 'Number_Of_DID_Lines__c' => [
+                        'preferred_name' => 'NumberOfDIDLines'
+                        , 'type' => 'int'
+                    ]
+                    , 'Access_Charge__c' => [
+                        'preferred_name' => 'AccessCharge'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
+                    ]
+                    , 'Number_Of_Lines__c' => [
+                        'preferred_name' => 'NumberOfLines'
+                        , 'type' => 'int'
+                    ]
+                    , 'MainOne_CPE__c' => [
+                        'preferred_name' => 'MainOneCPE'
+                        , 'type' => 'string'
+                        , 'type_description' => '255'
+                    ]
+                    , 'Credit_Limit__c' => [
+                        'preferred_name' => 'CreditLimit'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
                     ]
                     // , 'X3rd_Party_MRC__c' => [
                     //     'preferred_name' => 'ThirdPartyMRC'
                     //     , 'type' => 'decimal'
-                    //     , 'type_description' => '14,4'
+                    //     , 'type_description' => '19,14'
                     // ]
                     // , 'X3rd_Party_NRC__c' => [
                     //     'preferred_name' => 'ThirdPartyNRC'

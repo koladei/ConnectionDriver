@@ -219,27 +219,27 @@ abstract class MiddlewareConnectionDriver
                 }
                 case '$1HR$':{
                     $interval = new \DateInterval("PT1H");
-                    $date = ($now->sub($interval))->format('Y-m-d');
+                    $date = $now->sub($interval)->format('Y-m-d');
                     break;
                 }
                 case '$6HR$':{
                     $interval = new \DateInterval("PT6H");
-                    $date = ($now->sub($interval))->format('Y-m-d');
+                    $date = $now->sub($interval)->format('Y-m-d');
                     break;
                 }
                 case '$24HR$':{
                     $interval = new \DateInterval("PT24H");
-                    $date = ($now->sub($interval))->format('Y-m-d');
+                    $date = $now->sub($interval)->format('Y-m-d');
                     break;
                 }
                 case '$month$':{
                     $interval = new \DateInterval("P1M");
-                    $date = ($now->sub($interval))->format('Y-m-d');
+                    $date = $now->sub($interval)->format('Y-m-d');
                     break;
                 }
                 case '$year$':{
                     $interval = new \DateInterval("P1Y");
-                    $date = ($now->sub($interval))->format('Y-m-d');
+                    $date = $now->sub($interval)->format('Y-m-d');
                     break;
                 }
             }
