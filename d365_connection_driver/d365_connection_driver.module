@@ -231,7 +231,7 @@ function d365_connection_driver__get_entity_definitions()
                         , 'type' => 'detail'
                         , 'relationship' => [
                             'local_field' => 'Id'
-                            , 'remote_field' => 'RelatedInvoiceId'
+                            , 'remote_field' => 'InvoiceId'
                             , 'remote_entity' => 'invoice_line'
                             , 'remote_type' => 'child'
                         ]
@@ -254,7 +254,7 @@ function d365_connection_driver__get_entity_definitions()
                     '_Id' => [
                         'preferred_name' => 'Id'
                         , 'type' => 'formula'
-                        , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{RelatedInvoiceId}\''
+                        , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{InvoiceId}\''
                         , 'formula_type' => 'string'
                         , 'mandatory' => 1,
                     ]
@@ -263,7 +263,7 @@ function d365_connection_driver__get_entity_definitions()
                         , 'type' => 'bigint'
                         , 'relationship' => [
                             'local_field' => 'RelatedInvoice'
-                            , 'preferred_local_key_name' => 'RelatedInvoiceId'
+                            , 'preferred_local_key_name' => 'InvoiceId'
                             , 'remote_field' => 'Id'
                             , 'remote_entity' => 'invoice_line'
                             , 'remote_type' => 'parent'
