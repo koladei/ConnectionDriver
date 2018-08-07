@@ -119,7 +119,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
             if (is_array($res)) {
                 throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else if (is_null($res)) {
-                throw new \Exception('Something went wrong. Communication with Saled365orce failed.');
+                throw new \Exception('Something went wrong. xCommunication with D365 failed.');
             } else {
                 $d = new \stdClass();
                 $d->d = $res->id;
@@ -211,7 +211,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
             $obj = json_encode($object);
             
             // Prepare the POST request
-            $options = array(
+            $options = [
                 CURLOPT_HTTPHEADER => array(
                     'Authorization: Bearer ' . $connectionToken->access_token,
                     'Content-Type: application/json'
@@ -221,7 +221,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
                 CURLOPT_SSL_VERIFYHOST => 0,
                 CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
                 CURLOPT_POSTFIELDS => $obj
-            );
+            ];
 
             if ($connectionToken->ConnectionParameters->UseProxyServer) {
                 $options[CURLOPT_PROXY] = $connectionToken->ConnectionParameters->ProxyServer;
@@ -239,7 +239,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
             if (is_array($res)) {
                 throw new \Exception("{$res[0]->message}. errorCode: {$res[0]->errorCode}");
             } else if (is_null($res)) {
-                throw new \Exception('Something went wrong. Communication with Saled365orce failed.');
+                throw new \Exception('Something went wrong. YCommunication with D365 failed.');
             } else {
                 $d = new \stdClass();
                 $d->d = $res->id;
