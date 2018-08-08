@@ -552,6 +552,10 @@ function salesforce_settings_provider__get_entity_definitions()
                             , 'remote_entity' => 'opportunity'
                         ]
                     ]
+                    , 'Business_Entity__c' => [
+                        'preferred_name' => 'BusinessEntity'
+                        , 'type' => 'string'
+                    ]
                     , '_CashInflows' => [
                         'preferred_name' => 'CashInflows'
                         , 'type' => 'detail'
@@ -684,6 +688,17 @@ function salesforce_settings_provider__get_entity_definitions()
                             , 'remote_field' => 'Id'
                             , 'remote_type' => 'parent'
                             , 'remote_entity' => 'customer_product_contract'
+                        ]
+                    ]
+                    , 'Business_Entity__c' => [
+                        'preferred_name' => 'BusinessEntity'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'BusinessEntity'
+                            , 'preferred_local_key_name' => 'BusinessEntityId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'business_entity'
                         ]
                     ]
                     , '_Lines' => [
@@ -1458,6 +1473,17 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'ListPrice'
                         , 'type' => 'decimal'
                     ]
+                    , 'Business_Entity__c' => [
+                        'preferred_name' => 'BusinessEntity'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'BusinessEntity'
+                            , 'preferred_local_key_name' => 'BusinessEntityId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'business_entity'
+                        ]
+                    ]
                     , 'ProductCode' => [
                         'preferred_name' => 'ProductCode'
                         , 'type' => 'string'
@@ -1966,6 +1992,17 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'Currency__c' => [
                         'preferred_name' => 'Currency'
                         , 'type' => 'string'
+                    ]
+                    , 'Business_Entity__c' => [
+                        'preferred_name' => 'BusinessEntity'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'BusinessEntity'
+                            , 'preferred_local_key_name' => 'BusinessEntityId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'business_entity'
+                        ]
                     ]
                     , 'CreatedById' => [
                         'preferred_name' => 'CreatedBy'
