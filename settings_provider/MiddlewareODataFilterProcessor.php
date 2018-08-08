@@ -49,7 +49,7 @@ class MiddlewareODataFilterProcessor {
         // In operator
         $matchs = [];
         
-        preg_match_all('/([\w][\w\d\/]*[^\/])\s+(in)\s*(\()\s*(([\'"]?)([^\n\r\)]*))(\5)(\s*\))/i', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/([\w][\w\d\/]*[^\/\s])\s+(in)\s*(\()\s*(([\'"]?)([^\n\r\)]*))(\5)(\s*\))/i', $expression, $matchs, PREG_SET_ORDER);
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
             $key = "#{$place}#";
@@ -60,7 +60,7 @@ class MiddlewareODataFilterProcessor {
 
         // String match operations
         $matchs = [];
-        preg_match_all('/((substringof|startswith|endswith)\s*\()\s*([\w][\w\d\/]*[^\/])\s*\,\s*(([\'"])(\\5)\s*(\)))/', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/((substringof|startswith|endswith)\s*\()\s*([\w][\w\d\/]*[^\/\s])\s*\,\s*(([\'"])(\\5)\s*(\)))/', $expression, $matchs, PREG_SET_ORDER);
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
             $key = "#{$place}#";
@@ -70,7 +70,7 @@ class MiddlewareODataFilterProcessor {
 
         // String match operations
         $matchs = [];
-        preg_match_all('/((substringof|startswith|endswith)\s*\()\s*([\w][\w\d\/]*[^\/])\s*\,\s*(([\'"])([^\'"\)]{0,})(\5))\s*(\))/i', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/((substringof|startswith|endswith)\s*\()\s*([\w][\w\d\/]*[^\/\s])\s*\,\s*(([\'"])([^\'"\)]{0,})(\5))\s*(\))/i', $expression, $matchs, PREG_SET_ORDER);
 
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
@@ -81,7 +81,7 @@ class MiddlewareODataFilterProcessor {
 
         // Date and String comparisons
         $matchs = [];
-        preg_match_all('/([\w][\w\d\/]*[^\/])\s+([\w]{2})\s+(((datetime)([\'"]))|([\'"]))((4)?([\d\-:]+|[^\'"]{0,}))((\6)?(\6)|(\7))/', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/([\w][\w\d\/]*[^\/\s])\s+([\w]{2})\s+(((datetime)([\'"]))|([\'"]))((4)?([\d\-:]+|[^\'"]{0,}))((\6)?(\6)|(\7))/', $expression, $matchs, PREG_SET_ORDER);
 
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
@@ -92,7 +92,7 @@ class MiddlewareODataFilterProcessor {
         
         // Integer and Constants comparisons
         $matchs = [];
-        preg_match_all('/([\w][\w\d\/]*[^\/])\s+([\w]{2})\s+((([\-])?[\d]+(\.[\d]+)?)|(\$[\w]+\$))/', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/([\w][\w\d\/]*[^\/\s])\s+([\w]{2})\s+((([\-])?[\d]+(\.[\d]+)?)|(\$[\w]+\$))/', $expression, $matchs, PREG_SET_ORDER);
 
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
@@ -103,7 +103,7 @@ class MiddlewareODataFilterProcessor {
 
         // Field to field comparisons
         $matchs = [];
-        preg_match_all('/([\w][\w\d\/]*[^\/])\s+([\w]{2})\s+(([\-])?[\w\d\_]+)/', $expression, $matchs, PREG_SET_ORDER);
+        preg_match_all('/([\w][\w\d\/]*[^\/\s])\s+([\w]{2})\s+(([\-])?[\w\d\_]+)/', $expression, $matchs, PREG_SET_ORDER);
 
         foreach ($matchs as $mat) {
             $place = count($this->fragments);
