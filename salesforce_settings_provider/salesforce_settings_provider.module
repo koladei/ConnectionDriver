@@ -1493,8 +1493,13 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'type' => 'string'
                     ]
                     , 'Description' => [
+                        'preferred_name' => 'LineDescription'
+                        , 'type' => 'string'
+                    ]
+                    , 'Description__c' => [
                         'preferred_name' => 'Description'
                         , 'type' => 'string'
+                        , 'type_description' => 'MAX'
                     ]
                     , 'MRC__c' => [
                         'preferred_name' => 'MRC'
