@@ -1887,17 +1887,6 @@ function salesforce_settings_provider__get_entity_definitions()
                             , 'remote_entity' => 'user'
                         ]
                     ]
-                    , 'OwnerId' => [
-                        'preferred_name' => 'Owner'
-                        , 'type' => 'string'
-                        , 'relationship' => [
-                            'local_field' => 'Owner'
-                            , 'preferred_local_key_name' => 'OwnerId'
-                            , 'remote_field' => 'Id'
-                            , 'remote_type' => 'parent'
-                            , 'remote_entity' => 'user'
-                        ]
-                    ]
                 ]
             ]
             , 'product' => [
