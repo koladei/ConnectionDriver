@@ -102,7 +102,7 @@ function salesforce_settings_provider__get_entity_definitions()
 {
     $in_store = variable_get('SALESFORCE_DRIVER_OBJECTS');
 
-    if(!is_null($in_store)){ 
+    // if(!is_null($in_store)){ 
         $in_store =  ['salesforce'=>[
             'record_types' => [
                 'internal_name' => 'RecordType'
@@ -445,6 +445,10 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'Status'
                         , 'type' => 'string'
                     ]
+                    , 'Billing_Cycle__c' => [
+                        'preferred_name' => 'BillingCycle'
+                        , 'type' => 'string'
+                    ]
                     , 'Description__c' => [
                         'preferred_name' => 'Description'
                         , 'type' => 'string'
@@ -465,13 +469,29 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'SubType'
                         , 'type' => 'string'
                     ]
+                    , 'Last_Exchange_Rate__c' => [
+                        'preferred_name' => 'ExchangeRate'
+                        , 'type' => 'string'
+                    ]
                     , 'MRC__c' => [
                         'preferred_name' => 'MRC'
-                        , 'type' => 'int'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
                     ]
                     , 'NRC__c' => [
                         'preferred_name' => 'NRC'
-                        , 'type' => 'int'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
+                    ]
+                    , 'X3rd_Party_MRC__c' => [
+                        'preferred_name' => 'ThirdPartyMRC'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
+                    ]
+                    , 'X3rd_Party_NRC__c' => [
+                        'preferred_name' => 'ThirdPartyNRC'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
                     ]
                     , 'POP__c' => [
                         'preferred_name' => 'POP'
@@ -501,10 +521,6 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'Reactivated'
                         , 'type' => 'datetime'
                     ]
-                    , 'Units__c' => [
-                        'preferred_name' => 'Capacity'
-                        , 'type' => 'int'
-                    ]
                     , 'Burst_Capacity__c' => [
                         'preferred_name' => 'BurstCapacity'
                         , 'type' => 'int'
@@ -517,13 +533,17 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'LastMile'
                         , 'type' => 'string'
                     ]
-                    , 'Address__c' => [
-                        'preferred_name' => 'Address'
+                    , 'Delivery_Address__c' => [
+                        'preferred_name' => 'DeliveryAddress'
                         , 'type' => 'string'
                     ]
                     , 'Currency__c' => [
                         'preferred_name' => 'Currency'
                         , 'type' => 'string'
+                    ]
+                    , 'Quantity__c' => [
+                        'preferred_name' => 'Quantity'
+                        , 'type' => 'decimal'
                     ]
                     , 'IsDeleted' => [
                         'preferred_name' => 'IsDeleted'
@@ -653,10 +673,22 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'MRC__c' => [
                         'preferred_name' => 'MRC'
                         , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
                     ]
                     , 'NRC__c' => [
                         'preferred_name' => 'NRC'
                         , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
+                    ]
+                    , 'X3rd_Party_MRC__c' => [
+                        'preferred_name' => 'ThirdPartyMRC'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
+                    ]
+                    , 'X3rd_Party_NRC__c' => [
+                        'preferred_name' => 'ThirdPartyNRC'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '19,14'
                     ]
                     , 'Pre_Expiration_Notice_Date__c' => [
                         'preferred_name' => 'PreExpirationNoticeDate'
@@ -670,12 +702,20 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'Status'
                         , 'type' => 'string'
                     ]
+                    , 'Billing_Cycle__c' => [
+                        'preferred_name' => 'BillingCycle'
+                        , 'type' => 'string'
+                    ]
                     , 'Service_Order_ID__c' => [
                         'preferred_name' => 'ServiceOrderID'
                         , 'type' => 'string'
                     ]
                     , 'Tenure__c' => [
                         'preferred_name' => 'Tenure'
+                        , 'type' => 'int'
+                    ]
+                    , 'Version__c' => [
+                        'preferred_name' => 'Version'
                         , 'type' => 'int'
                     ]
                     , 'Revision__c' => [
@@ -1058,6 +1098,10 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'Name'
                         , 'type' => 'string'
                         , 'mandatory' => 1,
+                    ]
+                    , 'Version__c' => [
+                        'preferred_name' => 'Version'
+                        , 'type' => 'int'
                     ]
                     , 'LastModifiedDate' => [
                         'preferred_name' => 'Modified'
@@ -1493,8 +1537,13 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'type' => 'string'
                     ]
                     , 'Description' => [
+                        'preferred_name' => 'LineDescription'
+                        , 'type' => 'string'
+                    ]
+                    , 'Description__c' => [
                         'preferred_name' => 'Description'
                         , 'type' => 'string'
+                        , 'type_description' => 'MAX'
                     ]
                     , 'MRC__c' => [
                         'preferred_name' => 'MRC'
@@ -1664,6 +1713,18 @@ function salesforce_settings_provider__get_entity_definitions()
                             , 'remote_field' => 'Id'
                             , 'remote_type' => 'parent'
                             , 'remote_entity' => 'opportunity'
+                            , 'remote_driver' => 'salesforce'
+                        ]
+                    ]
+                    , 'Related_Customer_Product__c' => [
+                        'preferred_name' => 'RelatedCustomerProduct'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'RelatedCustomerProduct'
+                            , 'preferred_local_key_name' => 'RelatedCustomerProductId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'customer_product'
                             , 'remote_driver' => 'salesforce'
                         ]
                     ]
@@ -2287,6 +2348,10 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'ShortName'
                         , 'type' => 'string'
                     ]
+                    , 'ERP_Code__c' => [
+                        'preferred_name' => 'ERPCode'
+                        , 'type' => 'string'
+                    ]
                     , 'Website__c' => [
                         'preferred_name' => 'Website'
                         , 'type' => 'string'
@@ -2560,7 +2625,7 @@ function salesforce_settings_provider__get_entity_definitions()
         ]];
 
         variable_set('SALESFORCE_DRIVER_OBJECTS', $in_store);
-    }
+    // }
 
     return $in_store;
 }
