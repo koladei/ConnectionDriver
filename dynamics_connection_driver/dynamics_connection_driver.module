@@ -886,6 +886,74 @@ function dynamics_connection_driver__get_entity_definitions() {
                 ]
             ]
         ]
+        , 'cust_invoice_line_template' => [
+            'internal_name' => 'CustInvoiceLineTemplate'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+                , 'SFCUSTOMERPRODUCTID' => [
+                    'preferred_name' => 'CustomerProduct'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CustomerProduct'
+                        , 'preferred_local_key_name' => 'CustomerProductId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product'
+                        , 'remote_driver' => 'salesforce'
+                    ],
+                ]
+                , 'DATAAREAID' => [
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string',
+                ]
+            ]
+        ]
+        , 'cust_invoice_template' => [
+            'internal_name' => 'CustInvoiceTemplate'
+            , 'fields' => [
+                'RECID' => [
+                    'preferred_name' => 'Id'
+                    , 'type' => 'int'
+                    , 'mandatory' => 1,
+                ]
+                , 'MODIFIEDDATETIME' => [
+                    'preferred_name' => 'Modified'
+                    , 'type' => 'datetime',
+                ]
+                , 'CREATEDDATETIME' => [
+                    'preferred_name' => 'Created'
+                    , 'type' => 'datetime',
+                ]
+                , 'SFCUSTOMERPRODUCTID' => [
+                    'preferred_name' => 'CustomerProduct'
+                    , 'type' => 'string'
+                    , 'relationship' => [
+                        'local_field' => 'CustomerProduct'
+                        , 'preferred_local_key_name' => 'CustomerProductId'
+                        , 'remote_field' => 'Id'
+                        , 'remote_type' => 'parent'
+                        , 'remote_entity' => 'customer_product'
+                        , 'remote_driver' => 'salesforce'
+                    ],
+                ]
+                , 'DATAAREAID' => [
+                    'preferred_name' => 'DataArea'
+                    , 'type' => 'string',
+                ]
+            ]
+        ]
         , 'cust_invoice_line_transaction' => [
             'internal_name' => 'CustInvoiceLineTrans'
             , 'fields' => [
