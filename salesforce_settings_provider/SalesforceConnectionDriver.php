@@ -328,7 +328,8 @@ class SalesforceConnectionDriver extends MiddlewareConnectionDriver {
 
         // Get the requstToken
         if (($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken()))) {
-
+            ini_set("precision", 19);
+           
             $top = $otherOptions['$top'];
             $skip = $otherOptions['$skip'];
             $pageNumber = $otherOptions['$pageNumber'];
