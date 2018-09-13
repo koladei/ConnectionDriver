@@ -43,6 +43,18 @@ class MiddlewareODataFilterProcessor {
         $this->expressionGroupStringer = $expressionGroupStringer;
         $this->valueContext = $context;
 
+        // Deal with placeholders
+        foreach(['$now$' => '', '$1HRAgo$' => 'PT1H', '$6HRSAgo$' => 'PT6H', '$24HRSAgo$' => 'PT24H', '$1MONTHAgo$' => 'P1M', '$1YEARAgo$' => 'P1Y'] as $factor => $dur) {
+            $now = new \DateTime();
+            $date = $now->format('Y-m-d');
+            if(strlen($dur) > 0){
+                $interval = new \DateInterval($dur);
+                $date = $now->sub($interval)->format('Y-m-d');
+            }
+
+            $expression = str_replace($factor, "datetime'{$date}'", $expression);
+        }
+
         // Excape special characters
         $expression = EncoderDecoder::escape($expression);
 
