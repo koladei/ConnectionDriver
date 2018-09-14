@@ -1127,6 +1127,10 @@ function salesforce_settings_provider__get_entity_definitions()
                             , 'remote_entity' => 'payable_commission'
                         ],
                     ]
+                    , 'Expand_Costs__c' => [
+                        'preferred_name' => 'ExpandCosts'
+                        , 'type' => 'boolean'
+                    ]
                     , 'Number_Of_Lines__c' => [
                         'preferred_name' => 'NumberOfLines'
                         , 'type' => 'int'
