@@ -1131,6 +1131,10 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'ExpandCosts'
                         , 'type' => 'boolean'
                     ]
+                    , 'Overall_Feasibility_Outcome__c' => [
+                        'preferred_name' => 'OverallFeasibilityOutcome'
+                        , 'type' => 'string'
+                    ]
                     , 'Number_Of_Lines__c' => [
                         'preferred_name' => 'NumberOfLines'
                         , 'type' => 'int'
