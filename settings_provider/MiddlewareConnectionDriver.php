@@ -1471,7 +1471,7 @@ abstract class MiddlewareConnectionDriver
         $otherOptions['processedItems'] = isset($otherOptions['processedItems'])?$otherOptions['processedItems']:[];
         $reses = &$otherOptions['processedItems'];
         foreach($objects as $objId => &$object){    
-            if(property_exists($object,'__Created_Internal') && $object->__Created_Internal = true) {
+            if(is_null($object) || ( property_exists($object,'__Created_Internal') && $object->__Created_Internal = true )) {
                 continue;
             }
 
