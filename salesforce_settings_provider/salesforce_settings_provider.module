@@ -718,6 +718,14 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'Version'
                         , 'type' => 'int'
                     ]
+                    , 'Version_Compensation__c' => [
+                        'preferred_name' => 'VersionCompensation'
+                        , 'type' => 'int'
+                    ]
+                    , 'Sales_Order_ID__c' => [
+                        'preferred_name' => 'SalesOrderID'
+                        , 'type' => 'string'
+                    ]
                     , 'Revision__c' => [
                         'preferred_name' => 'Revision'
                         , 'type' => 'string'
@@ -728,6 +736,28 @@ function salesforce_settings_provider__get_entity_definitions()
                             , 'remote_field' => 'Id'
                             , 'remote_type' => 'parent'
                             , 'remote_entity' => 'customer_product_contract'
+                        ]
+                    ]
+                    , 'Opportunity__c' => [
+                        'preferred_name' => 'Opportunity'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'Opportunity'
+                            , 'preferred_local_key_name' => 'OpportunityId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'opportunity'
+                        ]
+                    ]
+                    , 'Customer_Product__c' => [
+                        'preferred_name' => 'CustomerProduct'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'CustomerProduct'
+                            , 'preferred_local_key_name' => 'CustomerProductId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'customer_product'
                         ]
                     ]
                     , 'Business_Entity__c' => [
@@ -1138,6 +1168,14 @@ function salesforce_settings_provider__get_entity_definitions()
                     , 'Number_Of_Lines__c' => [
                         'preferred_name' => 'NumberOfLines'
                         , 'type' => 'int'
+                    ]
+                    , 'Count_Of_Handover__c' => [
+                        'preferred_name' => 'CountOfHandover'
+                        , 'type' => 'int'
+                    ]
+                    , 'All_Lines_Handed_Over__c' => [
+                        'preferred_name' => 'AllLinesHandedOver'
+                        , 'type' => 'boolean'
                     ]
                     , 'Book_Status__c' => [
                         'preferred_name' => 'BookStatus'
