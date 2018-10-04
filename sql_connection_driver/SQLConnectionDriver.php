@@ -500,6 +500,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             $pageSize = $otherOptions['$pageSize'];
             $orderBy = $otherOptions['$orderBy'];
             $all = isset($otherOptions['$all']) && ''.$otherOptions['$all'] = '1'?TRUE:FALSE;
+            $logQuery = isset($otherOptions['$logQuery']) && ''.$otherOptions['$logQuery'] = '1'?TRUE:FALSE;
 
             // Remove distinct fields from select
             $distinct = $otherOptions['$distinct'];
@@ -550,6 +551,11 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             }
 
             $query_url = str_replace("\\'", "''", $query_url);
+
+            // if($logQuery){
+            //     watchdog("OUT OF SCHEDULE RUN:<>", "Query: {$query_url}");
+            // }
+
             try {
                 $pdo = new \PDO($connectionToken->DSN, $connectionToken->Username, $connectionToken->Password);
                 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
