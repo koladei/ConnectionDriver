@@ -76,7 +76,7 @@ function sql_connection_driver__get_entity_definitions()
 {
     $return = variable_get('SQL_DRIVER_OBJECTS');
 
-    if(is_null($return)){ 
+    // if(is_null($return)){ 
         $return = [
             'sql'=> [
                 'customerinfo' => [
@@ -542,6 +542,10 @@ function sql_connection_driver__get_entity_definitions()
                                 , 'remote_driver' => 'salesforce'
                             ]
                         ]
+                        , 'service_order_id' => [
+                            'preferred_name' => 'ServiceOrderID'
+                            , 'type' => 'string'
+                        ]
                         , 'payment_date' => [
                             'preferred_name' => 'PaymentDate'
                             , 'type' => 'date'
@@ -555,8 +559,17 @@ function sql_connection_driver__get_entity_definitions()
                             , 'type' => 'decimal'
                             , 'type_description' => '16,2'
                         ]
+                        , 'reporting_amount' => [
+                            'preferred_name' => 'ReportingAmount'
+                            , 'type' => 'decimal'
+                            , 'type_description' => '16,2'
+                        ]
                         , 'currency' => [
                             'preferred_name' => 'Currency'
+                            , 'type' => 'string'
+                        ]
+                        , 'entity' => [
+                            'preferred_name' => 'Entity'
                             , 'type' => 'string'
                         ]
                         , 'exchange_rate' => [
@@ -567,6 +580,28 @@ function sql_connection_driver__get_entity_definitions()
                         , 'sent_to_scoms' => [
                             'preferred_name' => 'SentToSCOMS'
                             , 'type' => 'int'
+                        ]
+                        , '_ServiceOrdersByCustomerProduct' => [
+                            'preferred_name' => 'ServiceOrdersByCustomerProduct'
+                            , 'type' => 'detail'
+                            , 'relationship' => [
+                                'local_field' => 'ServiceOrderID'
+                                , 'remote_field' => 'ServiceOrderID'
+                                , 'remote_type' => 'child'
+                                , 'remote_entity' => 'customer_product_contract'
+                                , 'remote_driver' => 'salesforce'
+                            ]
+                        ]
+                        , '_ServiceOrdersByOpportunity' => [
+                            'preferred_name' => 'ServiceOrdersByOpportunity'
+                            , 'type' => 'detail'
+                            , 'relationship' => [
+                                'local_field' => 'ServiceOrderID'
+                                , 'remote_field' => 'ServiceOrderID'
+                                , 'remote_type' => 'parent'
+                                , 'remote_entity' => 'opportunity'
+                                , 'remote_driver' => 'salesforce'
+                            ]
                         ]
                     ]
                 ]
@@ -1111,7 +1146,7 @@ function sql_connection_driver__get_entity_definitions()
         ];
         
         variable_set('SQL_DRIVER_OBJECTS', $return);
-    }
+    // }
 
     // Add other entities that have been cached to this driver.
     $cached_all = module_invoke_all('_get_cached_entity_definitions', 'sql');
