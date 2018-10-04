@@ -45,8 +45,8 @@ class MiddlewareODataFilterProcessor {
 
         // Deal with placeholders
         foreach(['$now$' => '', '$1HRAgo$' => 'PT1H', '$6HRSAgo$' => 'PT6H', '$24HRSAgo$' => 'PT24H', '$1MONTHAgo$' => 'P1M', '$1YEARAgo$' => 'P1Y'] as $factor => $dur) {
-            $now = new \DateTime();
-            $date = $now->format('Y-m-d');
+            $now = new \DateTime('now');
+            $date = $now->format('Y-m-d\TH:m:s');
             if(strlen($dur) > 0){
                 $interval = new \DateInterval($dur);
                 $date = $now->sub($interval)->format('Y-m-d');
