@@ -1165,6 +1165,11 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'OverallFeasibilityOutcome'
                         , 'type' => 'string'
                     ]
+                    , 'Additional_SOF_Style__c' => [
+                        'preferred_name' => 'AdditionalStyle'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
                     , 'Number_Of_Lines__c' => [
                         'preferred_name' => 'NumberOfLines'
                         , 'type' => 'int'
