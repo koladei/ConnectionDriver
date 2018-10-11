@@ -100,7 +100,7 @@ function salesforce_settings_provider__get_entity_definitions_local(){
  */
 function salesforce_settings_provider__get_entity_definitions()
 {
-    $in_store = variable_get('SALESFORCE_DRIVER_OBJECTS');
+    // $in_store = variable_get('SALESFORCE_DRIVER_OBJECTS');
 
     // if(!is_null($in_store)){ 
         $in_store =  ['salesforce'=>[
@@ -2392,6 +2392,10 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'ERPCode'
                         , 'type' => 'string'
                     ]
+                    , 'Country__c' => [
+                        'preferred_name' => 'Country'
+                        , 'type' => 'string'
+                    ]
                     , 'Website__c' => [
                         'preferred_name' => 'Website'
                         , 'type' => 'string'
@@ -2405,6 +2409,83 @@ function salesforce_settings_provider__get_entity_definitions()
                             , 'remote_field' => 'Id'
                             , 'remote_type' => 'parent'
                             , 'remote_entity' => 'user'
+                        ]
+                    ]
+                    , 'Location__c' => [
+                        'preferred_name' => 'Location'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'Location'
+                            , 'preferred_local_key_name' => 'LocationId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'location'
+                        ]
+                    ]
+                ],
+            ]
+            , 'location' => [
+                'internal_name' => 'Location__c'
+                , 'cache_to' => 'sql'
+                , 'cache_freq' => 7200
+                , 'fields' => [
+                    'Name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                    ]
+                    , 'LastModifiedDate' => [
+                        'preferred_name' => 'Modified'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'CreatedDate' => [
+                        'preferred_name' => 'Created'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'string'
+                        , 'mandatory' => 1
+                    ]
+                    , 'Country__c' => [
+                        'preferred_name' => 'Country'
+                        , 'type' => 'string'
+                    ]
+                    , 'State__c' => [
+                        'preferred_name' => 'State'
+                        , 'type' => 'string'
+                    ]
+                    , 'City__c' => [
+                        'preferred_name' => 'City'
+                        , 'type' => 'string'
+                    ]
+                    , 'Region__c' => [
+                        'preferred_name' => 'Region'
+                        , 'type' => 'string'
+                    ]
+                    , 'Location_Type__c' => [
+                        'preferred_name' => 'LocationType'
+                        , 'type' => 'string'
+                    ]
+                    , 'Parent__c' => [
+                        'preferred_name' => 'ParentLocation'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'ParentLocation'
+                            , 'preferred_local_key_name' => 'ParentLocationId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'location'
+                        ]
+                    ]
+                    , 'Region_Selection__c' => [
+                        'preferred_name' => 'RegionSelection'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'RegionSelection'
+                            , 'preferred_local_key_name' => 'RegionSelectionId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_type' => 'parent'
+                            , 'remote_entity' => 'location'
                         ]
                     ]
                 ],
@@ -2663,6 +2744,8 @@ function salesforce_settings_provider__get_entity_definitions()
                 ]
             ]
         ]];
+
+        // var_dump($in_store);
 
         variable_set('SALESFORCE_DRIVER_OBJECTS', $in_store);
     // }
