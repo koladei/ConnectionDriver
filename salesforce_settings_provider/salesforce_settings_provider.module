@@ -1170,6 +1170,11 @@ function salesforce_settings_provider__get_entity_definitions()
                         , 'type' => 'string'
                         , 'type_description' => 'MAX'
                     ]
+                    , 'SOF_Template_Version__c' => [
+                        'preferred_name' => 'SOFTemplateVersion'
+                        , 'type' => 'string'
+                        , 'type_description' => 'MAX'
+                    ]
                     , 'Number_Of_Lines__c' => [
                         'preferred_name' => 'NumberOfLines'
                         , 'type' => 'int'
