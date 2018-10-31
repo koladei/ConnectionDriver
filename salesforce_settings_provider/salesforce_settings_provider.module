@@ -465,13 +465,14 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'ContractTenure'
                         , 'type' => 'int'
                     ]
-                    , 'Product_Type__c' => [
+                    , 'Product_Name__c' => [
                         'preferred_name' => 'SubType'
                         , 'type' => 'string'
                     ]
                     , 'Last_Exchange_Rate__c' => [
                         'preferred_name' => 'ExchangeRate'
-                        , 'type' => 'string'
+                        , 'type' => 'decimal'
+                        , 'type_description' => '18,6'
                     ]
                     , 'MRC__c' => [
                         'preferred_name' => 'MRC'
