@@ -84,9 +84,9 @@ function d365_connection_driver__get_entity_definitions_local(){
  */
 function d365_connection_driver__get_entity_definitions()
 {
-    $in_store = variable_get('D365_DRIVER_OBJECTS');
+    // $in_store = variable_get('D365_DRIVER_OBJECTS');
 
-    if(!is_null($in_store)){      
+    // if(!is_null($in_store)){      
 
         $in_store = ['d365'=> [
             'customer' => [
@@ -642,8 +642,8 @@ function d365_connection_driver__get_entity_definitions()
             ]
         ]];
 
-        variable_set('D365_DRIVER_OBJECTS', $in_store);
-    }    
+    //     variable_set('D365_DRIVER_OBJECTS', $in_store);
+    // }    
 
     return $in_store;
 }
