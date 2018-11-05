@@ -973,7 +973,7 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'Status'
                         , 'type' => 'string',
                     ]
-                    , 'Number_Of_Active_Products__c' => [
+                    , 'No_Of_Active_Prods__c' => [
                         'preferred_name' => 'NumberOfActiveProducts'
                         , 'type' => 'int',
                     ]
