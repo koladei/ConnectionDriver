@@ -134,9 +134,17 @@ class MiddlewareFilter extends MiddlewareFilterBase {
     private function getORString($field){
         // Implement checking if field is meant to be a string or otherwise
         if (is_array($this->value) && count($this->value) > 0) {
+            
+            // Deal with blank strings.
+            foreach($this->value as &$v){
+                if(strlen($v) == 0){
+                    $v = '______BLANK______BLANK______';
+                }
+            }
             $im = implode("{$this->quote} or {$field} eq {$this->quote}", $this->value);
             $im = str_replace('\'\',', '', $im);
             $im = str_replace('\'\'', '', $im);
+            $im = str_replace('\'______BLANK______BLANK______\'', '\'\'', $im);
             return $im != '\'\''? "{$field} eq {$this->quote}{$im}{$this->quote}":'';
         }
     }
@@ -386,9 +394,14 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         } else if (is_null($value)) {
             $value = 'NULL';
         } else if (is_bool($value)) {
+            // echo $this->fieldInfo->getDataType(). ' ----- ';
             $q = '';
             $value = $value ? 'TRUE':'FALSE';
         }
+
+        // if ($this->fieldInfo->getDataType() == 'string') {
+        //     $q = "'";
+        // }
 
         switch ($this->operator) {
             case self::STARTS_WITH: {
