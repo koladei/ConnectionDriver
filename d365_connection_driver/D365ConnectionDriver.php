@@ -404,6 +404,26 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
         return MiddlewareFilter::ODATA;
     }
 
+    /*
+     ********************************************************************************************
+     ********************************************************************************************
+     ********************************************************************************************
+     ********************************************************************************************
+     ********************************************************************************************
+     */
+    
+    /**
+     * Returns a number that represents the maximum allowed OR statements to use when converting from IN to OR.
+     *
+     * This is necessary for systems that do not have an OOB implementation of the IN operator.
+     *
+     * @return void
+     */
+    public function getMaxInToOrConversionChunkSize()
+    {
+        return 20;
+    }
+
     /**
      * Returns a connection token to aid communication with the datasource.
      * @return boolean
