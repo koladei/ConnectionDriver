@@ -236,7 +236,7 @@ function d365_connection_driver__get_entity_definitions()
                         , 'type' => 'decimal',
                     ]
                     , 'SalesOrderNumber' => [
-                        'preferred_name' => 'SalesOrder'
+                        'preferred_name' => 'SalesOrderNumber'
                         , 'type' => 'string',
                     ]
                     , 'CustomersOrderReference' => [

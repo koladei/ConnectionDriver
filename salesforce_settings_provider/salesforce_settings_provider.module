@@ -1589,6 +1589,10 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'ProductCode'
                         , 'type' => 'string'
                     ]
+                    , 'Port_Type__c' => [
+                        'preferred_name' => 'PortType'
+                        , 'type' => 'string'
+                    ]
                     , 'Latitude_Longitude__c' => [
                         'preferred_name' => 'LatitudeLongitude'
                         , 'type' => 'string'
