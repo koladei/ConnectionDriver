@@ -279,24 +279,24 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
 
     private function sendEmail2($message = [], $ews = NULL){
         // var_dump($message);
-        if(!isset($message['to'])){
+        if(!isset($msg['to'])){
             throw new \Exception('Parameter \'to\' is required');
         }
-        $tos = is_string($message['to'])?explode(',', $message['to']):$message['to'];
+        $tos = is_string($msg['to'])?explode(',', $msg['to']):$msg['to'];
 
-        if(!isset($message['subject'])){
+        if(!isset($msg['subject'])){
             throw new \Exception('Parameter \'subject\' is required');
         }
-        $subject = $message['subject'];
+        $subject = $msg['subject'];
 
-        if(!isset($message['body'])){
+        if(!isset($msg['body'])){
             throw new \Exception('Parameter \'body\' is required');
         }
-        $body = $message['body'];
+        $body = $msg['body'];
 
-        $ccs = isset($message['cc'])?(is_string($message['cc'])?explode(',', $message['cc']):$message['cc']):[];
-        $bccs = isset($message['bc'])?(is_string($message['bc'])?explode(',', $message['bc']):$message['bc']):[];
-        $attachments = isset($message['attachments'])?(is_string($message['attachments'])?explode(',', $message['attachments']):$message['attachments']):[];
+        $ccs = isset($msg['cc'])?(is_string($msg['cc'])?explode(',', $msg['cc']):$msg['cc']):[];
+        $bccs = isset($msg['bc'])?(is_string($msg['bc'])?explode(',', $msg['bc']):$msg['bc']):[];
+        $attachments = isset($msg['attachments'])?(is_string($msg['attachments'])?explode(',', $msg['attachments']):$msg['attachments']):[];
 
         if (($ews = (!is_null($ews) ? $ews : $this->getConnectionToken2()))) {
 
@@ -317,10 +317,10 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
                 $message->Attachments = new NonEmptyArrayOfAttachmentsType();
             }            
             
-            if(isset($message['from'])){                
+            if(isset($msg['from'])){                
                 $message->From = new SingleRecipientType();
                 $message->From->Mailbox = new EmailAddressType();
-                $message->From->Mailbox->EmailAddress = $message['from'];
+                $message->From->Mailbox->EmailAddress = $msg['from'];
             }
 
             // // Set the sender.
