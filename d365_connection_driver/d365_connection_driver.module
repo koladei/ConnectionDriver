@@ -91,6 +91,10 @@ function d365_connection_driver__get_entity_definitions()
         $in_store = ['d365'=> [
             'customer' => [
                 'internal_name' => 'Customers'
+                // , 'cache_to' => 'sql'
+                // , 'cache_freq' => 60
+                // , 'cache_duplicate_check_query' => 'BusinessEntityId eq \'{}->BusinessEntityId\' and AccountNumber eq \'{}->AccountNumber\''
+                // , 'cache_duplicate_check_select' => 'AccountNumber'
                 , 'fields' => [
                     '_Id' => [
                         'preferred_name' => 'Id'
@@ -99,16 +103,40 @@ function d365_connection_driver__get_entity_definitions()
                         , 'formula_type' => 'string'
                         , 'mandatory' => 1,
                     ]
+                    , 'dataAreaId' => [
+                        'preferred_name' => 'BusinessEntityId'
+                        , 'type' => 'string',
+                    ]
                     , 'Name' => [
                         'preferred_name' => 'Name'
                         , 'type' => 'string'
                     ]
+                    // , 'ModifiedOn' => [
+                    //     'preferred_name' => 'Modified'
+                    //     , 'type' => 'datetime'
+                    // ]
+                    // , 'CreateDateTime' => [
+                    //     'preferred_name' => 'Created'
+                    //     , 'type' => 'datetime'
+                    // ]
                     , 'CustomerAccount' => [
                         'preferred_name' => 'AccountNumber'
                         , 'type' => 'string'
                     ]
                     , 'PartyType' => [
                         'preferred_name' => 'PartyType'
+                        , 'type' => 'string'
+                    ]
+                    , 'PrimaryContactEmail' => [
+                        'preferred_name' => 'PrimaryContactEmail'
+                        , 'type' => 'string'
+                    ]
+                    , 'PrimaryContactPhone' => [
+                        'preferred_name' => 'PrimaryContactPhoneNumber'
+                        , 'type' => 'string'
+                    ]
+                    , 'PrimaryContactEmailDescription' => [
+                        'preferred_name' => 'PrimaryContactEmailDescription'
                         , 'type' => 'string'
                     ]
                     , 'dataAreaId' => [
@@ -145,6 +173,18 @@ function d365_connection_driver__get_entity_definitions()
                             , 'remote_entity' => 'freetext_invoice'
                             , 'remote_type' => 'child'
                             , 'filter' => "InvoiceNumber eq 'Not posted'"
+                        ]
+                    ]
+                    , '_DictionaryInfo' => [
+                        'preferred_name' => 'DictionaryInfo'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'AccountNumber'
+                            , 'remote_field' => 'SystemKey'
+                            , 'remote_entity' => 'customerinfo'
+                            , 'remote_type' => 'parent'
+                            , 'remote_driver' => 'sql'
+                            , 'filter' => "SystemName eq 'd365'"
                         ]
                     ]
                 ]
