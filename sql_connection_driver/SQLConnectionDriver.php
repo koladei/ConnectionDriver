@@ -29,7 +29,6 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
         
         // Get a connection token
         if($connectionToken = (!is_null($connectionToken) ? $connectionToken : $this->getConnectionToken($source))){
-            
             try {
                 $pdo = new \PDO($connectionToken->DSN, $connectionToken->Username, $connectionToken->Password);
                 $pdo->exec('SET CHARACTER SET utf8');
@@ -38,7 +37,8 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 $createSQL = '';
                 $constraint = '';
                 $fields = $entityBrowser->getFieldsByInternalNames();
-                foreach($fields as $name => $field){
+                foreach($fields as $name => $field) {
+                    $dataType = $field->getDataType();            
                     $c = [];
                     preg_match('/([\w\d\_]+)_\$LOOKUP\$/', $name, $c);
                     if(count($c)){
@@ -46,12 +46,12 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                     }
                     $nullable = 'NULL';
 
-                    if($field->getInternalName() == $entityBrowser->getIdField()->getInternalName()){
+                    if($field->getInternalName() == $entityBrowser->getIdField()->getInternalName() && $dataType != 'formula'){
                         $nullable = 'NOT NULL';
                         $constraint = "CONSTRAINT {$entityBrowser->getInternalName()}_{$field->getInternalName()} UNIQUE({$field->getInternalName()})";
                     }
 
-                    switch($field->getDataType()){
+                    switch($dataType){
                         case 'string': {
                             $createSQL = "{$createSQL}, {$name} varchar({$field->getFieldDescription()}) {$nullable}";
                             break;
