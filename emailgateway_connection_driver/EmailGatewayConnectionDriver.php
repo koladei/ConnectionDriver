@@ -315,6 +315,12 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $message->BccRecipients = new ArrayOfRecipientsType();
             if(count($attachments) > 0){
                 $message->Attachments = new NonEmptyArrayOfAttachmentsType();
+            }            
+            
+            if(isset($message['from'])){                
+                $message->From = new SingleRecipientType();
+                $message->From->Mailbox = new EmailAddressType();
+                $message->From->Mailbox->EmailAddress = $message['from'];
             }
 
             // // Set the sender.
@@ -544,7 +550,8 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
             $sourceLoader = $this->sourceLoader;
             $settings = $sourceLoader($sourceName);
 
-            $ews = new Client($settings->server, $settings->username, $settings->password, Client::VERSION_2010_SP2);
+            $ews = new Client($settings->server, $settings->username, $settings->password, Client::VERSION_2016);
+            // $ews = new Client($settings->server, $settings->username, $settings->password, Client::VERSION_2010_SP2);
             $this->serviceRef = $ews;
             return $ews;
             // return $settings;            
