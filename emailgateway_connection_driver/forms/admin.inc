@@ -93,74 +93,79 @@ function emailgateway_connection_driver_form_settings_provider_admin_alter(&$for
     ];
 
     $sql = mware_connection_driver__get_driver('emailgateway');
-    $providers = $sql->getItems('emailgatewayinfo', 'Name,Description', '', '', ['$all' => '1']);
-
-    if(count($providers) > 1){        
     
-        $form['EMAILGATEWAY_UPDATEINFO']['providers']['addnew1'] = [
-            '#type' => 'submit'
-            , '#value' => t('Add account')
-            , '#submit' => ['emailgateway_connection_driver__add_email_provider']
-        ];
-    }
+    try {
+        $providers = $sql->getItems('emailgatewayinfo', 'Name,Description', '', '', ['$all' => '1']);
 
-    // Display each of the SMS providers in the database.
-    foreach($providers as $provider) {      
-        $form['EMAILGATEWAY_UPDATEINFO']['providers'][$provider->Id] = [
-            '#type' => 'fieldset'
-            , '#title' => t($provider->Name)
-            , '#description' => t('Define how to communicate with the remote gateway.')
-            , '#collapsible' => TRUE
-            , '#collapsed' => TRUE
-            , '#tree' => TRUE
-        ];
-        $thisProvider = &$form['EMAILGATEWAY_UPDATEINFO']['providers'][$provider->Id];
-        if(!isset($emailgatewayupdateInfo['providers'][$provider->Id])){
-            $emailgatewayupdateInfo['providers'][$provider->Id] = [];
+        if(count($providers) > 1){        
+        
+            $form['EMAILGATEWAY_UPDATEINFO']['providers']['addnew1'] = [
+                '#type' => 'submit'
+                , '#value' => t('Add account')
+                , '#submit' => ['emailgateway_connection_driver__add_email_provider']
+            ];
         }
-        $thisProviderValues = $emailgatewayupdateInfo['providers'][$provider->Id];
+
+        // Display each of the SMS providers in the database.
+        foreach($providers as $provider) {      
+            $form['EMAILGATEWAY_UPDATEINFO']['providers'][$provider->Id] = [
+                '#type' => 'fieldset'
+                , '#title' => t($provider->Name)
+                , '#description' => t('Define how to communicate with the remote gateway.')
+                , '#collapsible' => TRUE
+                , '#collapsed' => TRUE
+                , '#tree' => TRUE
+            ];
+            $thisProvider = &$form['EMAILGATEWAY_UPDATEINFO']['providers'][$provider->Id];
+            if(!isset($emailgatewayupdateInfo['providers'][$provider->Id])){
+                $emailgatewayupdateInfo['providers'][$provider->Id] = [];
+            }
+            $thisProviderValues = $emailgatewayupdateInfo['providers'][$provider->Id];
+            
+            $thisProvider['name'] = [
+                '#type' => 'textfield'
+                , '#title' => t('Display name')
+                , '#default_value' =>  $provider->Name//isset($thisProviderValues['name'])?$thisProviderValues['name']:''  
+            ];
+            
+            // $thisProvider['logic'] = [
+            //     '#type' => 'textarea'
+            //     , '#title' => t('Delivery logic')
+            //     , '#default_value' => $provider->Logic//isset($thisProviderValues['logic'])?$thisProviderValues['logic']:''    
+            //     , '#attributes' => ['class' => ['filter-wrapper logic-editor']]    
+            // ];
+            
+            // $thisProvider['report'] = [
+            //     '#type' => 'textarea'
+            //     , '#title' => t('Report logic')
+            //     , '#default_value' => $provider->ReportLogic//isset($thisProviderValues['logic'])?$thisProviderValues['logic']:''    
+            //     , '#attributes' => ['class' => ['filter-wrapper logic-editor']]    
+            // ];
+            
+            $thisProvider['description'] = [
+                '#type' => 'textarea'
+                , '#title' => t('Description')
+                , '#default_value' => $provider->Description//isset($thisProviderValues['description'])?$thisProviderValues['description']:''    
+            ];
+            
+            $thisProvider['save'] = [
+                '#type' => 'submit'
+                , '#value' => t('Update Provider')
+                , '#submit' => ['emailgateway_connection_driver__update_sms_provider']
+                , '#attributes' => ['provider-id' => [$provider->Id]]  
+            ];
+            
+            $thisProvider['delete'] = [
+                '#type' => 'submit'
+                , '#value' => t('Delete Provider')
+                , '#submit' => ['emailgateway_connection_driver__remove_sms_provider']
+                , '#attributes' => ['provider-id' => [$provider->Id]]  
+            ];
+        }
+    }catch(\Exception $fmExp){
         
-        $thisProvider['name'] = [
-            '#type' => 'textfield'
-            , '#title' => t('Display name')
-            , '#default_value' =>  $provider->Name//isset($thisProviderValues['name'])?$thisProviderValues['name']:''  
-        ];
-        
-        // $thisProvider['logic'] = [
-        //     '#type' => 'textarea'
-        //     , '#title' => t('Delivery logic')
-        //     , '#default_value' => $provider->Logic//isset($thisProviderValues['logic'])?$thisProviderValues['logic']:''    
-        //     , '#attributes' => ['class' => ['filter-wrapper logic-editor']]    
-        // ];
-        
-        // $thisProvider['report'] = [
-        //     '#type' => 'textarea'
-        //     , '#title' => t('Report logic')
-        //     , '#default_value' => $provider->ReportLogic//isset($thisProviderValues['logic'])?$thisProviderValues['logic']:''    
-        //     , '#attributes' => ['class' => ['filter-wrapper logic-editor']]    
-        // ];
-        
-        $thisProvider['description'] = [
-            '#type' => 'textarea'
-            , '#title' => t('Description')
-            , '#default_value' => $provider->Description//isset($thisProviderValues['description'])?$thisProviderValues['description']:''    
-        ];
-        
-        $thisProvider['save'] = [
-            '#type' => 'submit'
-            , '#value' => t('Update Provider')
-            , '#submit' => ['emailgateway_connection_driver__update_sms_provider']
-            , '#attributes' => ['provider-id' => [$provider->Id]]  
-        ];
-        
-        $thisProvider['delete'] = [
-            '#type' => 'submit'
-            , '#value' => t('Delete Provider')
-            , '#submit' => ['emailgateway_connection_driver__remove_sms_provider']
-            , '#attributes' => ['provider-id' => [$provider->Id]]  
-        ];
     }
-    
+        
     $form['EMAILGATEWAY_UPDATEINFO']['providers']['addnew2'] = [
         '#type' => 'submit'
         , '#value' => t('Add account')

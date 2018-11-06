@@ -57,65 +57,68 @@ function smsgateway_connection_driver_form_settings_provider_admin_alter(&$form,
     ];
 
     $sql = mware_connection_driver__get_driver('smsgateway');
-    $providers = $sql->getItems('smsgatewayinfo', 'Name,Description,DeliveryLogic,ReportLogic', '', '', ['$all' => '1']);
+    try {
+        $providers = $sql->getItems('smsgatewayinfo', 'Name,Description,DeliveryLogic,ReportLogic', '', '', ['$all' => '1']);
 
-    // Display each of the SMS providers in the database.
-    foreach($providers as $provider) {      
-        $form['SMSGATEWAY_UPDATEINFO']['providers'][$provider->Id] = [
-            '#type' => 'fieldset'
-            , '#title' => t($provider->Name)
-            , '#description' => t('Define how to communicate with the remote gateway.')
-            , '#collapsible' => TRUE
-            , '#collapsed' => TRUE
-            , '#tree' => TRUE
-        ];
-        $thisProvider = &$form['SMSGATEWAY_UPDATEINFO']['providers'][$provider->Id];
-        if(!isset($smsgatewayupdateInfo['providers'][$provider->Id])){
-            $smsgatewayupdateInfo['providers'][$provider->Id] = [];
+        // Display each of the SMS providers in the database.
+        foreach($providers as $provider) {      
+            $form['SMSGATEWAY_UPDATEINFO']['providers'][$provider->Id] = [
+                '#type' => 'fieldset'
+                , '#title' => t($provider->Name)
+                , '#description' => t('Define how to communicate with the remote gateway.')
+                , '#collapsible' => TRUE
+                , '#collapsed' => TRUE
+                , '#tree' => TRUE
+            ];
+            $thisProvider = &$form['SMSGATEWAY_UPDATEINFO']['providers'][$provider->Id];
+            if(!isset($smsgatewayupdateInfo['providers'][$provider->Id])){
+                $smsgatewayupdateInfo['providers'][$provider->Id] = [];
+            }
+            $thisProviderValues = $smsgatewayupdateInfo['providers'][$provider->Id];
+            
+            $thisProvider['name'] = [
+                '#type' => 'textfield'
+                , '#title' => t('Display name')
+                , '#default_value' =>  $provider->Name//isset($thisProviderValues['name'])?$thisProviderValues['name']:''  
+            ];
+            
+            $thisProvider['logic'] = [
+                '#type' => 'textarea'
+                , '#title' => t('Delivery logic')
+                , '#default_value' => $provider->DeliveryLogic//isset($thisProviderValues['logic'])?$thisProviderValues['logic']:''    
+                , '#attributes' => ['class' => ['filter-wrapper logic-editor']]    
+            ];
+            
+            $thisProvider['report'] = [
+                '#type' => 'textarea'
+                , '#title' => t('Report logic')
+                , '#default_value' => $provider->ReportLogic//isset($thisProviderValues['logic'])?$thisProviderValues['logic']:''    
+                , '#attributes' => ['class' => ['filter-wrapper logic-editor']]    
+            ];
+            
+            $thisProvider['description'] = [
+                '#type' => 'textarea'
+                , '#title' => t('Description')
+                , '#default_value' => $provider->Description//isset($thisProviderValues['description'])?$thisProviderValues['description']:''    
+            ];
+            
+            $thisProvider['save'] = [
+                '#type' => 'submit'
+                , '#value' => t('Update Provider')
+                , '#submit' => ['smsgateway_connection_driver__update_sms_provider']
+                , '#attributes' => ['provider-id' => [$provider->Id]]  
+            ];
+            
+            $thisProvider['delete'] = [
+                '#type' => 'submit'
+                , '#value' => t('Delete Provider')
+                , '#submit' => ['smsgateway_connection_driver__remove_sms_provider']
+                , '#attributes' => ['provider-id' => [$provider->Id]]  
+            ];
         }
-        $thisProviderValues = $smsgatewayupdateInfo['providers'][$provider->Id];
-        
-        $thisProvider['name'] = [
-            '#type' => 'textfield'
-            , '#title' => t('Display name')
-            , '#default_value' =>  $provider->Name//isset($thisProviderValues['name'])?$thisProviderValues['name']:''  
-        ];
-        
-        $thisProvider['logic'] = [
-            '#type' => 'textarea'
-            , '#title' => t('Delivery logic')
-            , '#default_value' => $provider->DeliveryLogic//isset($thisProviderValues['logic'])?$thisProviderValues['logic']:''    
-            , '#attributes' => ['class' => ['filter-wrapper logic-editor']]    
-        ];
-        
-        $thisProvider['report'] = [
-            '#type' => 'textarea'
-            , '#title' => t('Report logic')
-            , '#default_value' => $provider->ReportLogic//isset($thisProviderValues['logic'])?$thisProviderValues['logic']:''    
-            , '#attributes' => ['class' => ['filter-wrapper logic-editor']]    
-        ];
-        
-        $thisProvider['description'] = [
-            '#type' => 'textarea'
-            , '#title' => t('Description')
-            , '#default_value' => $provider->Description//isset($thisProviderValues['description'])?$thisProviderValues['description']:''    
-        ];
-        
-        $thisProvider['save'] = [
-            '#type' => 'submit'
-            , '#value' => t('Update Provider')
-            , '#submit' => ['smsgateway_connection_driver__update_sms_provider']
-            , '#attributes' => ['provider-id' => [$provider->Id]]  
-        ];
-        
-        $thisProvider['delete'] = [
-            '#type' => 'submit'
-            , '#value' => t('Delete Provider')
-            , '#submit' => ['smsgateway_connection_driver__remove_sms_provider']
-            , '#attributes' => ['provider-id' => [$provider->Id]]  
-        ];
+    }catch(\Exception $fmExp) {
+        drupal_set_message('Failed to load code logic from the SQL database.', 'error');
     }
-    
     $form['SMSGATEWAY_UPDATEINFO']['providers']['addnew2'] = [
         '#type' => 'submit'
         , '#value' => t('Add Provider')
