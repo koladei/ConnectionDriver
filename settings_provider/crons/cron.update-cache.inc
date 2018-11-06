@@ -33,6 +33,7 @@ function settings_provider__update_cache($sourceDestination = NULL, $entityId = 
 function settings_provider__update_cache_inner($sourceDestination, $entity, $source, $destination, $sql, $start = NULL, $idsToSync = [])
 {
     // var_dump($idsToSync);
+    // echo $source->getDisplayName();
     if ($source && $destination && $sql) {
             $idsToSync = is_string($idsToSync) ? explode(',', $idsToSync) : $idsToSync;
             // Get the field names to select
@@ -83,7 +84,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
 
 
                 foreach ($entity['fields'] as $fieldName => $field) {
-                    if($field['type'] != 'detail'){
+                    if($field['type'] != 'detail' && $field['type'] != 'formula'){
                         if(!in_array($fieldName, ['_IsUpdated'])) {
                             $selectFields[] = $field['preferred_name'];
                         }
@@ -91,7 +92,24 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                 };
 
                 $selectFields = implode(', ', $selectFields);
-                $filter = "Created ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}' or Modified ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}'";
+                $filter = '';
+                // check if the date fields exist.
+                $sourceBrowser = $source->getEntityBrowser($entity['original_display_name']);
+                try {
+                    if($sourceBrowser->hasField('Created')){
+                        $filter = "Created ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}'";
+                    }
+
+                    if($sourceBrowser->hasField('Modified')){
+                        $filter = "{$filter} or Modified ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}'";
+                    }
+                } catch(\Exception $ex){
+                    var_dump($ex);
+                }
+
+                // $filter = "Created ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}' or Modified ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}'";
+                // echo $filter. ' > '. $source->getEntityBrowser($entity['original_display_name'])->getDisplayName();
+                // var_dump($source);
                 $newbies = [];
                 $generalErrorOccured = FALSE;
                 try {
@@ -102,6 +120,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                             '$includeDeleted' => 1
                         ]);
                     } else {
+
                         $newbies = $source->getItems(
                             $entity['original_display_name'], 
                             $selectFields, 
@@ -116,6 +135,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     }
 
                 } catch(\Exception $ce){
+                    // var_dump($ce);
                     $generalErrorOccured = TRUE;
 
                     // Log this synchronization error.
@@ -136,8 +156,36 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                 foreach ($newbies as $newbie) {
                     try {
                         // Create item if it does not exist.
-                        $destCopy = $destination->getItems($entity['internal_name'], 'Id', "Id eq '{$newbie->Id}'", '', [
-                            '$includeDeleted' => 1
+                        $check_query = "Id eq '{$newbie->Id}'";
+                        $check_select = 'Id';
+
+                        if(isset($entity['cache_duplicate_check_query'])){
+                            $check_query = $entity['cache_duplicate_check_query'];
+                            $check_query = preg_replace_callback(
+                                '|(\{\}\->)([\w]+[\w\d]*)|',
+                                function ($matches) use($newbie) {
+                                    if(is_object($newbie) && property_exists($newbie, $matches[2])) {
+                                        return $newbie->{$matches[2]};
+                                    } 
+                                    else if(is_array($newbie) && isset($newbie[$matches[2]])){
+                                        return $newbie[$matches[2]];
+                                    } else {
+            
+                                        throw new \Exception("The requested arrow property '{$matches[2]}' could not be found");
+                                    }
+                                },
+                                $check_query
+                            );
+                        }
+
+                        if(isset($entity['cache_duplicate_check_select'])){
+                            $check_select = $entity['cache_duplicate_check_select'];
+                        }
+                        
+                        $destCopy = $destination->getItems($entity['internal_name'], $check_select, $check_query, '', [
+                            '$includeDeleted' => 1,
+                            '$distinct' => $check_select,
+                            '$orderBy' => $check_select
                         ]);
                     
                         if (count($destCopy) < 1) {
