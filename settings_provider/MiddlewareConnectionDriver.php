@@ -784,7 +784,7 @@ abstract class MiddlewareConnectionDriver
     
 
     public function getItemsByFieldValues2($entityBrowser, EntityFieldDefinition $entityField, array $values, $select, $expands = '', &$otherOptions = []){
-        $max_chunk_size = $this->getMaxInToOrConversionChunkSize();
+        $max_chunk_size = $entityBrowser->getParent()->getMaxInToOrConversionChunkSize();
         $expand_chunks = array_chunk($values, $max_chunk_size);
         $data = [];
 
@@ -982,6 +982,7 @@ abstract class MiddlewareConnectionDriver
         }
 
         //TODO: Stop overriding $orderBy and implement code to rename fields.
+        // $otherOptions['$orderBy'] = (isset($otherOptions['$orderBy']) && strlen(trim($otherOptions['$orderBy'])) > 0)? $otherOptions['$orderBy']: "{$entityBrowser->getIdField()->getDisplayName()} asc";
         $otherOptions['$orderBy'] = "{$entityBrowser->getIdField()->getInternalName()} ASC";
         
         // Set the default filter
@@ -1192,7 +1193,8 @@ abstract class MiddlewareConnectionDriver
                 $expand_val['ids'] = array_unique($expand_val['ids']);
 
                 // Divide the keys into manageable chunks
-                $max_chunk_size = $this->getMaxInToOrConversionChunkSize();
+                $max_chunk_size = $remoteDriver->getMaxInToOrConversionChunkSize();
+                // echo $remoteEntityBrowser->getDisplayName(). ' """ '. $max_chunk_size;
                 $expand_chunks = array_chunk($expand_val['ids'], $max_chunk_size);
                 $data = NULL;
 
