@@ -122,6 +122,10 @@ function sql_connection_driver__get_entity_definitions()
                             'preferred_name' => 'SystemKey'
                             , 'type' => 'string'
                         ]
+                        , 'SystemName' => [
+                            'preferred_name' => 'SystemName'
+                            , 'type' => 'string'
+                        ]
                         , 'System' => [
                             'preferred_name' => 'System'
                             , 'type' => 'int'
@@ -177,6 +181,17 @@ function sql_connection_driver__get_entity_definitions()
                                 , 'remote_type' => 'parent'
                                 , 'remote_entity' => 'cust_table'
                                 , 'remote_driver' => 'dynamics'
+                            ]
+                        ]
+                        , '_D365AccountInformation' => [
+                            'preferred_name' => 'RelatedD365Account'
+                            , 'type' => 'detail'
+                            , 'relationship' => [
+                                'local_field' => 'SystemKey'
+                                , 'remote_field' => 'AccountNumber'
+                                , 'remote_type' => 'parent'
+                                , 'remote_entity' => 'customer'
+                                , 'remote_driver' => 'd365'
                             ]
                         ]
                         , '_AdvancedInfo' => [
