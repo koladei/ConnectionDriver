@@ -453,6 +453,83 @@ class MiddlewareFilter extends MiddlewareFilterBase {
         return $ret;
     }
 
+    protected function D365Stringer(MiddlewareFilterBase &$scope) {
+        $ret = '';
+
+        $value = $this->value;
+        $q = "'";
+
+        if(!is_null($this->fieldInfo)){
+            switch($this->fieldInfo->getDataType()){
+                case 'int':
+                case 'bigint':
+                case 'boolean':
+                case 'decimal': {
+                    $q = '';
+                    break;
+                }
+            }
+        }
+
+        if ($value instanceof \DateTime) {
+            $value = $value->format('Y-m-d\\TH:i:s\\Z');
+        } else if (is_null($value)) {
+            $value = 'NULL';
+        } else if (is_bool($value)) {
+            $q = '';
+            $value = ($value == true) ? "Microsoft.Dynamics.DataEntities.NoYes'Yes'":"Microsoft.Dynamics.DataEntities.NoYes'No'";
+        }
+
+        switch ($this->operator) {
+            case self::STARTS_WITH: {
+                    $ret = "{$this->field} LIKE {$q}{$value}%{$q}";
+                    break;
+                }
+            case self::ENDS_WITH: {
+                    $ret = "{$this->field} LIKE {$q}%{$value}{$q}";
+                    break;
+                }
+            case self::SUBSTRING_OF: {
+                    $ret = "{$this->field} LIKE {$q}%{$value}%{$q}";
+                    break;
+                }
+            case self::NOT_EQUAL_TO: {
+                    $ret = "{$this->field} ne {$q}{$value}{$q}";
+                    break;
+                }
+            case self::EQUAL_TO: {
+                    $ret = "{$this->field} eq {$q}{$value}{$q}";
+                    break;
+                }
+            case self::GREATER_THAN: {
+                    $ret = "{$this->field} gt {$q}{$value}{$q}";
+                    break;
+                }
+            case self::GREATER_THAN_EQUAL_TO: {
+                    $ret = "{$this->field} ge {$value}";
+                    break;
+                }
+            case self::LESS_THAN: {
+                    $ret = "{$this->field} lt {$value}";
+                    break;
+                }
+            case self::LESS_THAN_EQUAL_TO: {
+                    $ret = "{$this->field} le {$value}";
+                    break;
+                }
+            case self::IN: {
+                    $ret = $this->getORString($this->field);
+                    break;
+                }
+            default: {
+                    throw new \Exception('Unknown query operand encountered.');
+                }
+        }
+        $ret = EncoderDecoder::unescape($ret);
+
+        return $ret;
+    }
+
     protected function BMCStringer(MiddlewareFilterBase &$scope) {
         $ret = '';
 

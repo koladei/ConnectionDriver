@@ -401,7 +401,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
      * @return type
      */
     public function getStringer() {
-        return MiddlewareFilter::ODATA;
+        return MiddlewareFilter::D365;
     }
 
     /*

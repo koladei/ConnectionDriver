@@ -19,6 +19,7 @@ abstract class MiddlewareFilterBase {
     const CUSTOM = 5;
     const BMC = 6;
     const ODATA = 7;
+    const D365 = 8;
 
     public abstract function setStringifier(callable $processor = NULL);
     protected abstract function LDAPStringer(MiddlewareFilterBase &$scope);
@@ -28,6 +29,7 @@ abstract class MiddlewareFilterBase {
     protected abstract function XPPStringer(MiddlewareFilterBase &$scope);
     protected abstract function BMCStringer(MiddlewareFilterBase &$scope);
     protected abstract function ODATAStringer(MiddlewareFilterBase &$scope);
+    protected abstract function D365Stringer(MiddlewareFilterBase &$scope);
 
     public function __construct($behaviour = self::DEFAULT_STRINGER, callable $stringer = NULL) {
 
@@ -54,6 +56,10 @@ abstract class MiddlewareFilterBase {
             }
             case self::ODATA:{
                 $this->stringer = 'ODATAStringer';
+                break;
+            }
+            case self::D365:{
+                $this->stringer = 'D365Stringer';
                 break;
             }
             case self::DEFAULT_STRINGER:{
