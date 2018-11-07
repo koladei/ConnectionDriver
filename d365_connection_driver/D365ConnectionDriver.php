@@ -337,11 +337,9 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
             $orderBy = $otherOptions['$orderBy'];
             $all = isset($otherOptions['$all']) && ''.$otherOptions['$all'] = '1'?TRUE:FALSE;
 
-            // Determin the record to start from based on the $pageSize and $pageNumber;
-            $start = ($pageSize * ($pageNumber - 1)) + $skip;
-
-            // Prepare the limit
-            $limit = " LIMIT {$pageSize}";
+            if($all){
+                $pageSize = 100000000;
+            }
             
 
             // Prepare the POST request
@@ -353,6 +351,8 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
                 , CURLOPT_SSL_VERIFYPEER => 0
                 , CURLOPT_SSL_VERIFYHOST => 0
                 , CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
+                , CURLOPT_CONNECTTIMEOUT => 100000
+                , CURLOPT_TIMEOUT => 100000
             );
 
             $result = [];
@@ -361,9 +361,9 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
 
             $invoice_params = [
                 '$select' => implode(',', $select)
-                , '$top' => $otherOptions['$pageSize']
-                , '$skip' => ($otherOptions['$pageSize'] * ($otherOptions['$pageNumber'] - 1)) //+ $otherOptions['$skip']
-                , '$cross-company' => 'true'
+                , '$top' => $pageSize
+                , '$skip' => ($pageSize * ($pageNumber - 1))
+                , 'cross-company' => 'true'
             ];
 
             if(strlen($filter) > 0){
@@ -371,7 +371,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
             }
 
             // Execute the POST request.
-            $query_string = drupal_http_build_query($invoice_params);
+            $query_string = http_build_query($invoice_params);
             $res = new \stdClass();              
             $res->nextRecordsUrl = "/data/{$entityBrowser->getInternalName()}?{$query_string}";
 
