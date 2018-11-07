@@ -594,7 +594,7 @@ function d365_connection_driver__get_entity_definitions()
                     ]
                     , 'IsPosted' => [
                         'preferred_name' => 'IsPosted'
-                        , 'type' => 'string'
+                        , 'type' => 'boolean'
                     ]
                     , 'CustomerGroup' => [
                         'preferred_name' => 'CustomerGroup'
@@ -666,8 +666,16 @@ function d365_connection_driver__get_entity_definitions()
                         'preferred_name' => 'LineNumber'
                         , 'type' => 'int',
                     ]
+                    , 'Quantity' => [
+                        'preferred_name' => 'Quantity'
+                        , 'type' => 'decimal',
+                    ]
                     , 'InvoiceText' => [
                         'preferred_name' => 'InvoiceText'
+                        , 'type' => 'string',
+                    ]
+                    , 'SalesUnit' => [
+                        'preferred_name' => 'UnitOfMeasure'
                         , 'type' => 'string',
                     ]
                     , 'AmountDetails' => [
