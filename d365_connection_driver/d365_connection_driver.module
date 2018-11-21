@@ -247,10 +247,6 @@ function d365_connection_driver__get_entity_definitions()
                         'preferred_name' => 'SalesOrderResponsiblePersonnelNumber'
                         , 'type' => 'string',
                     ]
-                    , 'TotalChargeAmount' => [
-                        'preferred_name' => 'AmountSettled'
-                        , 'type' => 'decimal',
-                    ]
                     , 'TotalInvoiceAmount' => [
                         'preferred_name' => 'Amount'
                         , 'type' => 'decimal',
@@ -559,6 +555,10 @@ function d365_connection_driver__get_entity_definitions()
                     , 'DueDate' => [
                         'preferred_name' => 'DueDate'
                         , 'type' => 'date',
+                    ]
+                    , 'DocumentDate' => [
+                        'preferred_name' => 'DocumentDate'
+                        , 'type' => 'datetime',
                     ]
                     , 'IsCorrection' => [
                         'preferred_name' => 'IsCorrection'
