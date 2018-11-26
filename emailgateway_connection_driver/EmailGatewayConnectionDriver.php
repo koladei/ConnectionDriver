@@ -210,17 +210,24 @@ class EmailGatewayConnectionDriver extends MiddlewareConnectionDriver
                                         $m->CcRecipients->Mailbox = [];
                                     } else if(!property_exists($m->CcRecipients, 'Mailbox')){
                                         $m->CcRecipients->Mailbox = [];
-                                    }                                
+                                    }                
+                                    
+                                    $ccRecipients = [];                
                                     foreach($m->CcRecipients->Mailbox as &$r){
-                                        $r = $r->EmailAddress;
+                                        if(is_object($r)){
+                                            $ccRecipients[] = $r->EmailAddress;
+                                        }
                                     }
-                                    $m->CcRecipients = \strtolower(implode(';', $m->CcRecipients->Mailbox));
+                                    $m->CcRecipients = \strtolower(@implode(';', $ccRecipients));
     
                                     // Collect the direct recipients
+                                    $toRecipients = [];
                                     foreach($m->ToRecipients->Mailbox as &$r){
-                                        $r = $r->EmailAddress;
+                                        if(is_object($r)){
+                                            $toRecipients[] = $r->EmailAddress;
+                                        }
                                     }
-                                    $m->ToRecipients = \strtolower(implode(';', $m->ToRecipients->Mailbox));
+                                    $m->ToRecipients = \strtolower(@implode(';', $toRecipients));
                                     
                                     $m->Sender = \strtolower($m->From->Mailbox->EmailAddress);
                                     $m->BodyType = $m->Body->BodyType;
