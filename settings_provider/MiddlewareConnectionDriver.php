@@ -8,6 +8,8 @@ include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EntityDefinitionB
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/EncoderDecoder.php');
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/Exceptions.php');
 include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/FormulaProcessor.php');
+include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/Order.php');
+include_once str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/OrderProcessor.php');
 
 use com\mainone\middleware\MiddlewareFilter;
 use com\mainone\middleware\MiddlewareODataFilterProcessor;
@@ -15,6 +17,8 @@ use com\mainone\middleware\EntityDefinitionBrowser;
 use com\mainone\middleware\EncoderDecoder;
 use com\mainone\middleware\InvalidFieldSelectedException;
 use com\mainone\middleware\FormulaProcessor;
+use com\mainone\middleware\Order;
+use com\mainone\middleware\OrderProcessor;
 
 /**
  * Description of MiddlewareConnectionDriver
@@ -981,9 +985,17 @@ abstract class MiddlewareConnectionDriver
             $otherOptions['$distinct'] = array_unique($distinctRe);
         }
 
-        //TODO: Stop overriding $orderBy and implement code to rename fields.
-        // $otherOptions['$orderBy'] = (isset($otherOptions['$orderBy']) && strlen(trim($otherOptions['$orderBy'])) > 0)? $otherOptions['$orderBy']: "{$entityBrowser->getIdField()->getDisplayName()} asc";
-        $otherOptions['$orderBy'] = "{$entityBrowser->getIdField()->getInternalName()} ASC";
+        if(isset($otherOptions['$orderBy']) && strlen(trim($otherOptions['$orderBy'])) > 0)
+        {
+            // Do nothing.
+        } else {
+            if($entityBrowser->getIdField()->getDataType() != 'formula'){
+                $otherOptions['$orderBy'] = "{$entityBrowser->getIdField()->getDisplayName()} asc";
+            } else {
+                $otherOptions['$orderBy'] = '';
+            }
+        }
+        // $otherOptions['$orderBy'] = "{$entityBrowser->getIdField()->getInternalName()} ASC";
         
         // Set the default filter
         $filter = trim(strlen(trim($filter)) < 1 ? $this->getDefaultFilter() : $filter);
@@ -1078,10 +1090,11 @@ abstract class MiddlewareConnectionDriver
         $formulaFields = $entityBrowser->getFieldsOfTypeByInternalName(['formula'], $select);
         $se = $select;
 
-        // Automatically include fields used in the formula to avoid evaluation errors.
+        // Automatically include fields used in the formula to avoid evaluation errors and exclude the formal fields from the query.
         foreach($formulaFields as &$formulaField) {
             $se = FormulaProcessor::initialize($formulaField)->getFields($se);
-            if(($k = array_search($formulaField->getInternalName(), $se)) != FALSE){
+            $k = array_search($formulaField->getInternalName(), $se);
+            if($k > -1){
                 unset($se[$k]);
             }
         }

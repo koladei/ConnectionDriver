@@ -5,6 +5,7 @@ namespace com\mainone\middleware;
 use com\mainone\middleware\MiddlewareConnectionDriver;
 use com\mainone\middleware\MiddlewareFilter;
 use com\mainone\middleware\EntityDefinitionBrowser;
+use com\mainone\middleware\OrderProcessor;
 use \PDO;
 
 /**
@@ -37,6 +38,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 $createSQL = '';
                 $constraint = '';
                 $fields = $entityBrowser->getFieldsByInternalNames();
+                $idField = $entityBrowser->getIdField();
                 foreach($fields as $name => $field) {
                     $dataType = $field->getDataType();            
                     $c = [];
@@ -46,9 +48,14 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                     }
                     $nullable = 'NULL';
 
-                    if($field->getInternalName() == $entityBrowser->getIdField()->getInternalName() && $dataType != 'formula'){
-                        $nullable = 'NOT NULL';
-                        $constraint = "CONSTRAINT {$entityBrowser->getInternalName()}_{$field->getInternalName()} UNIQUE({$field->getInternalName()})";
+                    // If this is the Id field
+                    if($field->getInternalName() == $idField->getInternalName()) {
+                        if($dataType != 'formula') {
+                            $nullable = 'NOT NULL';
+                            $constraint = "CONSTRAINT {$entityBrowser->getInternalName()}_{$field->getInternalName()} UNIQUE({$field->getInternalName()})";
+                        } else {
+                            $dataType = $field->getFormulaDataType();
+                        }
                     }
 
                     switch($dataType){
@@ -159,8 +166,8 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                     if(
                         in_array($name, array_keys($re)) && 
                         (
-                            $re[$name]['type'] == $field->getDataType() || 
-                            ($re[$name]['type'] == 'datetime' && $field->getDataType() == 'date')
+                            $re[$name]['type'] == $field->getReturnDataType() || 
+                            ($re[$name]['type'] == 'datetime' && $field->getReturnDataType() == 'date')
                         )
                     ) {
                         continue;
@@ -176,7 +183,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
 
                     $nullable = 'NULL';
 
-                    switch($field->getDataType()) {
+                    switch($field->getReturnDataType()) {
                         case 'string': {
                             $pdo->exec("ALTER TABLE {$entityBrowser->getInternalName()} ADD {$name} varchar({$field->getFieldDescription()}) {$nullable}");
                             break;
@@ -498,12 +505,23 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             $skip = $otherOptions['$skip'];
             $pageNumber = $otherOptions['$pageNumber'];
             $pageSize = $otherOptions['$pageSize'];
-            $orderBy = $otherOptions['$orderBy'];
+            
+            
+            $orderExpression = OrderProcessor::convert($entityBrowser, $otherOptions['$orderBy'], $this->getOrderTranslator());
+            $orderBy = '';
+            
+            if(strlen($orderExpression) > 0){
+                $orderBy = "ORDER BY {$orderExpression}";
+            } else {
+                $orderBy = "ORDER BY {$entityBrowser->getDefaultField()->getInternalName()}";
+            }
+
             $all = isset($otherOptions['$all']) && ''.$otherOptions['$all'] = '1'?TRUE:FALSE;
             $logQuery = isset($otherOptions['$logQuery']) && ''.$otherOptions['$logQuery'] = '1'?TRUE:FALSE;
 
             // Remove distinct fields from select
-            $distinct = $otherOptions['$distinct'];
+            // $distinct = $otherOptions['$distinct'];
+            $distinct = [$entityBrowser->getDefaultField()->getInternalName()];
             $sel = [];
             foreach($select as $dis){
                 if(!in_array($dis, $distinct)){
@@ -512,15 +530,10 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             }
             $select2 = implode(',', $select);
 
-            // $distinct = implode(',', $otherOptions['$distinct']);
-            $occurence = '';
-            if (count($distinct) < 1) {
-                $distinct = 'ID';
-            } else {
-                $distinct = implode(',', $otherOptions['$distinct']);
-                $distinct = "{$distinct}";
-                $occurence = ' WHERE OCCURENCE = 1 ';
-            }
+            // $distinct = implode(',', $otherOptions['$distinct']);            
+            $distinct = implode(',', $distinct);
+            // $distinct = "{$distinct}";
+            $occurence = ' WHERE OCCURENCE = 1 ';
 
             // Determin the record to start from based on the $pageSize and $pageNumber;
             $start = ($pageSize * ($pageNumber - 1)) + 1 + $skip;
@@ -538,7 +551,7 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 )
 
                 SELECT  {$select2}
-                FROM    ( SELECT  ROW_NUMBER() OVER ( ORDER BY {$orderBy} ) AS RowNum, {$select2}
+                FROM    ( SELECT  ROW_NUMBER() OVER ({$orderBy}) AS RowNum, {$select2}
                         FROM DEDUPE {$occurence}
                         ) AS RowConstrainedResult
                 WHERE   RowNum >= {$start}
@@ -546,8 +559,10 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
                 ORDER BY RowNum
             ";
 
+            // echo $query_url;
+
             if($all){
-                $query_url = "SELECT {$select2} FROM {$entityBrowser->getInternalName()} {$where} ORDER BY {$orderBy}";
+                $query_url = "SELECT {$select2} FROM {$entityBrowser->getInternalName()} {$where} {$orderBy}";
             }
 
             $query_url = str_replace("\\'", "''", $query_url);
@@ -569,6 +584,14 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
         } else {
             throw new \Exception('The connection datasource settings could not be retrieved, contact the administrator.');
         }   
+    }
+    
+    public function getOrderTranslator(){
+        $translator = function(Order $order){            
+            return "{$order->getField()->getInternalName()} {$order->getOrder()}";
+        };
+
+        return $translator;
     }
 
     public function getStringer() {
