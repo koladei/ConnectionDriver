@@ -2406,6 +2406,26 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'Country'
                         , 'type' => 'string'
                     ]
+                    , 'State__c' => [
+                        'preferred_name' => 'State'
+                        , 'type' => 'string'
+                    ]
+                    , 'City__c' => [
+                        'preferred_name' => 'City'
+                        , 'type' => 'string'
+                    ]
+                    , 'Billing_Email__c' => [
+                        'preferred_name' => 'BillingEmail'
+                        , 'type' => 'string'
+                    ]
+                    , 'Billing_Fax__c' => [
+                        'preferred_name' => 'BillingFax'
+                        , 'type' => 'string'
+                    ]
+                    , 'Billing_Phone__c' => [
+                        'preferred_name' => 'BillingPhone'
+                        , 'type' => 'string'
+                    ]
                     , 'Website__c' => [
                         'preferred_name' => 'Website'
                         , 'type' => 'string'
