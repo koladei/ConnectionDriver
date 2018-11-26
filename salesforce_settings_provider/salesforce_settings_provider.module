@@ -2426,6 +2426,14 @@ function salesforce_settings_provider__get_entity_definitions()
                         'preferred_name' => 'BillingPhone'
                         , 'type' => 'string'
                     ]
+                    , 'Tax_Registration_Number__c' => [
+                        'preferred_name' => 'TaxRegistrationNumber'
+                        , 'type' => 'string'
+                    ]
+                    , 'Registration_Certificate__c' => [
+                        'preferred_name' => 'RegistrationCertificate'
+                        , 'type' => 'string'
+                    ]
                     , 'Website__c' => [
                         'preferred_name' => 'Website'
                         , 'type' => 'string'
