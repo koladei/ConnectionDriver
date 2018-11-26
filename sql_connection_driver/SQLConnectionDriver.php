@@ -24,6 +24,26 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
         parent::__construct($driverLoader, $sourceLoader, $identifier);
     }
 
+    /*
+     ********************************************************************************************
+     ********************************************************************************************
+     ********************************************************************************************
+     ********************************************************************************************
+     ********************************************************************************************
+     */
+    
+    /**
+     * Returns a number that represents the maximum allowed OR statements to use when converting from IN to OR.
+     *
+     * This is necessary for systems that do not have an OOB implementation of the IN operator.
+     *
+     * @return void
+     */
+    public function getMaxInToOrConversionChunkSize()
+    {
+        return 150;
+    }
+
     public function ensureDataStructureInternal($entityBrowser, &$connectionToken = null, array $otherOptions = []){
         $source = $entityBrowser->getDataSourceName();
         
@@ -512,7 +532,6 @@ class SQLConnectionDriver extends MiddlewareConnectionDriver {
             }
             $select2 = implode(',', $select);
 
-            // $distinct = implode(',', $otherOptions['$distinct']);
             $occurence = '';
             if (count($distinct) < 1) {
                 $distinct = 'ID';
