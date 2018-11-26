@@ -212,6 +212,15 @@ class EntityFieldDefinition {
         return $type;
     }
 
+    public function getReturnDataType() {
+        $type = $this->dataType;
+        if($type == 'formula'){
+            $type = $this->formula_type;
+        }
+        
+        return $type;
+    }
+
     public function getFormula() {
         return is_null($this->formula)?null:$this->formula;
     }

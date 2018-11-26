@@ -27,7 +27,8 @@ class EntityDefinitionBrowser
     private $idField;
     private $fieldsByDisplayName = [];
     private $fieldsByInternalName = [];
-    private $mandatoryFields = ['Id'];
+    private $defaultField = null;
+    private $mandatoryFields = [];
     private $renameStrategy = null;
     private $fieldValueFetchStrategy = null;
     private $mergeExpansionChunksStrategy = null;
@@ -365,18 +366,59 @@ class EntityDefinitionBrowser
         foreach ($fields as $internalName => $field) {
             $fieldDef = new EntityFieldDefinition($internalName, $field, $this);
             $this->setField($fieldDef);
+
+            // if($fieldDef->getDisplayName() == 'Id'){
+            //     if(!in_array('Id', $this->mandatoryFields)){
+            //         $this->mandatoryFields[] = 'Id';
+            //     }
+            // }
         }
 
         if (!isset($this->fieldsByDisplayName['Id'])) {
             if (count($this->fieldsByDisplayName) > 0) {
-                reset($this->fieldsByDisplayName);
-                $first_key = key($this->fieldsByDisplayName);
-                $this->idField = &$this->fieldsByDisplayName[$first_key];
+                
+                foreach($this->fieldsByDisplayName as $first_key => &$fieldByDisplayName){
+                    if(is_null($this->idField)) {
+                        $this->idField = &$this->fieldsByDisplayName[$first_key];
+                        if(!in_array($fieldByDisplayName->getDisplayName(), $this->mandatoryFields)){
+                            $this->mandatoryFields[] = $fieldByDisplayName->getDisplayName();
+                        }
+                    }
+                    
+                    if($fieldByDisplayName->getDataType() != 'formula'){
+                        $this->defaultField = &$fieldByDisplayName;
+
+                        if(!in_array($fieldByDisplayName->getDisplayName(), $this->mandatoryFields)){
+                            $this->mandatoryFields[] = $fieldByDisplayName->getDisplayName();
+                        }
+                        break;
+                    }
+                }
+
+                if(is_null($this->defaultField)){
+                    throw new \Exception("The Entity '{$this->displayName}' must have at least one non-formula field.");
+                }
             } else {
                 throw new \Exception("The Entity '{$this->displayName}' has no fields");
             }
         } else {
             $this->idField = &$this->fieldsByDisplayName['Id'];
+
+            // Also set the default field.
+            foreach($this->fieldsByDisplayName as $first_key => &$fieldByDisplayName) {                
+                if($fieldByDisplayName->getDataType() != 'formula'){
+                    $this->defaultField = &$fieldByDisplayName;
+
+                    if(!in_array($fieldByDisplayName->getDisplayName(), $this->mandatoryFields)){
+                        $this->mandatoryFields[] = $fieldByDisplayName->getDisplayName();
+                    }
+                    break;
+                }
+            }
+
+            if(is_null($this->defaultField)){
+                throw new \Exception("The Entity '{$this->displayName}' must have at least one non-formula field.");
+            }
         }
 
         return $this;
@@ -446,6 +488,10 @@ class EntityDefinitionBrowser
         } catch (\Exception $exp) {
             return FALSE;
         }
+    }
+
+    public function getDefaultField(){
+        return $this->defaultField;
     }
 
     /**
