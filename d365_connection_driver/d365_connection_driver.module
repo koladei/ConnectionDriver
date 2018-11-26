@@ -101,7 +101,6 @@ function d365_connection_driver__get_entity_definitions()
                         , 'type' => 'formula'
                         , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{AccountNumber}\''
                         , 'formula_type' => 'string'
-                        , 'mandatory' => 1,
                     ]
                     , 'dataAreaId' => [
                         'preferred_name' => 'BusinessEntityId'

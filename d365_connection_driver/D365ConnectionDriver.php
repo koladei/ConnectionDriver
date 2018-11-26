@@ -372,6 +372,7 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
 
             // Execute the POST request.
             $query_string = http_build_query($invoice_params);
+          
             $res = new \stdClass();              
             $res->nextRecordsUrl = "/data/{$entityBrowser->getInternalName()}?{$query_string}";
 
