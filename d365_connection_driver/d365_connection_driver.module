@@ -396,6 +396,370 @@ function d365_connection_driver__get_entity_definitions()
                     ]
                 ]
             ]
+            , 'freetext_invoice' => [
+                'internal_name' => 'FreeTextInvoiceHeaders'
+                , 'fields' => [
+                    'InvoiceIdentifier' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'bigint'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'InvoiceDate' => [
+                        'preferred_name' => 'InvoiceDate'
+                        , 'type' => 'datetime',
+                    ]
+                    , 'DueDate' => [
+                        'preferred_name' => 'DueDate'
+                        , 'type' => 'date',
+                    ]
+                    , 'DocumentDate' => [
+                        'preferred_name' => 'DocumentDate'
+                        , 'type' => 'datetime',
+                    ]
+                    , 'IsCorrection' => [
+                        'preferred_name' => 'IsCorrection'
+                        , 'type' => 'string'
+                    ]
+                    , 'ExchangeRate' => [
+                        'preferred_name' => 'ExchangeRate'
+                        , 'type' => 'decimal'
+                    ]
+                    , 'FreeTextNumber' => [
+                        'preferred_name' => 'InvoiceNumber'
+                        , 'type' => 'string'
+                    ]
+                    , 'InvoiceAccount' => [
+                        'preferred_name' => 'InvoiceAccount'
+                        , 'type' => 'string'
+                    ]
+                    , 'CustomerAccount' => [
+                        'preferred_name' => 'CustomerAccount'
+                        , 'type' => 'string'
+                    ]
+                    , 'CorrectionType' => [
+                        'preferred_name' => 'CorrectionType'
+                        , 'type' => 'string'
+                    ]
+                    , 'CurrencyCode' => [
+                        'preferred_name' => 'CurrencyCode'
+                        , 'type' => 'string'
+                    ]
+                    , 'CustomerReference' => [
+                        'preferred_name' => 'CustomerReference'
+                        , 'type' => 'string'
+                    ]
+                    , 'IsPosted' => [
+                        'preferred_name' => 'IsPosted'
+                        , 'type' => 'boolean'
+                    ]
+                    , 'CustomerGroup' => [
+                        'preferred_name' => 'CustomerGroup'
+                        , 'type' => 'string'
+                    ]
+                    , 'dataAreaId' => [
+                        'preferred_name' => 'BusinessEntityId'
+                        , 'type' => 'string',
+                    ]
+                    , 'BankAccountId' => [
+                        'preferred_name' => 'BankAccount'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'BankAccount'
+                            , 'preferred_local_key_name' => 'BankAccountId'
+                            , 'remote_field' => 'CompanyBankAccountId'
+                            , 'remote_entity' => 'bank_account'
+                            , 'remote_type' => 'parent'
+                        ]
+                    ]
+                    , 'TermsOfPayment' => [
+                        'preferred_name' => 'PaymentTerms'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'PaymentTerms'
+                            , 'preferred_local_key_name' => 'PaymentTermsId'
+                            , 'remote_field' => 'Name'
+                            , 'remote_entity' => 'payment_term'
+                            , 'remote_type' => 'parent'
+                        ]
+                    ]
+                    , '_CustomerId' => [
+                        'preferred_name' => 'CustomerId'
+                        , 'type' => 'formula'
+                        , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{InvoiceAccount}\''
+                        , 'formula_type' => 'string'
+                    ]
+                    , '_Lines' => [
+                        'preferred_name' => 'Lines'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'Id'
+                            , 'remote_field' => 'InvoiceId'
+                            , 'remote_entity' => 'freetext_invoice_line'
+                            , 'remote_type' => 'child'
+                        ]
+                    ]
+                ]
+            ]
+            , 'freetext_invoice_line' => [
+                'internal_name' => 'FreeTextInvoiceLines'
+                , 'fields' => [
+                    '_Id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'formula'
+                        , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{InvoiceId}\''
+                        , 'formula_type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'ParentRecId' => [
+                        'preferred_name' => 'RelatedInvoice'
+                        , 'type' => 'bigint'
+                        , 'relationship' => [
+                            'local_field' => 'RelatedInvoice'
+                            , 'preferred_local_key_name' => 'InvoiceId'
+                            , 'remote_field' => 'Id'
+                            , 'remote_entity' => 'freetext_invoice_line'
+                            , 'remote_type' => 'parent'
+                        ]
+                    ]
+                    , 'dataAreaId' => [
+                        'preferred_name' => 'BusinessEntityId'
+                        , 'type' => 'string',
+                    ]
+                    , 'Description' => [
+                        'preferred_name' => 'Description'
+                        , 'type' => 'string',
+                    ]
+                    , 'LineNumber' => [
+                        'preferred_name' => 'LineNumber'
+                        , 'type' => 'int',
+                    ]
+                    , 'Quantity' => [
+                        'preferred_name' => 'Quantity'
+                        , 'type' => 'decimal',
+                    ]
+                    , 'InvoiceText' => [
+                        'preferred_name' => 'InvoiceText'
+                        , 'type' => 'string',
+                    ]
+                    , 'SalesUnit' => [
+                        'preferred_name' => 'UnitOfMeasure'
+                        , 'type' => 'string',
+                    ]
+                    , 'AmountDetails' => [
+                        'preferred_name' => 'AmountDetails'
+                        , 'type' => 'string',
+                    ]
+                    , 'TransactionCurrencyAmount' => [
+                        'preferred_name' => 'Amount'
+                        , 'type' => 'decimal',
+                    ]
+                ]
+            ]
+            , 'general_ledger_cust_invoice_journal_headers' => [
+                'internal_name' => 'GeneralLedgerCustInvoiceJournalHeaders'
+                , 'fields' => [
+                    '_Id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'formula'
+                        , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{JournalBatchNumber}\''
+                        , 'formula_type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'dataAreaId' => [
+                        'preferred_name' => 'BusinessEntityId'
+                        , 'type' => 'string',
+                    ]
+                    , 'JournalBatchNumber' => [
+                        'preferred_name' => 'JournalBatchNumber'
+                        , 'type' => 'string',
+                    ]
+                    , 'JournalName' => [
+                        'preferred_name' => 'JournalName'
+                        , 'type' => 'string',
+                    ]
+                    , 'Description' => [
+                        'preferred_name' => 'Description'
+                        , 'type' => 'string',
+                    ]
+                    , 'IsPosted' => [
+                        'preferred_name' => 'IsPosted'
+                        , 'type' => 'boolean',
+                    ]
+                    , '_Lines' => [
+                        'preferred_name' => 'Lines'
+                        , 'type' => 'detail'
+                        , 'relationship' => [
+                            'local_field' => 'JournalBatchNumber'
+                            , 'remote_field' => 'JournalBatchNumber'
+                            , 'remote_entity' => 'general_ledger_cust_invoice_journal_lines'
+                            , 'remote_type' => 'child'
+                        ]
+                    ]
+                ]
+            ]
+            , 'general_ledger_cust_invoice_journal_lines' => [
+                'internal_name' => 'GeneralLedgerCustInvoiceJournalLines'
+                , 'fields' => [
+                    '_Id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'formula'
+                        , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{InvoiceNumber}\''
+                        , 'formula_type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'dataAreaId' => [
+                        'preferred_name' => 'BusinessEntityId'
+                        , 'type' => 'string',
+                    ]
+                    , 'JournalBatchNumber' => [
+                        'preferred_name' => 'JournalBatchNumber'
+                        , 'type' => 'string',
+                    ]
+                    , 'LineNumber' => [
+                        'preferred_name' => 'LineNumber'
+                        , 'type' => 'int',
+                    ]
+                    , 'CreditAmount' => [
+                        'preferred_name' => 'CreditAmount'
+                        , 'type' => 'decimal',
+                    ]
+                    , 'OffsetAccountType' => [
+                        'preferred_name' => 'OffsetAccountType'
+                        , 'type' => 'string',
+                    ]
+                    , 'ReasonCode' => [
+                        'preferred_name' => 'ReasonCode'
+                        , 'type' => 'string',
+                    ]
+                    , 'CashDiscountDate' => [
+                        'preferred_name' => 'CashDiscountDate'
+                        , 'type' => 'datetime',
+                    ]
+                    , 'ItemSalesTaxGroup' => [
+                        'preferred_name' => 'ItemSalesTaxGroup'
+                        , 'type' => 'string',
+                    ]
+                    , 'Currency' => [
+                        'preferred_name' => 'Currency'
+                        , 'type' => 'string',
+                    ]
+                    , 'OffsetTransactionText' => [
+                        'preferred_name' => 'OffsetTransactionText'
+                        , 'type' => 'string',
+                    ]
+                    , 'MethodOfPayment' => [
+                        'preferred_name' => 'MethodOfPayment'
+                        , 'type' => 'string',
+                    ]
+                    , 'TransactionText' => [
+                        'preferred_name' => 'TransactionText'
+                        , 'type' => 'string',
+                    ]
+                    , 'Company' => [
+                        'preferred_name' => 'Company'
+                        , 'type' => 'string',
+                    ]
+                    , 'Listcode' => [
+                        'preferred_name' => 'ListCode'
+                        , 'type' => 'string',
+                    ]
+                    , 'TransactionType' => [
+                        'preferred_name' => 'TransactionType'
+                        , 'type' => 'string',
+                    ]
+                    , 'OffsetAccountDisplayValue' => [
+                        'preferred_name' => 'OffsetAccountDisplayValue'
+                        , 'type' => 'string',
+                    ]
+                    , 'DocumentDate' => [
+                        'preferred_name' => 'DocumentDate'
+                        , 'type' => 'datetime',
+                    ]
+                    , 'CashDiscountCode' => [
+                        'preferred_name' => 'CashDiscountCode'
+                        , 'type' => 'string',
+                    ]
+                    , 'IsWithholdingCalculationEnabled' => [
+                        'preferred_name' => 'IsWithholdingCalculationEnabled'
+                        , 'type' => 'string',
+                    ]
+                    , 'DeliveryDate' => [
+                        'preferred_name' => 'DeliveryDate'
+                        , 'type' => 'datetime',
+                    ]
+                    , 'OffsetCompany' => [
+                        'preferred_name' => 'OffsetCompany'
+                        , 'type' => 'string',
+                    ]
+                    , 'CustomerAccountDisplayValue' => [
+                        'preferred_name' => 'CustomerAccountDisplayValue'
+                        , 'type' => 'string',
+                    ]
+                    , 'DocumentNumber' => [
+                        'preferred_name' => 'DocumentNumber'
+                        , 'type' => 'string',
+                    ]
+                    , 'DebitAmount' => [
+                        'preferred_name' => 'DebitAmount'
+                        , 'type' => 'decimal',
+                    ]
+                    , 'PostingProfile' => [
+                        'preferred_name' => 'PostingProfile'
+                        , 'type' => 'string',
+                    ]
+                    , 'ItemWithholdingTaxGroupCode' => [
+                        'preferred_name' => 'ItemWithholdingTaxGroupCode'
+                        , 'type' => 'string',
+                    ]
+                    , 'Voucher' => [
+                        'preferred_name' => 'Voucher'
+                        , 'type' => 'string',
+                    ]
+                    , 'DueDate' => [
+                        'preferred_name' => 'DueDate'
+                        , 'type' => 'datetime',
+                    ]
+                    , 'CashDiscountAmount' => [
+                        'preferred_name' => 'CashDiscountAmount'
+                        , 'type' => 'decimal',
+                    ]
+                    , 'Approved' => [
+                        'preferred_name' => 'Approved'
+                        , 'type' => 'boolean',
+                    ]
+                    , 'AccountType' => [
+                        'preferred_name' => 'AccountType'
+                        , 'type' => 'string',
+                    ]
+                    , 'TypeOfOperation' => [
+                        'preferred_name' => 'TypeOfOperation'
+                        , 'type' => 'string',
+                    ]
+                    , 'InvoiceDate' => [
+                        'preferred_name' => 'InvoiceDate'
+                        , 'type' => 'datetime',
+                    ]
+                    , 'InvoiceId' => [
+                        'preferred_name' => 'InvoiceNumber'
+                        , 'type' => 'string',
+                    ]
+                    , 'DefaultDimensionDisplayValue' => [
+                        'preferred_name' => 'DefaultDimensionDisplayValue'
+                        , 'type' => 'string',
+                    ]
+                    , 'TermsOfPayment' => [
+                        'preferred_name' => 'PaymentTerms'
+                        , 'type' => 'string'
+                        , 'relationship' => [
+                            'local_field' => 'PaymentTerms'
+                            , 'preferred_local_key_name' => 'PaymentTermsId'
+                            , 'remote_field' => 'Name'
+                            , 'remote_entity' => 'payment_term'
+                            , 'remote_type' => 'parent'
+                        ]
+                    ]
+                ]
+            ]
             , 'payment_term' => [
                 'internal_name' => 'PaymentTerms'
                 , 'fields' => [
@@ -484,6 +848,78 @@ function d365_connection_driver__get_entity_definitions()
                     ]     
                 ]
             ]
+            , 'bank_account' => [
+                'internal_name' => 'BankAccounts'
+                , 'fields' => [
+                    '_Id' => [
+                        'preferred_name' => 'Id'
+                        , 'type' => 'formula'
+                        , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{BankAccountId}\''
+                        , 'formula_type' => 'string'
+                        , 'mandatory' => 1,
+                    ]
+                    , 'dataAreaId' => [
+                        'preferred_name' => 'BusinessEntityId'
+                        , 'type' => 'string',
+                    ]
+                    , 'BankAccountId' => [
+                        'preferred_name' => 'BankAccountId'
+                        , 'type' => 'string'
+                    ]
+                    , 'PositivePayFormatName' => [
+                        'preferred_name' => 'PositivePayFormatName'
+                        , 'type' => 'string'
+                    ]
+                    , 'CustomerPaymentFeeMainAccountIdDisplayValue' => [
+                        'preferred_name' => 'CustomerPaymentFeeMainAccountIdDisplayValue'
+                        , 'type' => 'boolean'
+                    ]
+                    , 'ActiveFrom' => [
+                        'preferred_name' => 'ActiveFrom'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'DiscountInterestsFee' => [
+                        'preferred_name' => 'DiscountInterestsFee'
+                        , 'type' => 'decimal'
+                    ]
+                    , 'ReconciliationMatchingRuleSetId' => [
+                        'preferred_name' => 'ReconciliationMatchingRuleSetId'
+                        , 'type' => 'string'
+                    ]
+                    , 'AddressCountryISOCode' => [
+                        'preferred_name' => 'AddressCountryISOCode'
+                        , 'type' => 'string'
+                    ]
+                    , 'AddressCountry' => [
+                        'preferred_name' => 'AddressCountry'
+                        , 'type' => 'string'
+                    ]
+                    , 'ControlInternalNumber' => [
+                        'preferred_name' => 'ControlInternalNumber'
+                        , 'type' => 'string'
+                    ]
+                    , 'AddressTimeZone' => [
+                        'preferred_name' => 'AddressTimeZone'
+                        , 'type' => 'string'
+                    ]
+                    , 'AccountNumber' => [
+                        'preferred_name' => 'AccountNumber'
+                        , 'type' => 'string'
+                    ]
+                    , 'SWIFTCode' => [
+                        'preferred_name' => 'SWIFTCode'
+                        , 'type' => 'string'
+                    ]
+                    , 'Name' => [
+                        'preferred_name' => 'Name'
+                        , 'type' => 'string'
+                    ]
+                    , 'SortCode' => [
+                        'preferred_name' => 'SortCode'
+                        , 'type' => 'string'
+                    ]
+                ]
+            ]
             , 'settled_payment' => [
                 'internal_name' => 'PaymentJournalLineSettledInvoices'
                 , 'fields' => [
@@ -537,154 +973,6 @@ function d365_connection_driver__get_entity_definitions()
                         'preferred_name' => 'AccountDisplayValue'
                         , 'type' => 'string'
                     ] 
-                ]
-            ]
-            , 'freetext_invoice' => [
-                'internal_name' => 'FreeTextInvoiceHeaders'
-                , 'fields' => [
-                    'InvoiceIdentifier' => [
-                        'preferred_name' => 'Id'
-                        , 'type' => 'bigint'
-                        , 'mandatory' => 1,
-                    ]
-                    , 'InvoiceDate' => [
-                        'preferred_name' => 'InvoiceDate'
-                        , 'type' => 'datetime',
-                    ]
-                    , 'DueDate' => [
-                        'preferred_name' => 'DueDate'
-                        , 'type' => 'date',
-                    ]
-                    , 'DocumentDate' => [
-                        'preferred_name' => 'DocumentDate'
-                        , 'type' => 'datetime',
-                    ]
-                    , 'IsCorrection' => [
-                        'preferred_name' => 'IsCorrection'
-                        , 'type' => 'string'
-                    ]
-                    , 'ExchangeRate' => [
-                        'preferred_name' => 'ExchangeRate'
-                        , 'type' => 'decimal'
-                    ]
-                    , 'FreeTextNumber' => [
-                        'preferred_name' => 'InvoiceNumber'
-                        , 'type' => 'string'
-                    ]
-                    , 'InvoiceAccount' => [
-                        'preferred_name' => 'InvoiceAccount'
-                        , 'type' => 'string'
-                    ]
-                    , 'CustomerAccount' => [
-                        'preferred_name' => 'CustomerAccount'
-                        , 'type' => 'string'
-                    ]
-                    , 'CorrectionType' => [
-                        'preferred_name' => 'CorrectionType'
-                        , 'type' => 'string'
-                    ]
-                    , 'CurrencyCode' => [
-                        'preferred_name' => 'CurrencyCode'
-                        , 'type' => 'string'
-                    ]
-                    , 'CustomerReference' => [
-                        'preferred_name' => 'CustomerReference'
-                        , 'type' => 'string'
-                    ]
-                    , 'IsPosted' => [
-                        'preferred_name' => 'IsPosted'
-                        , 'type' => 'boolean'
-                    ]
-                    , 'CustomerGroup' => [
-                        'preferred_name' => 'CustomerGroup'
-                        , 'type' => 'string'
-                    ]
-                    , 'dataAreaId' => [
-                        'preferred_name' => 'BusinessEntityId'
-                        , 'type' => 'string',
-                    ]
-                    , 'TermsOfPayment' => [
-                        'preferred_name' => 'PaymentTerms'
-                        , 'type' => 'string'
-                        , 'relationship' => [
-                            'local_field' => 'PaymentTerms'
-                            , 'preferred_local_key_name' => 'PaymentTermsId'
-                            , 'remote_field' => 'Name'
-                            , 'remote_entity' => 'payment_term'
-                            , 'remote_type' => 'parent'
-                        ]
-                    ]
-                    , '_CustomerId' => [
-                        'preferred_name' => 'CustomerId'
-                        , 'type' => 'formula'
-                        , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{InvoiceAccount}\''
-                        , 'formula_type' => 'string'
-                    ]
-                    , '_Lines' => [
-                        'preferred_name' => 'Lines'
-                        , 'type' => 'detail'
-                        , 'relationship' => [
-                            'local_field' => 'Id'
-                            , 'remote_field' => 'InvoiceId'
-                            , 'remote_entity' => 'freetext_invoice_line'
-                            , 'remote_type' => 'child'
-                        ]
-                    ]
-                ]
-            ]
-            , 'freetext_invoice_line' => [
-                'internal_name' => 'FreeTextInvoiceLines'
-                , 'fields' => [
-                    '_Id' => [
-                        'preferred_name' => 'Id'
-                        , 'type' => 'formula'
-                        , 'formula' => 'strtoupper(\'{BusinessEntityId}\').\'-\'.\'{InvoiceId}\''
-                        , 'formula_type' => 'string'
-                        , 'mandatory' => 1,
-                    ]
-                    , 'ParentRecId' => [
-                        'preferred_name' => 'RelatedInvoice'
-                        , 'type' => 'bigint'
-                        , 'relationship' => [
-                            'local_field' => 'RelatedInvoice'
-                            , 'preferred_local_key_name' => 'InvoiceId'
-                            , 'remote_field' => 'Id'
-                            , 'remote_entity' => 'freetext_invoice_line'
-                            , 'remote_type' => 'parent'
-                        ]
-                    ]
-                    , 'dataAreaId' => [
-                        'preferred_name' => 'BusinessEntityId'
-                        , 'type' => 'string',
-                    ]
-                    , 'Description' => [
-                        'preferred_name' => 'Description'
-                        , 'type' => 'string',
-                    ]
-                    , 'LineNumber' => [
-                        'preferred_name' => 'LineNumber'
-                        , 'type' => 'int',
-                    ]
-                    , 'Quantity' => [
-                        'preferred_name' => 'Quantity'
-                        , 'type' => 'decimal',
-                    ]
-                    , 'InvoiceText' => [
-                        'preferred_name' => 'InvoiceText'
-                        , 'type' => 'string',
-                    ]
-                    , 'SalesUnit' => [
-                        'preferred_name' => 'UnitOfMeasure'
-                        , 'type' => 'string',
-                    ]
-                    , 'AmountDetails' => [
-                        'preferred_name' => 'AmountDetails'
-                        , 'type' => 'string',
-                    ]
-                    , 'TransactionCurrencyAmount' => [
-                        'preferred_name' => 'Amount'
-                        , 'type' => 'decimal',
-                    ]
                 ]
             ]
         ]];

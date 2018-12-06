@@ -1180,11 +1180,6 @@ abstract class MiddlewareConnectionDriver
                 $this->syncByRecordIds($entityBrowser->getCachedObject(), $oldRecords);
                 return $this->getItems(...$getItemArgs);
             }
-
-            if($entityBrowser->getDisplayName() == 'customer'){
-                watchdog('RRR0', print_r($result, true));
-            }
-
             // Fetch the related field values in one sweep
             array_walk($expands, function (&$expand_val, $expand_key) use ($driverScope, $skipCache, $includeDeleted, $entityBrowser) {
                 $localField = $expand_val['info'];
@@ -1206,35 +1201,19 @@ abstract class MiddlewareConnectionDriver
                     $otherOptions['more_filter'] = $localField->getRemoteEntityFilter();
                 }
 
-                if($entityBrowser->getDisplayName() == 'customer'){
-                    watchdog('RRR-1', print_r('$result', true));
-                }
-
                 // Remove duplicates
                 $expand_val['ids'] = array_unique($expand_val['ids']);
 
                 // Divide the keys into manageable chunks
                 $max_chunk_size = $remoteDriver->getMaxInToOrConversionChunkSize();
-                // echo $remoteEntityBrowser->getDisplayName(). ' """ '. $max_chunk_size;
                 $expand_chunks = array_chunk($expand_val['ids'], $max_chunk_size);
                 $data = NULL;
 
                 $ex = isset($expand_val['expand'][$localField->getDisplayName()]) ? $expand_val['expand'][$localField->getDisplayName()] : [];
-
-
-                if($entityBrowser->getDisplayName() == 'customer'){
-                    watchdog('RRR-2', print_r('$result'.count($expand_chunks), true));
-                }
                 $countrx = 0;
+                set_time_limit(0);
                 foreach ($expand_chunks as $chunk) {
-                    if($entityBrowser->getDisplayName() == 'customer'){
-                        watchdog('RRR-Y', print_r($chunk, true));
-                    }
                     $chunkResult = $remoteDriver->getItemsByFieldValues($remoteEntityBrowser, $remoteField, $chunk, $expand_val['select'], implode(',', $ex), $otherOptions);
-
-                    if($entityBrowser->getDisplayName() == 'customer'){
-                        watchdog('RRR-X', print_r([$countrx, $chunkResult], true));
-                    }
                     // Combine this chunk result with previous chunk results
                     $data = $remoteEntityBrowser->mergeExpansionChunks($data, $chunkResult, $localField, $remoteField);
                     $countrx = $countrx + 1;
@@ -1244,17 +1223,7 @@ abstract class MiddlewareConnectionDriver
                     //     // break;
                     // }
                 }
-                
-                
-                if($entityBrowser->getDisplayName() == 'customer'){
-                    watchdog('RRR1', print_r($data, true));
-                }
                 $expand_val['data'] = $data;
-                
-                
-                if($entityBrowser->getDisplayName() == 'customer'){
-                    watchdog('RRR2', print_r($data, true));
-                }
             });
 
             // Attach the fetched values to their corresponding parents
