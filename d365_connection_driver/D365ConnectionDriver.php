@@ -375,7 +375,6 @@ class D365ConnectionDriver extends MiddlewareConnectionDriver {
             $res = new \stdClass();              
             $res->nextRecordsUrl = "/data/{$entityBrowser->getInternalName()}?{$query_string}";
 
-            echo $res->nextRecordsUrl;
             do {   
                 $feed = mware_blocking_http_request("{$connectionToken->resource}{$res->nextRecordsUrl}", ['options' => $options]);
 
