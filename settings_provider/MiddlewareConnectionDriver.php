@@ -1107,7 +1107,7 @@ abstract class MiddlewareConnectionDriver
         }
         
         if (!is_null($result)) {
-            $select_map = $entityBrowser->getFieldsByInternalNames($select);
+            $select_map = $entityBrowser->getFieldsByInternalNames($se);
             $dataIsOld = FALSE;
             $oldRecords = [];
 
