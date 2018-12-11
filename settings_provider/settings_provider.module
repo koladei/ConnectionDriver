@@ -164,6 +164,7 @@ function settings_provider__format_cached_definition($from, $to, callable $entit
                 $entity['original_display_name'] = $entity_name;
                 $entity['original_driver_name'] = $from;
                 $entity['internal_name'] = $name;
+                $entity['is_cache'] = '1';
                 unset($entity['cache']);
                 unset($entity['cache_to']);
 

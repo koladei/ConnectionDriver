@@ -84,7 +84,7 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
 
 
                 foreach ($entity['fields'] as $fieldName => $field) {
-                    if($field['type'] != 'detail' && $field['type'] != 'formula'){
+                    if($field['type'] != 'detail'){
                         if(!in_array($fieldName, ['_IsUpdated'])) {
                             $selectFields[] = $field['preferred_name'];
                         }
@@ -107,9 +107,6 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                     var_dump($ex);
                 }
 
-                // $filter = "Created ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}' or Modified ge datetime'{$lastSynched->format('Y-m-d\TH:i:s')}'";
-                // echo $filter. ' > '. $source->getEntityBrowser($entity['original_display_name'])->getDisplayName();
-                // var_dump($source);
                 $newbies = [];
                 $generalErrorOccured = FALSE;
                 try {
@@ -191,10 +188,12 @@ function settings_provider__update_cache_inner($sourceDestination, $entity, $sou
                         if (count($destCopy) < 1) {
                             try {
                                 $newbie->_IsUpdated = TRUE;
+                                var_dump($newbie);
                                 $destination->createItem($entity['internal_name'], $newbie, [
                                     '$setId' => '1'
                                 ]);
                                 $synched = $synched + 1;
+                                break;
                             } catch(\Exception $ce){
                                 // Log this synchronization error.
                                 $info = new \stdClass();
