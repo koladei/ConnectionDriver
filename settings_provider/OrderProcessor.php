@@ -34,9 +34,11 @@ class OrderProcessor {
         
         preg_match_all('/([\w][\w\d]*)\s*((asc|desc)\s*[\,]?)?/i', $expression, $matchs, PREG_PATTERN_ORDER);
         foreach ($matchs as $mat) {
-            $key = $mat[1];
-            if(strlen($key) > 0){
-                $this->orderSegments[$key] = new Order($entityDefinition, $mat[1], $mat[3]);
+            if(count($mat) > 0){
+                $key = $mat[1];
+                if(strlen($key) > 0){
+                    $this->orderSegments[$key] = new Order($entityDefinition, $mat[1], $mat[3]);
+                }
             }
         }
     }
