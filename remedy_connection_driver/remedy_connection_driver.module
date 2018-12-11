@@ -1758,6 +1758,74 @@ function remedy_connection_driver__get_entity_definitions() {
                     ]
                 ]
             ]
+            , 'pmo_project' => [
+                'internal_name' => 'MainOne_PMO:CreateProjectWS'
+                , 'soap_methods' => [
+                    'create' => 'CreateProject',
+                    // 'query' => 'CreateProject'
+                ]
+                , 'fields' => [
+                    'Infrastructure_Change_ID' => [
+                        'preferred_name' => 'Id'
+                        , 'preferred_query_name' => 'Infrastructure Change ID'
+                        , 'type' => 'string'
+                    ]
+                    , 'CA_Date' => [
+                        'preferred_name' => 'CommercialApprovalDate'
+                        , 'preferred_query_name' => 'CA Date'
+                        , 'type' => 'datetime'
+                        , 'mandatory' => 1
+                    ]
+                    , 'Requested_Date' => [
+                        'preferred_name' => 'RequestedDate'
+                        , 'preferred_query_name' => 'Requested Date'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Commencement_Date' => [
+                        'preferred_name' => 'Commencement_Date'
+                        , 'preferred_query_name' => 'Commencement Date'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Expected_End_Date' => [
+                        'preferred_name' => 'ExpectedEndDate'
+                        , 'preferred_query_name' => 'Expected End Date'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Billing_Start_Date' => [
+                        'preferred_name' => 'BillingStartDate'
+                        , 'preferred_query_name' => 'Billing Start Date'
+                        , 'type' => 'datetime'
+                    ]
+                    , 'Customer' => [
+                        'preferred_name' => 'Customer'
+                        , 'type' => 'string'
+                    ]
+                    , 'Priority' => [
+                        'preferred_name' => 'Priority'
+                        , 'type' => 'string'
+                    ]
+                    , 'Circuit_ID' => [
+                        'preferred_name' => 'CircuitID'
+                        , 'type' => 'string'
+                    ]
+                    , 'Description' => [
+                        'preferred_name' => 'Description'
+                        , 'type' => 'string'
+                    ]
+                    , 'Priority' => [
+                        'preferred_name' => 'Priority'
+                        , 'type' => 'string'
+                    ]
+                    , 'TypeOfConnection' => [
+                        'preferred_name' => 'TypeOfConnection'
+                        , 'type' => 'string'
+                    ]
+                    , 'Type_Of_Delivery' => [
+                        'preferred_name' => 'TypeOfDelivery'
+                        , 'type' => 'string'
+                    ]
+                ]
+            ]
         ]
     ];
 }
