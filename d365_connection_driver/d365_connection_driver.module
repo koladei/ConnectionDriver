@@ -461,13 +461,13 @@ function d365_connection_driver__get_entity_definitions()
                         'preferred_name' => 'BusinessEntityId'
                         , 'type' => 'string',
                     ]
-                    , 'BankAccountId' => [
+                    , 'CompanyBankAccountId' => [
                         'preferred_name' => 'BankAccount'
                         , 'type' => 'string'
                         , 'relationship' => [
                             'local_field' => 'BankAccount'
                             , 'preferred_local_key_name' => 'BankAccountId'
-                            , 'remote_field' => 'CompanyBankAccountId'
+                            , 'remote_field' => 'BankAccountId'
                             , 'remote_entity' => 'bank_account'
                             , 'remote_type' => 'parent'
                         ]
